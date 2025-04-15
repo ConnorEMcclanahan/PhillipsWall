@@ -1,0 +1,272 @@
+[
+  {
+    "id": 1,
+    "question": {
+      "en": "What can AI do for you?",
+      "nl": "Wat kan AI voor jou betekenen?"
+    },
+    "color": "#008ce9",
+    "gradientColor": "linear-gradient(135deg, #008ce9 0%, #006db3 100%)",
+    "answers": {
+      "en": [
+        "AI can streamline my work by automating repetitive tasks.",
+        "It could help me make smarter financial decisions.",
+        "AI can provide personalized health tips based on my data.",
+        "It could assist me in learning new languages faster.",
+        "AI could help me organize my time more efficiently.",
+        "It can offer targeted suggestions for my professional growth."
+      ],
+      "nl": [
+        "AI kan me ondersteunen bij het vinden van nieuwe muziek.",
+        "Het kan helpen met het verbeteren van mijn sportprestaties.",
+        "AI kan suggesties geven voor gezondere recepten.",
+        "Het kan zorgen voor beter tijdsbeheer door meldingen.",
+        "AI kan me helpen om mijn huis veiliger te maken.",
+        "AI kan nieuwe vaardigheden aanbevelen om te leren."
+      ]
+    }
+  },
+  {
+    "id": 2,
+    "question": {
+      "en": "What daily chore would you like AI to take over?",
+      "nl": "Welke dagelijkse taak zou jij aan AI willen overdragen?"
+    },
+    "color": "#008ce9",
+    "gradientColor": "linear-gradient(135deg, #008ce9 0%, #006db3 100%)",
+    "answers": {
+      "en": [
+        "I would love AI to handle sorting and folding laundry.",
+        "It could plan and prepare my weekly grocery list.",
+        "AI can manage my home cleaning schedule automatically.",
+        "I’d like AI to handle organizing my inbox.",
+        "It could take care of daily meal prep and cooking.",
+        "AI could manage pet feeding and tracking routines."
+      ],
+      "nl": [
+        "Ik zou willen dat AI de afwas doet.",
+        "AI kan mijn post sorteren en bijhouden.",
+        "Ik zou het fijn vinden als AI de planten water geeft.",
+        "AI kan helpen met het schoonmaken van de badkamer.",
+        "Het zou geweldig zijn als AI de ramen schoonmaakt.",
+        "AI kan helpen om de vuilnis buiten te zetten."
+      ]
+    }
+  },
+  {
+    "id": 3,
+    "question": {
+      "en": "What AI solution would you like to design?",
+      "nl": "Welke AI-oplossing zou jij willen ontwerpen?"
+    },
+    "color": "#8e00c5",
+    "gradientColor": "linear-gradient(135deg, #8e00c5 0%, #6b009f 100%)",
+    "answers": {
+      "en": [
+        "An AI tutor that adapts lessons based on learning pace.",
+        "An AI that monitors environmental pollution levels.",
+        "A mental health companion that offers daily check-ins.",
+        "An AI that assists artists in creating new concepts.",
+        "A community safety AI that predicts areas needing help.",
+        "A budgeting assistant that offers real-time spending tips."
+      ],
+      "nl": [
+        "Een AI die verkeersdrukte beter kan voorspellen.",
+        "Een AI die je helpt om duurzaam te leven.",
+        "Een AI die helpt bij het vinden van verloren spullen.",
+        "Een AI-assistent voor het plannen van vakanties.",
+        "Een AI die gepersonaliseerde kooktips geeft.",
+        "Een AI die helpt bij online veiligheid voor kinderen."
+      ]
+    }
+  },
+  {
+    "id": 4,
+    "question": {
+      "en": "What is your most remarkable experience with AI?",
+      "nl": "Wat is jouw meest bijzondere ervaring met AI?"
+    },
+    "color": "#008ce9",
+    "gradientColor": "linear-gradient(135deg, #008ce9 0%, #006db3 100%)",
+    "answers": {
+      "en": [
+        "Using AI to edit a photo automatically was impressive.",
+        "AI once helped me find an old friend online.",
+        "A recommendation from AI introduced me to my favorite book.",
+        "Seeing AI create music based on my mood was surprising.",
+        "An AI correctly predicting the weather was remarkable.",
+        "AI-powered virtual reality was a completely new experience."
+      ],
+      "nl": [
+        "AI die me hielp met een last-minute vliegticket.",
+        "Een chatbot die bijna echt aanvoelde.",
+        "Een AI-assistent die mijn vakantie volledig plande.",
+        "AI die persoonlijke aanbevelingen gaf voor kleding.",
+        "Een kunstwerk gemaakt door AI dat ik heel mooi vond.",
+        "Een AI die live sportcommentaar gaf was indrukwekkend."
+      ]
+    }
+  },
+  {
+    "id": 5,
+    "question": {
+      "en": "What worries you about AI?",
+      "nl": "Waarover maak je je zorgen bij AI?"
+    },
+    "color": "#008ce9",
+    "gradientColor": "linear-gradient(135deg, #008ce9 0%, #006db3 100%)",
+    "answers": {
+      "en": [
+        "AI may cause a loss of privacy.",
+        "It could make humans too dependent on technology.",
+        "AI could replace jobs, leading to unemployment.",
+        "The misuse of AI in spreading misinformation.",
+        "AI might be used for surveillance without consent.",
+        "It could be difficult to manage ethical boundaries in AI."
+      ],
+      "nl": [
+        "AI kan ervoor zorgen dat banen verdwijnen.",
+        "Ik maak me zorgen over AI en privacy.",
+        "AI kan mensen lui maken als ze te veel erop vertrouwen.",
+        "Het risico dat AI misbruikt wordt voor propaganda.",
+        "De angst dat AI onethische beslissingen neemt.",
+        "AI kan zorgen voor meer ongelijkheid in de maatschappij."
+      ]
+    }
+  },
+  {
+    "id": 6,
+    "question": {
+      "en": "Does AI make life easier or more complicated?",
+      "nl": "Maakt AI het leven gemakkelijker of ingewikkelder?"
+    },
+    "color": "#ba5719",
+    "gradientColor": "linear-gradient(135deg, #ba5719 0%, #9f4515 100%)",
+    "answers": {
+      "en": [
+        "It generally simplifies routine tasks.",
+        "Sometimes it adds a learning curve with new interfaces.",
+        "AI can make things more efficient, saving time.",
+        "It can complicate things if it malfunctions or is biased.",
+        "Overall, it helps reduce mental load in daily life.",
+        "For complex tasks, AI can actually add confusion."
+      ],
+      "nl": [
+        "Het maakt veel taken gemakkelijker.",
+        "AI voegt soms een nieuwe laag complexiteit toe.",
+        "In veel gevallen bespaart AI tijd.",
+        "Wanneer AI faalt, kan het juist voor problemen zorgen.",
+        "AI biedt gemak, maar soms ontbreekt het persoonlijke aspect.",
+        "Het kan routinewerk gemakkelijker maken, maar niet altijd."
+      ]
+    }
+  },
+  {
+    "id": 7,
+    "question": {
+      "en": "Who should be responsible for AI?",
+      "nl": "Wie moet verantwoordelijk zijn voor AI?"
+    },
+    "color": "#008ce9",
+    "gradientColor": "linear-gradient(135deg, #008ce9 0%, #006db3 100%)",
+    "answers": {
+      "en": [
+        "The developers creating and training AI models.",
+        "Governments need to set clear regulations.",
+        "Companies that deploy AI should have accountability.",
+        "An independent AI ethics board might help.",
+        "Consumers should also understand AI usage risks.",
+        "Collaboration between all stakeholders is essential."
+      ],
+      "nl": [
+        "Ontwikkelaars die de technologie maken.",
+        "Overheden moeten zorgen voor regelgeving.",
+        "Bedrijven moeten verantwoordelijk worden gehouden.",
+        "Een ethische commissie kan AI-overzicht houden.",
+        "Gebruikers moeten bewust omgaan met AI-gebruik.",
+        "Een samenwerking tussen experts en overheden is nodig."
+      ]
+    }
+  },
+  {
+    "id": 8,
+    "question": {
+      "en": "How will people look back on today’s AI developments a hundred years from now?",
+      "nl": "Hoe wordt over honderd jaar teruggekeken op de huidige AI-ontwikkelingen?"
+    },
+    "color": "#0a7c53",
+    "gradientColor": "linear-gradient(135deg, #0a7c53 0%, #075e3c 100%)",
+    "answers": {
+      "en": [
+        "They may see it as a pioneering era for technology.",
+        "It could be viewed as a time of ethical challenges.",
+        "People might laugh at how basic AI was back then.",
+        "It might be seen as the beginning of real human-AI collaboration.",
+        "Future generations may consider it a critical turning point.",
+        "They could view it as a time filled with optimism and fear."
+      ],
+      "nl": [
+        "Mensen zullen deze tijd als revolutionair zien.",
+        "Het zal misschien als het begin van AI-ethiek worden gezien.",
+        "Ze zullen lachen om de simpele AI van nu.",
+        "Mensen zullen dit herinneren als het startpunt voor innovatie.",
+        "Toekomstige generaties zullen het waarschijnlijk kritisch bekijken.",
+        "Het kan als een tijd van hoop en vrees worden gezien."
+      ]
+    }
+  },
+  {
+    "id": 9,
+    "question": {
+      "en": "What problem do you hope AI might solve?",
+      "nl": "Welk probleem hoop je dat AI kan oplossen?"
+    },
+    "color": "#0a7c53",
+    "gradientColor": "linear-gradient(135deg, #0a7c53 0%, #075e3c 100%)",
+    "answers": {
+      "en": [
+        "Finding sustainable solutions for climate change.",
+        "Improving access to quality healthcare globally.",
+        "Helping reduce food waste and improve distribution.",
+        "Supporting mental health with accessible resources.",
+        "Solving global educational inequality.",
+        "Enhancing wildlife protection and biodiversity."
+      ],
+      "nl": [
+        "Het aanpakken van klimaatverandering.",
+        "Betere toegang tot gezondheidszorg bieden.",
+        "Voedselverspilling tegengaan.",
+        "Onderwijs toegankelijker maken voor iedereen.",
+        "De wereldwijde armoede verminderen.",
+        "Duurzame energieoplossingen ontwikkelen."
+      ]
+    }
+  },
+  {
+    "id": 10,
+    "question": {
+      "en": "What AI applications would you hate to do without?",
+      "nl": "Welke AI-toepassingen zou je niet willen missen?"
+    },
+    "color": "#0a7c53",
+    "gradientColor": "linear-gradient(135deg, #0a7c53 0%, #075e3c 100%)",
+    "answers": {
+      "en": [
+        "AI-powered virtual assistants like Siri or Alexa.",
+        "Recommendation algorithms for movies and music.",
+        "AI-powered health trackers for fitness goals.",
+        "Language translation apps like Google Translate.",
+        "AI for helping manage schedules and reminders.",
+        "Smart home devices like thermostats and lighting."
+      ],
+      "nl": [
+        "Slimme assistenten zoals Siri en Google Assistant.",
+        "Aanbevelingssystemen voor films en muziek.",
+        "AI voor gezondheidstracking.",
+        "Vertaalapps zoals Google Translate.",
+        "Slimme apparaten zoals de thermostaat.",
+        "Apps die je helpen je agenda te beheren."
+      ]
+    }
+  }
+]

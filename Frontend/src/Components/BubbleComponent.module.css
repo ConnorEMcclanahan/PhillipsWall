@@ -1,0 +1,28 @@
+.bubble {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 180px;
+    height: 180px;
+    background-color: rgba(0, 123, 255, 0.7); /* Default color */
+    border-radius: 50%; /* Makes it circular */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+    overflow: hidden; /* Prevents text overflow */
+    padding: 10px; /* Adjusts inner spacing */
+    cursor: pointer;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.bubble:hover {
+    transform: scale(1.1); /* Slightly enlarges on hover */
+    background-color: rgba(0, 123, 255, 1); /* Brightens on hover */
+}
+
+.bubble-text {
+    pointer-events: none; /* Prevents text from interfering with hover effects */
+}

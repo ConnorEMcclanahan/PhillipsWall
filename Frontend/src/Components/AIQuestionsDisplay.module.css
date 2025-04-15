@@ -1,0 +1,300 @@
+.container {
+    height: 92vh;
+    position: relative;
+    overflow: hidden;
+    background-color: rgb(17, 24, 39);
+    border-radius: 1.5rem;
+    transition: background-color 0.5s ease;
+}
+
+.gradientBackground {
+    position: absolute;
+    inset: 0;
+    background-color: #000;
+    pointer-events: none;
+}
+
+
+.pixelGrid {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.3) 1px, transparent 15px), linear-gradient(to bottom, rgba(255, 255, 255, 0.3) 1px, transparent 15px);
+    background-size: 20px 20px;
+    mix-blend-mode: overlay;
+
+}
+
+.questionsLayer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+.questionsGrid {
+    /*position: relative;*/
+    width: 110%;
+    height: 94%;
+}
+
+.questionItem {
+    position: absolute;
+    width: 13rem;
+    height: 13rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.questionItem:hover:not(.inactiveQuestion) {
+    transform: scale(1.4);
+    z-index: 20;
+}
+
+.inactiveQuestion {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+    transition: all 0.5s ease;
+}
+
+.zoomTransition {
+    position: fixed;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center center;
+}
+
+.zoomedIn {
+    transform: scale(1.5) translateZ(500px);
+}
+
+.zoomedOut {
+    transform: scale(0.1) translateZ(-1000px);
+}
+
+.questionText {
+    padding: 1.5rem;
+    text-align: center;
+    color: white;
+    font-weight: 500;
+    z-index: 1;
+}
+
+.glowEffect {
+    position: absolute;
+    inset: 0;
+    border-radius: 60%;
+    filter: blur(0.9rem);
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+    background: rgba(255, 255, 255, 0.18);
+    /* border-radius: 16px; */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    /* backdrop-filter: blur(7.9px); */
+    -webkit-backdrop-filter: blur(7.9px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.questionItem:hover .glowEffect {
+    opacity: 0.7;
+}
+
+/* Modal Overlay */
+.overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contentWrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    transform: translateZ(0);
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.backButton {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+    font-weight: 500;
+    z-index: 50;
+    cursor: pointer;
+}
+
+.backButton:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.activeQuestion {
+    width: 14rem;
+    height: 14rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    text-align: center;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 30;
+    transform: scale(1.2);
+}
+
+.answerBox {
+    position: absolute;
+    width: 17rem;
+    height: 16rem;
+    padding: 1.5rem;
+    color: white;
+    text-align: center;
+    transition: all 0.3s ease;
+    border-radius: 0.5rem;
+    transform-origin: center center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: auto;
+}
+
+.answerBox::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.4) 0%,
+            transparent 50%,
+            rgba(0, 0, 0, 0.05) 100%
+    );
+    pointer-events: none;
+}
+
+.answerBox:hover {
+    transform: scale(1.1) rotate(0deg) translate(-50%, -50%) !important;
+    z-index: 40;
+    box-shadow: 0 0 40px var(--hover-color), inset 0 0 40px var(--hover-color);
+}
+
+/* Animation for answer transitions */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.pageContainer {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes wave {
+    0% {
+        transform: translate(0, 0);
+    }
+    50% {
+        transform: translate(5px, -5px);
+    }
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+.entering {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.leaving {
+    transform: scale(0.8);
+    opacity: 0;
+}
+
+.enteringQuestions {
+    opacity: 1;
+}
+
+.leavingQuestions {
+    opacity: 0;
+}
+
+.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* General zoom transition settings */
+.zoomTransition {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    transform-origin: center center;
+}
+
+.zoomIn {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+.zoomOut {
+    transform: scale(1);
+    opacity: 0.7;
+}
+
+/* For better handling of zooming, you can also add transform behavior */
+.zoomTransition.zoomIn {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.zoomTransition.zoomOut {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+/* Updated pagination animation keyframes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+}
