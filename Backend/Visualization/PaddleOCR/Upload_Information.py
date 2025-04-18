@@ -1,29 +1,30 @@
 import os
 from paddleocr import PaddleOCR
 from fuzzywuzzy import fuzz
-from Visualization.PaddleOCR.DataParser import DataParser
-from DAL.QuestionsDAL import QuestionsDAL
-from DAL.AnswersDAL import AnswersDAL
+
+from ..PaddleOCR.DataParser import DataParser
+from ...dal.question_dao import QuestionDAO
+from ...dal.answer_dao import AnswerDAO
 
 # Initialize PaddleOCR with default and custom models
-default_ocr = PaddleOCR(use_angle_cls=True, lang='en', use_gpu=False, cpu_threads=4)
+default_ocr = PaddleOCR(use_angle_cls=True, lang="en", use_gpu=False, cpu_threads=4)
 custom_ocr = PaddleOCR(
     use_angle_cls=True,
-    lang='en',
+    lang="en",
     use_gpu=False,
     cpu_threads=4,
-    rec_model_dir="../../output/v3_en_mobile/inference"  # Path to your custom inference model
+    rec_model_dir="../../output/v3_en_mobile/inference",  # Path to your custom inference model
 )
 
 # Initialize DataParser
 data_parser = DataParser()
 
 # Initialize DAL classes
-questions_dal = QuestionsDAL()
-answers_dal = AnswersDAL()
+questions_dal = QuestionDAO()
+answers_dal = AnswerDAO()
 
 # Fetch all questions from the database
-questions = questions_dal.get_all_questions()
+questions = questions_dal.get_questions()
 
 
 def process_single_postit(image_path):
@@ -34,10 +35,7 @@ def process_single_postit(image_path):
     """
     if not os.path.exists(image_path):
         print(f"Error: File {image_path} does not exist.")
-        return {
-            "success": False,
-            "error": "File does not exist"
-        }
+        return {"success": False, "error": "File does not exist"}
 
     # Run OCR with both models
     default_result = default_ocr.ocr(image_path, cls=True)
@@ -72,23 +70,19 @@ def process_single_postit(image_path):
         selected_model = "Custom Model"
 
     if not selected_text.strip():
-        return {
-            "success": False,
-            "error": "No text above confidence threshold"
-        }
+        return {"success": False, "error": "No text above confidence threshold"}
 
     # Process the text with DataParser
-    processed_data = data_parser.process_text(selected_text, os.path.basename(image_path))
+    processed_data = data_parser.process_text(
+        selected_text, os.path.basename(image_path)
+    )
 
     if not processed_data:
-        return {
-            "success": False,
-            "error": "Processing failed"
-        }
+        return {"success": False, "error": "Processing failed"}
 
-    detected_language = processed_data['language']
-    question_text = processed_data['question']
-    answer_text = processed_data['answer']
+    detected_language = processed_data["language"]
+    question_text = processed_data["question"]
+    answer_text = processed_data["answer"]
 
     # Perform fuzzy matching
     best_match = None
@@ -102,8 +96,12 @@ def process_single_postit(image_path):
 
     # Insert the answer if match score is acceptable
     if best_score > 70:
-        answers_dal.insert_answer(answer_text, question_id, os.path.basename(image_path), detected_language)
-        print(f"Processed: {image_path} - Linked to Question ID {question_id} with match score {best_score}.")
+        answers_dal.insert_answer(
+            answer_text, question_id, os.path.basename(image_path), detected_language
+        )
+        print(
+            f"Processed: {image_path} - Linked to Question ID {question_id} with match score {best_score}."
+        )
     else:
         print(f"Processed: {image_path} - No suitable match found.")
 
