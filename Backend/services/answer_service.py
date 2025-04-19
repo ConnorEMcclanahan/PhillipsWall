@@ -3,13 +3,14 @@ import os
 import tempfile
 
 from flask import jsonify
-from ..Visualization.PaddleOCR.Upload_Information import process_single_postit
+from ..Visualization.PaddleOCR.post_it_parser import PostItParser
 
 
 class AnswerService:
-    def __init__(self, answer_dao, answers_for_questions_dao):
+    def __init__(self, answer_dao, answers_for_questions_dao, post_it_parser):
         self.ad = answer_dao
         self.afqd = answers_for_questions_dao
+        self.post_it_parser = post_it_parser
 
     def process_image(self, data):
         try:
@@ -26,7 +27,7 @@ class AnswerService:
 
             try:
                 # Process the image using your existing function
-                result = process_single_postit(temp_path)
+                result = self.post_it_parser.parse_image(temp_path)
                 return jsonify(
                     result
                     if result
@@ -40,6 +41,7 @@ class AnswerService:
         except Exception as e:
             return jsonify({"success": False, "error": str(e)}), 500
 
-    def check_if_image(self, data):
+    @staticmethod
+    def check_if_image(data):
         if not data or "image" not in data:
             return jsonify({"success": False, "error": "No image data provided"}), 400

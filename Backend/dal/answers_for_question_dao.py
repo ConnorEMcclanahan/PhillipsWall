@@ -1,5 +1,6 @@
 from .connection_db import create_connection
 
+
 class AnswersForQuestionsDAO:
     @staticmethod
     def get_answers_for_question(question_id):
@@ -20,7 +21,7 @@ class AnswersForQuestionsDAO:
                             LEFT JOIN answers a ON q.question_id = a.question_id
                             WHERE q.question_id = ?
                             """,
-                        (question_id,)
+                        (question_id,),
                     )
                     rows = cur.fetchall()
                 return rows

@@ -1,5 +1,6 @@
 from .connection_db import create_connection
 
+
 class QuestionDAO:
     @staticmethod
     def get_questions():

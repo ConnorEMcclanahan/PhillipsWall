@@ -5,8 +5,6 @@ from langdetect.lang_detect_exception import LangDetectException
 import re
 
 
-
-
 class DataParser:
     def __init__(self):
         self.question_pattern = re.compile(r"(.*?\?)\s*(.*)", re.DOTALL)

@@ -47,13 +47,9 @@ class QuestionService:
     def get_question_color(self, question_id):
         try:
             data_object = self.answers_for_questions_dao.get_question_color(question_id)
-            return (
-                (
-                    {
-                        "color": data_object["color"],
-                        "gradientColor": data_object["gradientColor"],
-                    }
-                )
-            )
+            return {
+                "color": data_object["color"],
+                "gradientColor": data_object["gradientColor"],
+            }
         except Exception as e:
             return {"error": str(e)}, 500

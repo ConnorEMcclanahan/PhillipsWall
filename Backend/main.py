@@ -1,6 +1,7 @@
 import logging
 from Backend import create_app
 
+
 def configure_logging():
     logging.getLogger().setLevel(logging.WARNING)
 
