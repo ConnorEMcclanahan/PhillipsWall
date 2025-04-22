@@ -4,11 +4,12 @@ from spellchecker import SpellChecker
 from langdetect.lang_detect_exception import LangDetectException
 import re
 
+
 class DataParser:
     def __init__(self):
         self.question_pattern = re.compile(r"(.*?\?)\s*(.*)", re.DOTALL)
-        self.spell_en = SpellChecker(language='en')
-        self.spell_nl = SpellChecker(language='nl')
+        self.spell_en = SpellChecker(language="en")
+        self.spell_nl = SpellChecker(language="nl")
 
     def detect_language(self, text):
         """Detects the language of a given text."""
@@ -24,10 +25,14 @@ class DataParser:
         """Corrects spelling based on detected language."""
         try:
             if lang == "en":
-                corrected = [self.spell_en.correction(word) or word for word in text.split()]
+                corrected = [
+                    self.spell_en.correction(word) or word for word in text.split()
+                ]
                 return " ".join(corrected)
             elif lang == "nl":
-                corrected = [self.spell_nl.correction(word) or word for word in text.split()]
+                corrected = [
+                    self.spell_nl.correction(word) or word for word in text.split()
+                ]
                 return " ".join(corrected)
             return text  # For unsupported languages, return as is
         except Exception:
@@ -63,7 +68,9 @@ class DataParser:
             return None
 
         # Correct spelling for both question and answer
-        corrected_question = self.spell_correct(question_text, "en")  # Assume questions are in English
+        corrected_question = self.spell_correct(
+            question_text, "en"
+        )  # Assume questions are in English
         corrected_answer = self.spell_correct(answer_text, detected_language)
 
         if not corrected_answer.strip():
@@ -73,5 +80,5 @@ class DataParser:
         return {
             "language": detected_language,
             "question": corrected_question,
-            "answer": corrected_answer
+            "answer": corrected_answer,
         }
