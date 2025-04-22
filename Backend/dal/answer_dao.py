@@ -18,3 +18,19 @@ class AnswerDAO:
         except Exception as e:
             print("Error fetching answers:", e)
             return []
+
+    @staticmethod
+    def insert_answer(answer, question_id, image_name, language):
+        query = "INSERT INTO answers (question_id, answer, img_name, language) VALUES (?, ?, ?, ?)"
+
+        # INSERT
+        # INTO
+        # answers(question_id, answer, img_name, language)
+        # VALUES(?, ?, ?, ?)
+        try:
+            with create_connection() as connection:
+                cursor = connection.cursor()
+                cursor.execute(query, (question_id, answer, image_name, language))
+                connection.commit()
+        except Exception as e:
+            print("Error inserting answer:", e)

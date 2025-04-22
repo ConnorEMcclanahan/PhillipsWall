@@ -99,7 +99,7 @@ class PostItParser:
         self.answer_dal.insert_answer(
             post_it_data["answer_text"],
             post_it_data["question_id"],
-            os.path.basename(post_it_data["image_path"]),
+            post_it_data["image_path"],
             post_it_data["language"],
         )
 
