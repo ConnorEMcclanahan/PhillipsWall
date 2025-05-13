@@ -1,47 +1,42 @@
-import base64
-import os
-import tempfile
+from typing import Dict, Any
 
-from flask import jsonify
-from ..Visualization.PaddleOCR.post_it_parser import PostItParser
-
+from . import prompts
 
 class AnswerService:
-    def __init__(self, answer_dao, answers_for_questions_dao, post_it_parser):
-        self.ad = answer_dao
-        self.afqd = answers_for_questions_dao
-        self.post_it_parser = post_it_parser
-
-    def process_image(self, data):
-        try:
-            self.check_if_image(data)
-            base64_string = data["image"]
-            if "," in base64_string:
-                base64_string = base64_string.split(",")[1]
-
-            # Create temporary file
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
-                image_data = base64.b64decode(base64_string)
-                temp_file.write(image_data)
-                temp_path = temp_file.name
-
-            try:
-                # Process the image using your existing function
-                result = self.post_it_parser.parse_image(temp_path)
-                return jsonify(
-                    result
-                    if result
-                    else {"success": False, "error": "Processing failed"}
-                )
-            finally:
-                # Clean up temporary file
-                if os.path.exists(temp_path):
-                    os.unlink(temp_path)
-
-        except Exception as e:
-            return jsonify({"success": False, "error": str(e)}), 500
+    def __init__(self, portkey_client):
+        self.portkey_client = portkey_client
 
     @staticmethod
-    def check_if_image(data):
+    def get_prompt(name: str) -> str:
+        prompt_map = {p["name"]: p["prompt"] for p in prompts}
+        if not (prompt := prompt_map.get(name)):
+            raise ValueError(f"Prompt '{name}' not found")
+        return prompt
+
+    @staticmethod
+    def validate_image_data(data: Dict[str, Any]):
         if not data or "image" not in data:
-            return jsonify({"success": False, "error": "No image data provided"}), 400
+            raise ValueError("No image data provided.")
+
+    def process_image(self, data: Dict[str, Any]) -> str:
+        self.validate_image_data(data)
+
+        response = self.portkey_client.get_chat_completion(
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": self.get_prompt("scan-postit")
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": data["image"]}
+                        }
+                    ]
+                }]
+        )
+        if not response.choices:
+            raise ValueError("No completion choices returned")
+        return response.choices[0].message.content
