@@ -1,0 +1,6 @@
+[
+  {
+    "name": "scan-postit",
+    "prompt": "Extract the question and answer text from the image and return them in a JSON object. Use double quotes for all keys and values, and format your response exactly as in the example: {question: <question text>, answer: <answer text>}, language: <language>. Do not include any extra text."
+  }
+]
