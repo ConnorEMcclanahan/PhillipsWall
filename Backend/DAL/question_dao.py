@@ -6,7 +6,7 @@ class QuestionDAO:
     def get_questions():
         with create_connection() as connection:
             with connection.cursor() as cur:
-                cur.execute("SELECT * FROM questions")
+                cur.execute("SELECT * FROM Question")
                 columns = [desc[0] for desc in cur.description]
                 rows = [dict(zip(columns, row)) for row in cur.fetchall()]
                 return rows
