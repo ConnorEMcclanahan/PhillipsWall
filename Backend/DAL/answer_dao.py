@@ -24,7 +24,7 @@ class AnswerDAO:
         query = (
             "INSERT INTO Answer (answer_text, answer_date, axis_value, answer_language, image_url, question_id) "
             "OUTPUT INSERTED.answer_id "
-            "VALUES (?, ?, ?, ?, ?, (SELECT question_id FROM Question WHERE question_text = ?));")
+            "VALUES (?, ?, ?, ?, ?, (SELECT question_id FROM Question WHERE question_text_dutch = ? OR question_text_english = ?));")
         try:
             with create_connection() as connection:
                 cursor = connection.cursor()
@@ -34,6 +34,7 @@ class AnswerDAO:
                     data["axis_value"],
                     data["answer_language"],
                     data["image_url"],
+                    data["question_text"],
                     data["question_text"]
                 ))
                 answer_id = cursor.fetchone()[0]

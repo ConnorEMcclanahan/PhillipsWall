@@ -20,7 +20,6 @@ class AnswerService:
         if not data or "image" not in data:
             raise ValueError("No image data provided.")
 
-
     def process_image(self, data: Dict[str, Any]) -> Any:
         self.validate_image_data(data)
         try:
@@ -53,7 +52,6 @@ class AnswerService:
             raise ValueError("No completion choices returned")
         response_msg = response.choices[0].message.content
         answer_data = json.loads(response_msg)
-        answer_data["image_url"] = data["image"]
         answer_data["answer_id"] = self.answer_dao.insert_answer(answer_data)
         return answer_data
 
@@ -77,5 +75,4 @@ class AnswerService:
         if not response.choices:
             raise ValueError("No completion choices returned")
         translation_data = json.loads(response.choices[0].message.content)
-        print(answer_text["answer_id"])
         self.answer_dao.insert_translated_answer(answer_text["answer_id"], translation_data)
