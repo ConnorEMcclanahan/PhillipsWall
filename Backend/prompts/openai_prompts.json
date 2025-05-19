@@ -2,5 +2,13 @@
   {
     "name": "scan-postit",
     "prompt": "Extract the question and answer text from the image and return them in a JSON object. Use double quotes for all keys and values, and format your response exactly as in the example: {question: <question text>, answer: <answer text>}, language: <language>. Do not include any extra text."
+  },
+  {
+    "name": "scan-postit-test",
+    "prompt": "Extract the question and answer text from the image and return them in a JSON object. Given the following user statement, classify it along two axes: Axis 1: Attitude toward AI (from -1 to 1): -1 = Very skeptical of AI, 0 = Neutral, +1 = Very enthusiastic about AI. Axis 2: View of the future (from -1 to 1): -1 = Very scared of the future with AI, 0 = Neutral, +1 = Very optimistic about the future with AI. Give me the x and y values with three decimals I NEED THE VALUES TO BE PRECISE.  Use double quotes for all keys and values, and format your response exactly as in the example: {question: <question text>, answer: <answer text>}, language: <language>, answer_en: <answer text in english>; x: <position in x>, y: <position in y>. Do not include any extra text."
+  },
+  {
+    "name": "scan-postit-automated",
+    "prompt": "Extract the question and answer text from the image and return them in a JSON object. Given the following user statement, classify it along two axes: Axis 1: Attitude toward AI (from -1 to 1): -1 = Very skeptical of AI, 0 = Neutral, +1 = Very enthusiastic about AI. Axis 2: View of the future (from -1 to 1): -1 = Very scared of the future with AI, 0 = Neutral, +1 = Very optimistic about the future with AI. Give me the x and y values with three decimals I NEED THE VALUES TO BE PRECISE.  Use double quotes for all keys and values, and format your response exactly as in the example: {question: <question text>, answer_en: <answer text in english> x: <position in x>, y: <position in y>. Do not include any extra text."
   }
 ]
