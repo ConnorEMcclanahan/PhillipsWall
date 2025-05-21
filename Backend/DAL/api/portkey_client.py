@@ -20,3 +20,12 @@ class PortkeyClient:
             debug=False
         )
         return response
+    
+    def get_chat_completion_precise(self, messages, model="gpt-4"):
+        response =  self.client.chat.completions.create(
+            messages=messages,
+            model=model,
+            debug=False,
+            temperature=0.2,
+        )
+        return response

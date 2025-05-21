@@ -1,5 +1,6 @@
 import json
 from typing import Dict, Any
+import ast
 
 from . import prompts
 
@@ -25,7 +26,8 @@ class AnswerService:
         try:
             answer_data = self.scan_image(data)
             self.translate_image(answer_data)
-            ## TODO: Call to axis value implementation - Diego
+            self.set_axis_value(answer_data)
+            
             return answer_data
         except Exception as e:
             print(e)
@@ -53,6 +55,8 @@ class AnswerService:
         response_msg = response.choices[0].message.content
         answer_data = json.loads(response_msg)
         answer_data["answer_id"] = self.answer_dao.insert_answer(answer_data)
+        # print(self.answer_dao.get_answer(answer_data["answer_id"]))
+        
         return answer_data
 
     def translate_image(self, answer_text: Dict[str, Any]):
@@ -76,3 +80,28 @@ class AnswerService:
             raise ValueError("No completion choices returned")
         translation_data = json.loads(response.choices[0].message.content)
         self.answer_dao.insert_translated_answer(answer_text["answer_id"], translation_data)
+
+    def set_axis_value(self, answer_text: Dict[str, Any]):
+        response = self.portkey_client.get_chat_completion_precise(            
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": self.get_prompt("get-axis-value")
+                        },
+                        {
+                            "type": "text",
+                            "text": answer_text["answer_text"]
+                        }
+                    ]
+                }]      
+        )
+        if not response.choices:
+            raise ValueError("No completion choices returned")
+        print(response.choices[0].message.content) #test
+        # axis_value = json.loads(response.choices[0].message.content)
+        axis_value = ast.literal_eval(response.choices[0].message.content)
+        self.answer_dao.insert_axis_value(answer_text["answer_id"], axis_value)
+        print(self.answer_dao.get_answer(answer_text["answer_id"]))
