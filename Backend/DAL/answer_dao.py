@@ -36,7 +36,7 @@ class AnswerDAO:
             return None
 
     @staticmethod
-    def insert_answer(data):
+    def insert_answer(data, axis_value):
         query = (
             "INSERT INTO Answer (answer_text, answer_date, x_axis_value, y_axis_value, answer_language, image_url, question_id) "
             "OUTPUT INSERTED.answer_id "
@@ -47,8 +47,8 @@ class AnswerDAO:
                 cursor.execute(query, (
                     data["answer_text"],
                     data["answer_date"],
-                    0.00,
-                    0.00,
+                    axis_value["x"],
+                    axis_value["y"],
                     data["answer_language"],
                     data["image_url"],
                     data["question_text"],
@@ -75,15 +75,3 @@ class AnswerDAO:
                 connection.commit()
         except Exception as e:
             print("Error inserting translated answer:", e)
-
-    @staticmethod
-    def insert_axis_value(answer_id, axis_value):
-        query = "UPDATE Answer SET x_axis_value = ?,  y_axis_value = ? WHERE answer_id = ?"
-        try:
-            with create_connection() as connection:
-                cursor = connection.cursor()
-                cursor.execute(query, (axis_value['x'], axis_value['y'], answer_id))
-                connection.commit()
-        except Exception as e:
-            print("Error inserting axis values:", e)
-        
