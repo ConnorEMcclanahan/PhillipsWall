@@ -81,7 +81,7 @@ class AnswerService:
         self.answer_dao.insert_translated_answer(answer_text["answer_id"], translation_data)
 
     def set_axis_value(self, answer_text: Dict[str, Any]):
-        response = self.portkey_client.get_chat_completion_precise(            
+        response = self.portkey_client.get_chat_completion(            
             messages=[
                 {
                     "role": "user",
