@@ -13,22 +13,35 @@ const AIQuestionsDisplay = () => {
     const [currentAnswers, setCurrentAnswers] = useState([]);
     const [isZooming, setIsZooming] = useState(false);
     const [clickedQuestionPosition, setClickedQuestionPosition] = useState(null);
+    const [selectedMonth, setSelectedMonth] = useState(null);
 
     const ITEMS_PER_PAGE = 7;
     const TRANSITION_DURATION = 500; // Match with CSS transition duration
 
-    const generateSpiralPoints = useCallback((count, centerX, centerY, spiralAngle) => {
+    const MONTHS = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+
+    // Replace the generateSpiralPoints function with this new positioning system
+    const generateQuadrantPoints = useCallback((count) => {
         const points = [];
-        const a = 35;
-        const b = 0.4;
+        
+        // Define quadrant boundaries (in percentages)
+        const quadrants = [
+            { x: [25, 50], y: [25, 50] },  // Top Left
+            { x: [50, 75], y: [25, 50] },  // Top Right
+            { x: [25, 50], y: [50, 75] },  // Bottom Left
+            { x: [50, 75], y: [50, 75] }   // Bottom Right
+        ];
 
         for (let i = 0; i < count; i++) {
-            let angle = i * spiralAngle * (Math.PI / 180);
-            let radius = a * Math.sqrt(i) * b;
-
-            let x = centerX + radius * Math.cos(angle);
-            let y = centerY + radius * Math.sin(angle);
-
+            const quadrant = quadrants[i % 4];
+            
+            // Random position within quadrant
+            const x = Math.random() * (quadrant.x[1] - quadrant.x[0]) + quadrant.x[0];
+            const y = Math.random() * (quadrant.y[1] - quadrant.y[0]) + quadrant.y[0];
+            
             points.push({ x, y });
         }
 
@@ -41,35 +54,6 @@ const AIQuestionsDisplay = () => {
             return matches[0]; // Return the first color
         }
         return '#000000'; // Fallback color
-    };
-    const generateGradientBackground = (questions, bubbleStyles) => {
-        if (!questions.length || !bubbleStyles.length) return 'none';
-
-        // Create gradient background based on questions data and their positions
-        const gradients = questions.map((question, index) => {
-            // Convert the percentage positions from bubbleStyles to the gradient position
-            const top = parseFloat(bubbleStyles[index]?.top) || 0;
-            const left = parseFloat(bubbleStyles[index]?.left) || 0;
-
-            // Adjust left and top to center the gradients behind the bubbles
-            // Example adjustment: centering using 50% as base
-            const centeredLeft = left - 40 + 50;
-            const centeredTop = top - 40 + 50;
-
-            // Extract the main color from the linear gradient
-            const mainColor = extractColorFromGradient(question.gradient_color);
-
-            // Create two radial gradients for each question - one for glow, one for core
-            return [
-                // Larger, softer gradient for the glow effect
-                `radial-gradient(350px at ${centeredLeft}% ${centeredTop}%, ${mainColor}33 0%, transparent 100%)`,
-                // Smaller, more intense gradient for the core
-                `radial-gradient(650px at ${centeredLeft}% ${centeredTop}%, ${mainColor}66 0%, transparent 60%)`
-            ];
-        }).flat();
-
-        // Join all gradients
-        return gradients.join(", ");
     };
 
 
@@ -91,8 +75,7 @@ const AIQuestionsDisplay = () => {
         if (!questionsData.length) return;
 
         const updateBubblePositions = () => {
-            const randomSpiralAngle = Math.floor(Math.random() * (150 - 130 + 1)) + 130;
-            const points = generateSpiralPoints(questionsData.length, 42, 40, randomSpiralAngle);
+            const points = generateQuadrantPoints(questionsData.length);
 
             const styles = points.map((point) => ({
                 top: `${point.y}%`,
@@ -107,7 +90,7 @@ const AIQuestionsDisplay = () => {
         updateBubblePositions();
         const interval = setInterval(updateBubblePositions, 8000);
         return () => clearInterval(interval);
-    }, [questionsData.length, generateSpiralPoints]);
+    }, [questionsData.length, generateQuadrantPoints]);
 
     const handleQuestionClick = async (questionId, event) => {
         const element = event.currentTarget;
@@ -189,19 +172,22 @@ const AIQuestionsDisplay = () => {
         return () => clearInterval(interval);
     }, [activeQuestionData, currentPage, language]);
 
+    const handleMonthClick = (month) => {
+        setSelectedMonth(prev => prev === month ? null : month);
+    };
+
+    // Update the color function with exact hex values
+    const getQuestionColor = (question) => {
+        // You'll need to adjust these conditions based on your actual question data
+        if (question.includes("can AI do")) return "#7EDDDE"; // Turquoise
+        if (question.includes("daily chore")) return "#009C49"; // Green
+        if (question.includes("applications")) return "#A77AD7"; // Purple
+        if (question.includes("problem")) return "#FFA40D"; // Orange
+        return "#7EDDDE"; // default color - turquoise
+    };
+
     return (
         <div className={styles.container}>
-            <div
-                className={styles.gradientBackground}
-                style={{
-                    background: activeQuestionData
-                        ? `radial-gradient(700px at center, ${activeQuestionData.color}33 80%, transparent 100%)`
-                        : generateGradientBackground(questionsData, bubbleStyles),
-                    opacity: isZooming ? 0.5 : 1
-                }}
-            />
-            <div className={styles.pixelGrid} />
-
             <div className={styles.questionsLayer}>
                 <div className={styles.questionsGrid}>
                     {questionsData.map((question, index) => (
@@ -212,6 +198,7 @@ const AIQuestionsDisplay = () => {
                                 ${activeQuestion ? styles.inactiveQuestion : ''}
                                 ${isZooming && question.question_id === activeQuestion ? styles.zoomTransition : ''}
                             `}
+                            data-color={getQuestionColor(question[language])}
                             style={{
                                 ...bubbleStyles[index],
                                 ...(clickedQuestionPosition && question.question_id === activeQuestion
@@ -221,18 +208,13 @@ const AIQuestionsDisplay = () => {
                                         width: clickedQuestionPosition.width,
                                         height: clickedQuestionPosition.height
                                     }
-                                    : {}),
-                                boxShadow: `0 0 40px ${question.gradient_color}`,
+                                    : {})
                             }}
                             onClick={(e) => handleQuestionClick(question.question_id, e)}
                         >
                             <div className={styles.questionText}>
                                 {question[language]}
                             </div>
-                            <div
-                                className={styles.glowEffect}
-                                style={{ backgroundColor: question.color }}
-                            />
                         </div>
                     ))}
 
@@ -279,6 +261,49 @@ const AIQuestionsDisplay = () => {
                     )}
                 </div>
             </div>
+
+            <div className={styles.gridLines}>
+                <div className={`${styles.axisLabel} ${styles.labelTop}`}>AI enthusiast</div>
+                <div className={`${styles.axisLabel} ${styles.labelBottom}`}>AI skeptic</div>
+                <div className={`${styles.axisLabel} ${styles.labelLeft}`}>Little scared of the future</div>
+                <div className={`${styles.axisLabel} ${styles.labelRight}`}>Looking bright to the future</div>
+            </div>
+
+            <div className={styles.timeline}>
+                {MONTHS.map((month, index) => (
+                    <div
+                        key={month}
+                        className={styles.timelineItem}
+                        onClick={() => handleMonthClick(month)}
+                    >
+                        <div 
+                            className={`
+                                ${styles.timelinePoint} 
+                                ${selectedMonth === month ? styles.active : ''}
+                            `}
+                        />
+                        <div className={styles.timelineMonth}>{month}</div>
+                    </div>
+                ))}
+            </div>
+
+            <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+                <defs>
+                    <filter id="texture">
+                        <feTurbulence 
+                            type="fractalNoise" 
+                            baseFrequency="0.65" 
+                            numOctaves="3" 
+                            seed="1"
+                            stitchTiles="stitch"
+                        />
+                        <feDisplacementMap 
+                            in="SourceGraphic" 
+                            scale="5"
+                        />
+                    </filter>
+                </defs>
+            </svg>
         </div>
     );
 };

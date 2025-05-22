@@ -1,56 +1,197 @@
+:root {
+    --turquoise: #7EDDDE;
+    --orange: #FFA40D;
+    --green: #009C49;
+    --purple: #A77AD7;
+}
+
 .container {
-    height: 92vh;
     position: relative;
+    height: 100vh;
+    width: 100%;
+    background-color: white;
     overflow: hidden;
-    background-color: rgb(17, 24, 39);
-    border-radius: 1.5rem;
-    transition: background-color 0.5s ease;
 }
 
 .gradientBackground {
-    position: absolute;
-    inset: 0;
-    background-color: #000;
-    pointer-events: none;
+    display: none; 
 }
 
 
 .pixelGrid {
     position: absolute;
     inset: 0;
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.3) 1px, transparent 15px), linear-gradient(to bottom, rgba(255, 255, 255, 0.3) 1px, transparent 15px);
-    background-size: 20px 20px;
-    mix-blend-mode: overlay;
-
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px; /* Larger grid size */
+    opacity: 0.5;
 }
 
 .questionsLayer {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    z-index: 10;
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    padding: 80px;
 }
 
 .questionsGrid {
-    /*position: relative;*/
-    width: 110%;
-    height: 94%;
+    width: 100%;
+    height: 100%;
+    padding: 4rem;
+    position: relative;
+}
+
+/* Update container and grid layout */
+.container {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    background-color: white;
+    overflow: hidden;
+}
+
+/* Update grid lines to be a background element */
+.gridLines {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    padding: 80px;
+    z-index: 1;
+}
+
+.gridLines::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 80px;
+    bottom: 80px;
+    width: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.gridLines::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 80px; 
+    right: 80px;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Update the axis labels */
+.axisLabel {
+    position: absolute;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 2;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.labelTop {
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.labelBottom {
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.labelLeft, .labelRight {
+    writing-mode: vertical-rl;
+    position: absolute;
+    top: 50%;
+    transform-origin: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px; /* Set fixed height for both labels */
+}
+
+.labelLeft {
+    transform: rotate(180deg) translateY(50%);
+    left: 40px;
+}
+
+.labelRight {
+    transform: rotate(0deg) translateY(-50%);
+    right: 40px;
 }
 
 .questionItem {
-    position: absolute;
-    width: 13rem;
-    height: 13rem;
+    position: relative;
+    width: 3rem; 
+    height: 3rem;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
+    background-color: currentColor;
+    filter: url('#texture');
+    z-index: 1;
+    mix-blend-mode: normal;
+}
+
+.questionText {
+    position: relative;
+    z-index: 2;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-align: center;
+    padding: 0.5rem;
+}
+
+/* Update color-specific styles */
+.questionItem[data-color="#7EDDDE"] {
+    background-color: var(--turquoise);
+    color: var(--turquoise);
+}
+
+.questionItem[data-color="#FFA40D"] {
+    background-color: var(--orange);
+    color: var(--orange);
+}
+
+.questionItem[data-color="#009C49"] {
+    background-color: var(--green);
+    color: var(--green);
+}
+
+.questionItem[data-color="#A77AD7"] {
+    background-color: var(--purple);
+    color: var(--purple);
+}
+
+/* Add hover effects */
+.questionItem:hover::before {
+    opacity: 0.25;
+    transform: scale(1.1);
+    filter: blur(2px);
+}
+
+/* Add rotation animation */
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .questionItem:hover:not(.inactiveQuestion) {
-    transform: scale(1.4);
+    transform: scale(1.1);
     z-index: 20;
 }
 
@@ -76,9 +217,10 @@
 }
 
 .questionText {
-    padding: 1.5rem;
+    padding: 0.5rem;
     text-align: center;
     color: white;
+    font-size: 0.7rem; /* Smaller font size for smaller bubbles */
     font-weight: 500;
     z-index: 1;
 }
@@ -86,9 +228,9 @@
 .glowEffect {
     position: absolute;
     inset: 0;
-    border-radius: 60%;
-    filter: blur(0.9rem);
-    opacity: 0.9;
+    border-radius: 50%;
+    filter: blur(0.5rem);  /* Reduced blur */
+    opacity: 0.6;  /* Reduced opacity */
     transition: opacity 0.3s ease;
     background: rgba(255, 255, 255, 0.18);
     /* border-radius: 16px; */
@@ -237,7 +379,6 @@
     transform: scale(0.8);
     opacity: 0;
 }
-
 .enteringQuestions {
     opacity: 1;
 }
@@ -297,4 +438,79 @@
         opacity: 0;
         transform: translate(-50%, -50%) scale(0.8);
     }
+}
+
+.timeline {
+    position: absolute;
+    bottom: 20px;  /* Reduced from 40px */
+    left: 0;
+    right: 0;
+    height: 40px;  /* Reduced from 60px */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 60px;  /* Adjusted padding */
+    z-index: 4;
+}
+
+/* Remove the previous timeline line */
+.timeline::before {
+    display: none;
+}
+
+.timelinePoint {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: white;  /* Changed to white */
+    border: 1px solid black; /* Added border */
+    position: relative;
+    z-index: 2;
+    cursor: pointer;         /* Added cursor pointer */
+    box-shadow: none;        /* Removed box shadow */
+}
+
+.timelinePoint.active {
+    background-color: black; /* Fill with black when active */
+}
+
+.timelineItem {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;      /* Reduced from 8px */
+    cursor: pointer;
+    flex: 1;
+}
+
+.timelineItem:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 6px;
+    right: 0;
+    height: 1px;
+    background-color: black; /* Solid black line */
+    width: calc(100% - 6px);
+}
+
+.timelineMonth {
+    font-size: 11px;  /* Reduced from 12px */
+    color: #333;
+    font-weight: 400;
+    margin-top: 2px;  /* Reduced from 4px */
+    font-family: inherit;
+}
+
+/* Active state */
+.timelinePoint.active {
+    background-color: #000;
+    transform: scale(1.2);
+}
+
+/* Hover state */
+.timelinePoint:hover {
+    transform: scale(1.2);
+    transition: transform 0.2s ease;
 }
