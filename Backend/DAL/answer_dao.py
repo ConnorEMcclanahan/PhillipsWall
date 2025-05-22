@@ -18,20 +18,37 @@ class AnswerDAO:
         except Exception as e:
             print("Error fetching answers:", e)
             return []
+ 
+    @staticmethod
+    def get_answer(answer_id):
+        query = "SELECT * FROM Answer WHERE answer_id = ?"
+        try:
+            with create_connection() as connection:
+                cursor = connection.cursor()
+                cursor.execute(query, (answer_id,))
+                row = cursor.fetchone()
+                if row:
+                    return dict(zip([column[0] for column in cursor.description], row))
+                else:
+                    return None
+        except Exception as e:
+            print("Error fetching answer:", e)
+            return None
 
     @staticmethod
-    def insert_answer(data):
+    def insert_answer(data, axis_value):
         query = (
-            "INSERT INTO Answer (answer_text, answer_date, axis_value, answer_language, image_url, question_id) "
+            "INSERT INTO Answer (answer_text, answer_date, x_axis_value, y_axis_value, answer_language, image_url, question_id) "
             "OUTPUT INSERTED.answer_id "
-            "VALUES (?, ?, ?, ?, ?, (SELECT question_id FROM Question WHERE question_text_dutch = ? OR question_text_english = ?));")
+            "VALUES (?, ?, ?, ?, ?,  ?, (SELECT question_id FROM Question WHERE question_text_dutch = ? OR question_text_english = ?));")
         try:
             with create_connection() as connection:
                 cursor = connection.cursor()
                 cursor.execute(query, (
                     data["answer_text"],
                     data["answer_date"],
-                    data["axis_value"],
+                    axis_value["x"],
+                    axis_value["y"],
                     data["answer_language"],
                     data["image_url"],
                     data["question_text"],
