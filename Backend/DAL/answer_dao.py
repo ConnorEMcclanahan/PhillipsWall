@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from .connection_db import create_connection
 
 
@@ -46,7 +48,7 @@ class AnswerDAO:
                 cursor = connection.cursor()
                 cursor.execute(query, (
                     data["answer_text"],
-                    data["answer_date"],
+                    datetime.today().strftime('%Y-%m-%d %H:%M:%S'),
                     axis_value["x"],
                     axis_value["y"],
                     data["answer_language"],

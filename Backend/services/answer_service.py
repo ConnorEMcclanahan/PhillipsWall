@@ -21,19 +21,7 @@ class AnswerService:
         if not data or "image" not in data:
             raise ValueError("No image data provided.")
 
-    def process_image(self, data: Dict[str, Any]) -> Any:
-        self.validate_image_data(data)
-        try:
-            answer_data = self.scan_image(data)
-            self.translate_image(answer_data)
-            
-            
-            return answer_data
-        except Exception as e:
-            print(e)
-            return {"error": str(e)}, 400
-
-    def scan_image(self, data: Dict[str, Any]) -> str:
+    def process_image(self, data: Dict[str, Any]) -> Dict[str, Any]:
         response = self.portkey_client.get_chat_completion(
             messages=[
                 {
@@ -54,9 +42,18 @@ class AnswerService:
             raise ValueError("No completion choices returned")
         response_msg = response.choices[0].message.content
         answer_data = json.loads(response_msg)
-        axis_value = self.set_axis_value(answer_data)
-        answer_data["answer_id"] = self.answer_dao.insert_answer(answer_data, axis_value)        
+        self.get_axis_value(answer_data)
         return answer_data
+
+    def insert_answer(self, answer_data, axis_value):
+        try:
+            answer_data["answer_id"] = self.answer_dao.insert_answer(answer_data, axis_value)
+        except Exception as e:
+            print(e)
+            return {"error": str(e)}, 400
+        finally:
+            self.translate_image(answer_data)
+
 
     def translate_image(self, answer_text: Dict[str, Any]):
         response = self.portkey_client.get_chat_completion(
@@ -80,7 +77,7 @@ class AnswerService:
         translation_data = json.loads(response.choices[0].message.content)
         self.answer_dao.insert_translated_answer(answer_text["answer_id"], translation_data)
 
-    def set_axis_value(self, answer_text: Dict[str, Any]):
+    def get_axis_value(self, answer_text: Dict[str, Any]):
         response = self.portkey_client.get_chat_completion(            
             messages=[
                 {
@@ -92,6 +89,10 @@ class AnswerService:
                         },
                         {
                             "type": "text",
+                            "text": answer_text["question_text"]
+                        },
+                        {
+                            "type": "text",
                             "text": answer_text["answer_text"]
                         }
                     ]
@@ -99,5 +100,5 @@ class AnswerService:
         )
         if not response.choices:
             raise ValueError("No completion choices returned")
-        axis_value = ast.literal_eval(response.choices[0].message.content)
-        return axis_value
+        axis_value = json.loads(response.choices[0].message.content)
+        self.insert_answer(answer_text, axis_value)

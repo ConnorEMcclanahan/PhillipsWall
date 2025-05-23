@@ -18,7 +18,8 @@ class PortkeyClient:
             messages=messages,
             model=model,
             debug=False
-            temperature=0.2,
+,           temperature=0
         )
+
+        print(response.choices[0].message.content)
         return response
-    
