@@ -17,7 +17,7 @@ class QuestionService:
             if not question_list:
                 return {"error": "Question list is empty."}, 500
 
-            return self.structure_question_list(question_list)
+            return self.format_question_list_to_json(question_list)
         except Exception as e:
             return {"error": str(e)}, 500
 

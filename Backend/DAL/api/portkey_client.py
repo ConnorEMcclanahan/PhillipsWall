@@ -18,7 +18,7 @@ class PortkeyClient:
             messages=messages,
             model=model,
             debug=False
-            temperature=0.2,
+,           temperature=0
         )
+
         return response
-    

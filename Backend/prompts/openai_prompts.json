@@ -1,14 +1,62 @@
 [
   {
     "name": "scan-postit",
-    "prompt": "Extract the question and answer text from the image and return them in a JSON object. Use double quotes for all keys and values, and format your response exactly as in the example: {answer_id: null, answer_text: <answer text>, answer_date: today's date in datetime sql format, axis_value: 00.00, answer_language: <language>, image_url: <image url (never return null, throw text 'placeholder' instead)>, question_text: <question text> }. Respond ONLY with a valid JSON object. All keys and string values MUST be enclosed in double quotes. Use null for null values. Do not use single quotes, Python-style None, or any extra text."
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Extract the question and answer text from the image and return them in a JSON object. Use double quotes for all keys and values, and format your response exactly as in the example: {answer_id: null, answer_text: <answer text>, answer_date: today's date in datetime sql format, axis_value: 00.00, answer_language: <language>, image_url: <image url (never return null, throw text 'placeholder' instead)>, question_text: <question text> }. Respond ONLY with a valid JSON object. All keys and string values MUST be enclosed in double quotes. Use null for null values. Do not use single quotes, Python-style None, or any extra text."
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "image_url"
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "name": "translate-submitted-answer",
-    "prompt": "Translate the answer to dutch and english, format your response exactly as in the example: {answer_dutch: <answer text>, answer_english: <answer text>}. Respond ONLY with a valid JSON object. All keys and string values MUST be enclosed in double quotes. Use null for null values. Do not use single quotes, Python-style None, or any extra text."
-  }, 
-  { 
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Translate the answer to dutch and english, format your response exactly as in the example: {answer_dutch: <answer text>, answer_english: <answer text>}. Respond ONLY with a valid JSON object. All keys and string values MUST be enclosed in double quotes. Use null for null values. Do not use single quotes, Python-style None, or any extra text."
+          },
+          {
+            "type": "text",
+            "text": "{submitted_text}"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "name": "get-axis-value",
-    "prompt": "You have a quesstion and an answer. Analyze the following statement and classify it along two axes: Axis 1: Attitude toward AI (Y axis), from -1.00 to 1.00 Axis 2: View of the Future with AI (X axis), from -1.00 to 1.00  Use values with 2 significant digits after the decimal point. Do **not round**, the second digit shouldnt be 0 or 5 if possible. Base your values on tone, intention, and underlying sentiment. Return ONLY a JSON object. Example format:{'y': -0.47, 'x': 0.21} "
-  }  
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "In context of the question, classify the personal sentiment of the answer toward AI: For each axis, assign a value between -1.00 and +1.00 (do not round; the second digit should not be 0 or 5 if possible). Definitions: - Y-axis: +1.00 means extremely enthusiastic about AI; -1.00 means extremely skeptical - X-axis: +1.00 means extremely optimistic about the AI-driven future; -1.00 means extremely fearful; Return ONLY a JSON object as {'y': 0.<est value>, 'x': -0.<est value>}. All keys and string values MUST be enclosed in double quotes. Do not use single quotes, Python-style None, or any extra text. In the off case that the answer does not show sentiment or does not answer the question, make the default value 0."
+          },
+          {
+            "type": "text",
+            "text": "{question_text}"
+          },
+          {
+            "type": "text",
+            "text": "{answer_text}"
+          }
+        ]
+      }
+    ]
+  }
 ]
