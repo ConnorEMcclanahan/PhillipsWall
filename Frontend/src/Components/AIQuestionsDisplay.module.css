@@ -1,16 +1,121 @@
-.container {
-    height: 92vh;
-    position: relative;
-    overflow: hidden;
-    background-color: rgb(17, 24, 39);
-    border-radius: 1.5rem;
-    transition: background-color 0.5s ease;
+:root {
+    --turquoise: #7EDDDE;
+    --orange: #FFA40D;
+    --green: #009C49;
+    --purple: #A77AD7;
 }
 
-.gradientBackground {
+.container {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    background-color: #faf9f6;
+    overflow: hidden;
+}
+
+/* Sticky note pattern background */
+.container::before {
+    content: '';
     position: absolute;
     inset: 0;
-    background-color: #000;
+    background-image: 
+        /* Updated squares with blue-grayish tones */
+        linear-gradient(45deg, rgba(172, 211, 210, 0.28) 0%, rgba(172, 211, 210, 0.28) 100%),
+        linear-gradient(45deg, rgba(149, 199, 199, 0.25) 0%, rgba(149, 199, 199, 0.25) 100%),
+        linear-gradient(45deg, rgba(179, 229, 252, 0.27) 0%, rgba(179, 229, 252, 0.27) 100%),
+        linear-gradient(45deg, rgba(164, 217, 210, 0.24) 0%, rgba(164, 217, 210, 0.24) 100%),
+        linear-gradient(45deg, rgba(185, 210, 210, 0.22) 0%, rgba(185, 210, 210, 0.22) 100%),
+        linear-gradient(45deg, rgba(190, 219, 220, 0.23) 0%, rgba(190, 219, 220, 0.23) 100%),
+        linear-gradient(45deg, rgba(173, 216, 230, 0.25) 0%, rgba(173, 216, 230, 0.25) 100%),
+        linear-gradient(45deg, rgba(172, 205, 212, 0.22) 0%, rgba(172, 205, 212, 0.22) 100%),
+        /* Additional squares with blue-grayish tones */
+        linear-gradient(45deg, rgba(183, 220, 215, 0.26) 0%, rgba(183, 220, 215, 0.26) 100%),
+        linear-gradient(45deg, rgba(165, 211, 222, 0.24) 0%, rgba(165, 211, 222, 0.24) 100%),
+        linear-gradient(45deg, rgba(187, 222, 251, 0.25) 0%, rgba(187, 222, 251, 0.25) 100%),
+        linear-gradient(45deg, rgba(157, 197, 205, 0.23) 0%, rgba(157, 197, 205, 0.23) 100%),
+        /* 4 new squares with blue-grayish tones */
+        linear-gradient(45deg, rgba(142, 194, 194, 0.25) 0%, rgba(142, 194, 194, 0.25) 100%),
+        linear-gradient(45deg, rgba(180, 215, 225, 0.26) 0%, rgba(180, 215, 225, 0.26) 100%),
+        linear-gradient(45deg, rgba(170, 200, 205, 0.24) 0%, rgba(170, 200, 205, 0.24) 100%),
+        linear-gradient(45deg, rgba(155, 210, 215, 0.25) 0%, rgba(155, 210, 215, 0.25) 100%);
+    background-size: 
+        80px 80px,
+        120px 120px,
+        90px 90px,
+        100px 100px,
+        70px 70px,
+        110px 110px,
+        95px 95px,
+        85px 85px,
+        /* Sizes for new squares */
+        75px 75px,
+        105px 105px,
+        115px 115px,
+        88px 88px,
+        /* Sizes for extra squares */
+        92px 92px,
+        103px 103px,
+        78px 78px,
+        112px 112px;
+    background-position:
+        15% 20%,
+        65% 15%,
+        85% 45%,
+        25% 70%,
+        75% 80%,
+        40% 30%,
+        60% 55%,
+        30% 85%,
+        /* Positions for new squares - spread out more */
+        10% 55%,
+        45% 85%,
+        90% 10%,
+        50% 5%,
+        /* Positions for extra squares - even more spread out */
+        5% 35%,
+        70% 40%,
+        35% 65%,
+        95% 30%;
+    background-repeat: no-repeat;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Add subtle shadow/depth effect */
+.container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+        /* Shadow squares with lighter opacity */
+        linear-gradient(45deg, rgba(0, 0, 0, 0.025) 0%, rgba(0, 0, 0, 0.025) 100%),
+        linear-gradient(45deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.02) 100%),
+        linear-gradient(45deg, rgba(0, 0, 0, 0.018) 0%, rgba(0, 0, 0, 0.018) 100%),
+        linear-gradient(45deg, rgba(0, 0, 0, 0.015) 0%, rgba(0, 0, 0, 0.015) 100%),
+        linear-gradient(45deg, rgba(0, 0, 0, 0.022) 0%, rgba(0, 0, 0, 0.022) 100%),
+        /* Additional shadow squares */
+        linear-gradient(45deg, rgba(0, 0, 0, 0.013) 0%, rgba(0, 0, 0, 0.013) 100%),
+        linear-gradient(45deg, rgba(0, 0, 0, 0.016) 0%, rgba(0, 0, 0, 0.016) 100%);
+    background-size: 
+        150px 150px,
+        120px 120px,
+        180px 180px,
+        140px 140px,
+        170px 170px,
+        /* Sizes for new shadow squares */
+        160px 160px,
+        130px 130px;
+    background-position:
+        30% 25%,
+        70% 60%,
+        20% 80%,
+        50% 35%,
+        80% 15%,
+        /* Positions for new shadow squares */
+        15% 50%,
+        90% 70%;
+    background-repeat: no-repeat;
+    z-index: 0;
     pointer-events: none;
 }
 
@@ -18,39 +123,177 @@
 .pixelGrid {
     position: absolute;
     inset: 0;
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.3) 1px, transparent 15px), linear-gradient(to bottom, rgba(255, 255, 255, 0.3) 1px, transparent 15px);
-    background-size: 20px 20px;
-    mix-blend-mode: overlay;
-
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px; /* Larger grid size */
+    opacity: 0.5;
 }
 
 .questionsLayer {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    z-index: 10;
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    padding: 80px;
 }
 
 .questionsGrid {
-    /*position: relative;*/
-    width: 110%;
-    height: 94%;
+    width: 100%;
+    height: 100%;
+    padding: 4rem;
+    position: relative;
+}
+
+/* Update container and grid layout */
+.container {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    background-color: white;
+    overflow: hidden;
+}
+
+/* Update grid lines to be a background element */
+.gridLines {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    padding: 80px;
+    z-index: 1;
+}
+
+.gridLines::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 80px;
+    bottom: 80px;
+    width: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.gridLines::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 80px; 
+    right: 80px;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Update the axis labels */
+.axisLabel {
+    position: absolute;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 2;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.labelTop {
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.labelBottom {
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.labelLeft, .labelRight {
+    writing-mode: vertical-rl;
+    position: absolute;
+    top: 50%;
+    transform-origin: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px; /* Set fixed height for both labels */
+}
+
+.labelLeft {
+    transform: rotate(180deg) translateY(50%);
+    left: 40px;
+}
+
+.labelRight {
+    transform: rotate(0deg) translateY(-50%);
+    right: 40px;
 }
 
 .questionItem {
-    position: absolute;
-    width: 13rem;
-    height: 13rem;
+    position: relative;
+    width: 3rem; 
+    height: 3rem;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
+    background-color: currentColor;
+    filter: url('#texture');
+    z-index: 1;
+    mix-blend-mode: normal;
+}
+
+.questionText {
+    position: relative;
+    z-index: 2;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-align: center;
+    padding: 0.5rem;
+}
+
+/* Update color-specific styles */
+.questionItem[data-color="#7EDDDE"] {
+    background-color: var(--turquoise);
+    color: var(--turquoise);
+}
+
+.questionItem[data-color="#FFA40D"] {
+    background-color: var(--orange);
+    color: var(--orange);
+}
+
+.questionItem[data-color="#009C49"] {
+    background-color: var(--green);
+    color: var(--green);
+}
+
+.questionItem[data-color="#A77AD7"] {
+    background-color: var(--purple);
+    color: var(--purple);
+}
+
+/* Add hover effects */
+.questionItem:hover::before {
+    opacity: 0.25;
+    transform: scale(1.1);
+    filter: blur(2px);
+}
+
+/* Add rotation animation */
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .questionItem:hover:not(.inactiveQuestion) {
-    transform: scale(1.4);
+    transform: scale(1.1);
     z-index: 20;
 }
 
@@ -76,9 +319,10 @@
 }
 
 .questionText {
-    padding: 1.5rem;
+    padding: 0.5rem;
     text-align: center;
     color: white;
+    font-size: 0.7rem; /* Smaller font size for smaller bubbles */
     font-weight: 500;
     z-index: 1;
 }
@@ -86,9 +330,9 @@
 .glowEffect {
     position: absolute;
     inset: 0;
-    border-radius: 60%;
-    filter: blur(0.9rem);
-    opacity: 0.9;
+    border-radius: 50%;
+    filter: blur(0.5rem);  /* Reduced blur */
+    opacity: 0.6;  /* Reduced opacity */
     transition: opacity 0.3s ease;
     background: rgba(255, 255, 255, 0.18);
     /* border-radius: 16px; */
@@ -237,7 +481,6 @@
     transform: scale(0.8);
     opacity: 0;
 }
-
 .enteringQuestions {
     opacity: 1;
 }
@@ -297,4 +540,67 @@
         opacity: 0;
         transform: translate(-50%, -50%) scale(0.8);
     }
+}
+
+.timeline {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    height: 40px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 0 60px;
+    z-index: 4;
+}
+
+/* Create one continuous line behind all timeline points */
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 60px;
+    right: 60px;
+    height: 1px;
+    background-color: black;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.timelinePoint {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: white;
+    border: 2px solid black;
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.timelinePoint.active {
+    background-color: black;
+    transform: scale(1.2);
+}
+
+.timelinePoint:hover {
+    transform: scale(1.2);
+}
+
+.timelineItem {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    flex: 1;
+    margin-top: 14px;
+}
+
+/* Remove the individual line segments from each timeline item */
+.timelineItem:not(:last-child)::after {
+    display: none;
 }
