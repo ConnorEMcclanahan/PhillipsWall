@@ -9,12 +9,114 @@
     position: relative;
     height: 100vh;
     width: 100%;
-    background-color: white;
+    background-color: #faf9f6;
     overflow: hidden;
 }
 
-.gradientBackground {
-    display: none; 
+/* Sticky note pattern background */
+.container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+        /* Updated squares with blue-grayish tones */
+        linear-gradient(45deg, rgba(172, 211, 210, 0.28) 0%, rgba(172, 211, 210, 0.28) 100%),
+        linear-gradient(45deg, rgba(149, 199, 199, 0.25) 0%, rgba(149, 199, 199, 0.25) 100%),
+        linear-gradient(45deg, rgba(179, 229, 252, 0.27) 0%, rgba(179, 229, 252, 0.27) 100%),
+        linear-gradient(45deg, rgba(164, 217, 210, 0.24) 0%, rgba(164, 217, 210, 0.24) 100%),
+        linear-gradient(45deg, rgba(185, 210, 210, 0.22) 0%, rgba(185, 210, 210, 0.22) 100%),
+        linear-gradient(45deg, rgba(190, 219, 220, 0.23) 0%, rgba(190, 219, 220, 0.23) 100%),
+        linear-gradient(45deg, rgba(173, 216, 230, 0.25) 0%, rgba(173, 216, 230, 0.25) 100%),
+        linear-gradient(45deg, rgba(172, 205, 212, 0.22) 0%, rgba(172, 205, 212, 0.22) 100%),
+        /* Additional squares with blue-grayish tones */
+        linear-gradient(45deg, rgba(183, 220, 215, 0.26) 0%, rgba(183, 220, 215, 0.26) 100%),
+        linear-gradient(45deg, rgba(165, 211, 222, 0.24) 0%, rgba(165, 211, 222, 0.24) 100%),
+        linear-gradient(45deg, rgba(187, 222, 251, 0.25) 0%, rgba(187, 222, 251, 0.25) 100%),
+        linear-gradient(45deg, rgba(157, 197, 205, 0.23) 0%, rgba(157, 197, 205, 0.23) 100%),
+        /* 4 new squares with blue-grayish tones */
+        linear-gradient(45deg, rgba(142, 194, 194, 0.25) 0%, rgba(142, 194, 194, 0.25) 100%),
+        linear-gradient(45deg, rgba(180, 215, 225, 0.26) 0%, rgba(180, 215, 225, 0.26) 100%),
+        linear-gradient(45deg, rgba(170, 200, 205, 0.24) 0%, rgba(170, 200, 205, 0.24) 100%),
+        linear-gradient(45deg, rgba(155, 210, 215, 0.25) 0%, rgba(155, 210, 215, 0.25) 100%);
+    background-size: 
+        80px 80px,
+        120px 120px,
+        90px 90px,
+        100px 100px,
+        70px 70px,
+        110px 110px,
+        95px 95px,
+        85px 85px,
+        /* Sizes for new squares */
+        75px 75px,
+        105px 105px,
+        115px 115px,
+        88px 88px,
+        /* Sizes for extra squares */
+        92px 92px,
+        103px 103px,
+        78px 78px,
+        112px 112px;
+    background-position:
+        15% 20%,
+        65% 15%,
+        85% 45%,
+        25% 70%,
+        75% 80%,
+        40% 30%,
+        60% 55%,
+        30% 85%,
+        /* Positions for new squares - spread out more */
+        10% 55%,
+        45% 85%,
+        90% 10%,
+        50% 5%,
+        /* Positions for extra squares - even more spread out */
+        5% 35%,
+        70% 40%,
+        35% 65%,
+        95% 30%;
+    background-repeat: no-repeat;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Add subtle shadow/depth effect */
+.container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+        /* Shadow squares with lighter opacity */
+        linear-gradient(45deg, rgba(0, 0, 0, 0.025) 0%, rgba(0, 0, 0, 0.025) 100%),
+        linear-gradient(45deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.02) 100%),
+        linear-gradient(45deg, rgba(0, 0, 0, 0.018) 0%, rgba(0, 0, 0, 0.018) 100%),
+        linear-gradient(45deg, rgba(0, 0, 0, 0.015) 0%, rgba(0, 0, 0, 0.015) 100%),
+        linear-gradient(45deg, rgba(0, 0, 0, 0.022) 0%, rgba(0, 0, 0, 0.022) 100%),
+        /* Additional shadow squares */
+        linear-gradient(45deg, rgba(0, 0, 0, 0.013) 0%, rgba(0, 0, 0, 0.013) 100%),
+        linear-gradient(45deg, rgba(0, 0, 0, 0.016) 0%, rgba(0, 0, 0, 0.016) 100%);
+    background-size: 
+        150px 150px,
+        120px 120px,
+        180px 180px,
+        140px 140px,
+        170px 170px,
+        /* Sizes for new shadow squares */
+        160px 160px,
+        130px 130px;
+    background-position:
+        30% 25%,
+        70% 60%,
+        20% 80%,
+        50% 35%,
+        80% 15%,
+        /* Positions for new shadow squares */
+        15% 50%,
+        90% 70%;
+    background-repeat: no-repeat;
+    z-index: 0;
+    pointer-events: none;
 }
 
 
@@ -442,36 +544,49 @@
 
 .timeline {
     position: absolute;
-    bottom: 20px;  /* Reduced from 40px */
+    bottom: 20px;
     left: 0;
     right: 0;
-    height: 40px;  /* Reduced from 60px */
+    height: 40px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    padding: 0 60px;  /* Adjusted padding */
+    padding: 0 60px;
     z-index: 4;
 }
 
-/* Remove the previous timeline line */
+/* Create one continuous line behind all timeline points */
 .timeline::before {
-    display: none;
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 60px;
+    right: 60px;
+    height: 1px;
+    background-color: black;
+    transform: translateY(-50%);
+    z-index: 1;
 }
 
 .timelinePoint {
-    width: 6px;
-    height: 6px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    background-color: white;  /* Changed to white */
-    border: 1px solid black; /* Added border */
+    background-color: white;
+    border: 2px solid black;
     position: relative;
     z-index: 2;
-    cursor: pointer;         /* Added cursor pointer */
-    box-shadow: none;        /* Removed box shadow */
+    cursor: pointer;
+    transition: transform 0.2s ease;
 }
 
 .timelinePoint.active {
-    background-color: black; /* Fill with black when active */
+    background-color: black;
+    transform: scale(1.2);
+}
+
+.timelinePoint:hover {
+    transform: scale(1.2);
 }
 
 .timelineItem {
@@ -479,38 +594,13 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;      /* Reduced from 8px */
+    gap: 6px;
     cursor: pointer;
     flex: 1;
+    margin-top: 14px;
 }
 
+/* Remove the individual line segments from each timeline item */
 .timelineItem:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 6px;
-    right: 0;
-    height: 1px;
-    background-color: black; /* Solid black line */
-    width: calc(100% - 6px);
-}
-
-.timelineMonth {
-    font-size: 11px;  /* Reduced from 12px */
-    color: #333;
-    font-weight: 400;
-    margin-top: 2px;  /* Reduced from 4px */
-    font-family: inherit;
-}
-
-/* Active state */
-.timelinePoint.active {
-    background-color: #000;
-    transform: scale(1.2);
-}
-
-/* Hover state */
-.timelinePoint:hover {
-    transform: scale(1.2);
-    transition: transform 0.2s ease;
+    display: none;
 }

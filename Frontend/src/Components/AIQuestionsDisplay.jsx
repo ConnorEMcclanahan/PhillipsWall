@@ -16,7 +16,7 @@ const AIQuestionsDisplay = () => {
     const [selectedMonth, setSelectedMonth] = useState(null);
 
     const ITEMS_PER_PAGE = 7;
-    const TRANSITION_DURATION = 500; // Match with CSS transition duration
+    const TRANSITION_DURATION = 500; 
 
     const MONTHS = [
         'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
@@ -270,6 +270,8 @@ const AIQuestionsDisplay = () => {
             </div>
 
             <div className={styles.timeline}>
+                <div className={styles.continuousLine}></div>
+                
                 {MONTHS.map((month, index) => (
                     <div
                         key={month}
