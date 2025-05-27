@@ -84,6 +84,7 @@ const AIQuestionsDisplay = () => {
     };
 
     // Function to get the position of each answer bubble
+  // Function to get the position of each answer bubble
     useEffect(() => {
         if (!answersData.length) return;
 
@@ -112,38 +113,38 @@ const AIQuestionsDisplay = () => {
         return () => clearInterval(interval);
     }, [answersData, getQuestionColor]);
 
-    // const handleQuestionClick = async (questionId, event) => {
-    //     const element = event.currentTarget;
-    //     const rect = element.getBoundingClientRect();
+    const handleQuestionClick = async (questionId, event) => {
+        const element = event.currentTarget;
+        const rect = element.getBoundingClientRect();
 
-    //     setClickedQuestionPosition({
-    //         top: rect.top,
-    //         left: rect.left,
-    //         width: rect.width,
-    //         height: rect.height
-    //     });
+        setClickedQuestionPosition({
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height
+        });
 
-    //     setIsZooming(true);
+        setIsZooming(true);
 
-    //     // Add class to questionsGrid for zoom effect
-    //     const gridElement = document.querySelector(`.${styles.questionsGrid}`);
-    //     gridElement?.classList.add(styles.zooming);
+        // Add class to questionsGrid for zoom effect
+        const gridElement = document.querySelector(`.${styles.questionsGrid}`);
+        gridElement?.classList.add(styles.zooming);
 
-    //     try {
-    //         const response = await fetch(`http://localhost:5000/question/${questionId}`);
-    //         const data = await response.json();
+        try {
+            const response = await fetch(`http://localhost:5000/question/${questionId}`);
+            const data = await response.json();
 
-    //         // Stagger the transitions
-    //         setTimeout(() => {
-    //             gridElement?.classList.add(styles.zoomed);
-    //             setActiveQuestion(questionId);
-    //             setActiveQuestionData(data);
-    //             setCurrentPage(1);
-    //         }, TRANSITION_DURATION / 2);
-    //     } catch (error) {
-    //         console.error("Error fetching question details:", error);
-    //     }
-    // };
+            // Stagger the transitions
+            setTimeout(() => {
+                gridElement?.classList.add(styles.zoomed);
+                setActiveQuestion(questionId);
+                setActiveQuestionData(data);
+                setCurrentPage(1);
+            }, TRANSITION_DURATION / 2);
+        } catch (error) {
+            console.error("Error fetching question details:", error);
+        }
+    };
 
 
     const handleBack = () => {
@@ -178,8 +179,30 @@ const AIQuestionsDisplay = () => {
     //     return () => clearInterval(interval);
     // }, [activeQuestionData, currentPage, language]);
 
-    const handleMonthClick = (month) => {
-        setSelectedMonth(prev => prev === month ? null : month);
+    // Function to set current month as active
+    useEffect(() => {
+        // Get current date
+        const now = new Date();
+        const currentMonth = now.getMonth(); // 0-based (January is 0)
+        
+        // Set initial active month
+        setActiveMonth(currentMonth);
+    }, []);
+
+    // State for tracking active month
+    const [activeMonth, setActiveMonth] = useState(null);
+
+    const handleTimelinePointClick = (monthIndex) => {
+        setActiveMonth(monthIndex);
+       
+        const monthName = MONTHS[monthIndex];
+        console.log(`Showing data for ${monthName}`);
+        
+        // You can filter your answersData here based on the selected month
+        // setFilteredAnswers(answersData.filter(answer => {
+        //     const answerDate = new Date(answer.created_at);
+        //     return answerDate.getMonth() === monthIndex;
+        // }));
     };
 
     return (
@@ -190,14 +213,9 @@ const AIQuestionsDisplay = () => {
                     {answersData.map((answer, index) => (    
                         <div
                             key={answer.answer_id}
-                            className={`
-                                ${styles.answerItem}
-                                // ${activeQuestion ? styles.inactiveQuestion : ''}
-                                // ${isZooming && answer.answer_id ? styles.zoomTransition : ''}
-                            `}
+                            className={styles.answerItem}
                             data-color={getQuestionColor(answer.question_id)}
                             style={bubbleStyles[index]}
-                            // onClick={(e) => handleQuestionClick(question.question_id, e)}
                         >
                             <div className={styles.answerText}>
                                 {answer.answer_text}
@@ -287,21 +305,24 @@ const AIQuestionsDisplay = () => {
             </div>
 
             <div className={styles.timeline}>
-                <div className={styles.continuousLine}></div>
-                
                 {MONTHS.map((month, index) => (
                     <div
                         key={month}
                         className={styles.timelineItem}
-                        onClick={() => handleMonthClick(month)}
+                        onClick={() => handleTimelinePointClick(index)}
                     >
                         <div 
                             className={`
                                 ${styles.timelinePoint} 
-                                ${selectedMonth === month ? styles.active : ''}
+                                ${activeMonth === index ? styles.active : ''}
                             `}
                         />
-                        <div className={styles.timelineMonth}>{month}</div>
+                        <div className={`
+                            ${styles.timelineMonth}
+                            ${activeMonth === index ? styles.current : ''}
+                        `}>
+                            {month}
+                        </div>
                     </div>
                 ))}
             </div>

@@ -523,6 +523,7 @@
     }
 }
 
+/* Timeline component */
 .timeline {
     position: absolute;
     bottom: 20px;
@@ -537,14 +538,14 @@
 }
 
 /* Create one continuous line behind all timeline points */
-.timeline::before {
+.timeline::after {
     content: '';
     position: absolute;
     top: 50%;
-    left: 60px;
-    right: 60px;
+    left: 7.5%; 
+    right: 7.5%; 
     height: 1px;
-    background-color: black;
+    background-color: rgba(0, 0, 0, 0.3);
     transform: translateY(-50%);
     z-index: 1;
 }
@@ -554,20 +555,36 @@
     height: 12px;
     border-radius: 50%;
     background-color: white;
-    border: 2px solid black;
+    border: 1px solid rgba(0, 0, 0, 0.3); /* Thinner, more transparent border */
     position: relative;
     z-index: 2;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
+/* Active state for timeline points */
 .timelinePoint.active {
-    background-color: black;
+    background-color: #000000; /* Solid black */
     transform: scale(1.2);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
 }
 
 .timelinePoint:hover {
     transform: scale(1.2);
+}
+
+.timelineMonth {
+    font-size: 14px;  /* Match the axis label font size */
+    color: #333;      /* Match the axis label color */
+    font-weight: 500; /* Match the axis label font weight */
+    margin-top: 5px;
+    text-align: center;
+}
+
+/* Style for the current month */
+.timelineMonth.current {
+    font-weight: 600;
+    color: #000;
 }
 
 .timelineItem {
@@ -584,4 +601,48 @@
 /* Remove the individual line segments from each timeline item */
 .timelineItem:not(:last-child)::after {
     display: none;
+}
+
+/* Add this to ensure responsiveness */
+@media (max-width: 768px) {
+    .timeline {
+        padding: 0 30px;
+    }
+    
+    .timeline::after {
+        left: 30px;
+        right: 30px;
+    }
+    
+    .timelineMonth {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .timelinePoint {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .timelineMonth {
+        font-size: 0.65rem;
+    }
+}
+
+/* Optional: Add a subtle pulse effect for active point */
+@keyframes subtlePulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2);
+    }
+    70% {
+        box-shadow: 0 0 0 4px rgba(0, 0, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+.timelinePoint.active {
+    animation: subtlePulse 2s infinite;
 }
