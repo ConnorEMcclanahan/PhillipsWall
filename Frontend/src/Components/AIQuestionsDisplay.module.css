@@ -18,7 +18,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background-image: 
+    background-image:
         /* Updated squares with blue-grayish tones */
         linear-gradient(45deg, rgba(172, 211, 210, 0.28) 0%, rgba(172, 211, 210, 0.28) 100%),
         linear-gradient(45deg, rgba(149, 199, 199, 0.25) 0%, rgba(149, 199, 199, 0.25) 100%),
@@ -555,15 +555,23 @@
     z-index: 4;
 }
 
-/* Create one continuous line behind all timeline points */
 .timeline::before {
+    display: none;
+}
+
+.continuousLine {
+    display: none;
+}
+
+
+.timeline::after {
     content: '';
     position: absolute;
     top: 50%;
-    left: 60px;
-    right: 60px;
+    left: 7.5%; 
+    right: 7.5%; 
     height: 1px;
-    background-color: black;
+    background-color: rgba(0, 0, 0, 0.3);
     transform: translateY(-50%);
     z-index: 1;
 }
@@ -573,7 +581,7 @@
     height: 12px;
     border-radius: 50%;
     background-color: white;
-    border: 2px solid black;
+    border: 1px solid rgba(0, 0, 0, 0.3); /* Thinner, more transparent border */
     position: relative;
     z-index: 2;
     cursor: pointer;
@@ -581,12 +589,20 @@
 }
 
 .timelinePoint.active {
-    background-color: black;
+    background-color: #000000; /* Solid black */
     transform: scale(1.2);
 }
 
 .timelinePoint:hover {
     transform: scale(1.2);
+}
+
+.timelineMonth {
+    font-size: 14px;  /* Match the axis label font size */
+    color: #333;      /* Match the axis label color */
+    font-weight: 500; /* Match the axis label font weight */
+    margin-top: 5px;
+    text-align: center;
 }
 
 .timelineItem {
@@ -603,4 +619,32 @@
 /* Remove the individual line segments from each timeline item */
 .timelineItem:not(:last-child)::after {
     display: none;
+}
+
+/* Add this to ensure responsiveness */
+@media (max-width: 768px) {
+    .timeline {
+        padding: 0 30px;
+    }
+    
+    .continuousLine,
+    .timeline::before {
+        left: 30px;
+        right: 30px;
+    }
+    
+    .timelineMonth {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .timelinePoint {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .timelineMonth {
+        font-size: 0.65rem;
+    }
 }
