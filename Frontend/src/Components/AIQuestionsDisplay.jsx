@@ -1,24 +1,19 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styles from './AIQuestionsDisplay.module.css';
-import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import { useLanguage } from './LanguageContext';
+
+// import { useLanguage } from './LanguageContext';
 
 const AIQuestionsDisplay = () => {
     const [bubbleStyles, setBubbleStyles] = useState([]);
-    const { language } = useLanguage();
     const [questionsData, setQuestionsData] = useState([]);
-    const [activeQuestion, setActiveQuestion] = useState(null); //??
-    const [activeQuestionData, setActiveQuestionData] = useState(null); //??
-    const [currentPage, setCurrentPage] = useState(1);
-    const [currentAnswers, setCurrentAnswers] = useState([]);//??
     const [answersData, setAnswersData] = useState([]);
 
-    const [isZooming, setIsZooming] = useState(false);
-    const [clickedQuestionPosition, setClickedQuestionPosition] = useState(null);
     const [selectedMonth, setSelectedMonth] = useState(null);
+    // const [currentPage, setCurrentPage] = useState(1);
+    // const [isZooming, setIsZooming] = useState(false);
 
-    const ITEMS_PER_PAGE = 20;
-    const TRANSITION_DURATION = 500; 
+    // const ITEMS_PER_PAGE = 20;
+    // const TRANSITION_DURATION = 500; 
 
     const MONTHS = [
         'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
@@ -72,16 +67,6 @@ const AIQuestionsDisplay = () => {
     const getQuestionColor = useCallback((questionId) => {
         return questionColorMap[questionId] || '#7EDDDE';
     }, [questionColorMap]);
-
-    // Function to extract the first color from a linear gradient string - NOT used in this version
-    const extractColorFromGradient = (gradientString) => {
-        // Extract the first color from the linear gradient
-        const matches = gradientString.match(/#[a-fA-F0-9]{6}/g);
-        if (matches && matches.length > 0) {
-            return matches[0]; // Return the first color
-        }
-        return '#000000'; // Fallback color
-    };
 
     // Function to get the position of each answer bubble
     useEffect(() => {
@@ -145,38 +130,22 @@ const AIQuestionsDisplay = () => {
     //     }
     // };
 
+    // Function to handle back button click
+    // const handleBack = () => {
+    //     setIsZooming(false);
 
-    const handleBack = () => {
-        setIsZooming(false);
+    //     const gridElement = document.querySelector(`.${styles.questionsGrid}`);
+    //     gridElement?.classList.remove(styles.zoomed);
 
-        const gridElement = document.querySelector(`.${styles.questionsGrid}`);
-        gridElement?.classList.remove(styles.zoomed);
+    //     setTimeout(() => {
+    //         gridElement?.classList.remove(styles.zooming);
+    //         setActiveQuestion(null);
+    //         // setActiveQuestionData(null);
+    //         setCurrentPage(1);
+    //         setClickedQuestionPosition(null);
+    //     }, TRANSITION_DURATION);
+    // };
 
-        setTimeout(() => {
-            gridElement?.classList.remove(styles.zooming);
-            setActiveQuestion(null);
-            // setActiveQuestionData(null);
-            setCurrentPage(1);
-            setClickedQuestionPosition(null);
-        }, TRANSITION_DURATION);
-    };
-
-    // useEffect(() => {
-    //     if (!activeQuestionData?.answers[language]) return;
-
-    //     const answers = activeQuestionData.answers[language]
-    //         .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-    //     setCurrentAnswers(answers);
-
-    //     const interval = setInterval(() => {
-    //         setCurrentPage(prev => {
-    //             const maxPage = Math.ceil(activeQuestionData.answers[language].length / ITEMS_PER_PAGE);
-    //             return prev === maxPage ? 1 : prev + 1;
-    //         });
-    //     }, 8000);
-
-    //     return () => clearInterval(interval);
-    // }, [activeQuestionData, currentPage, language]);
 
     const handleMonthClick = (month) => {
         setSelectedMonth(prev => prev === month ? null : month);
@@ -192,8 +161,6 @@ const AIQuestionsDisplay = () => {
                             key={answer.answer_id}
                             className={`
                                 ${styles.answerItem}
-                                // ${activeQuestion ? styles.inactiveQuestion : ''}
-                                // ${isZooming && answer.answer_id ? styles.zoomTransition : ''}
                             `}
                             data-color={getQuestionColor(answer.question_id)}
                             style={bubbleStyles[index]}
@@ -204,78 +171,6 @@ const AIQuestionsDisplay = () => {
                             </div>
                         </div>
                     ))}
-
-
-                    {/* {answersData.map((answer, index) => (
-                        <div
-                            key={answer.answer_id}
-                            className={`
-                                ${styles.answerItem}
-                                ${activeQuestion ? styles.inactiveQuestion : ''}
-                                ${isZooming && answer.answer_id ? styles.zoomTransition : ''}
-                            `}
-                            data-color={getQuestionColor(answer.question_id)}
-                            
-                            // style={{
-                            //     ...bubbleStyles[index],
-                            //     ...(clickedQuestionPosition && answer.answer_id
-                            //         ? {
-                            //             top: clickedQuestionPosition.top,
-                            //             left: clickedQuestionPosition.left,
-                            //             width: clickedQuestionPosition.width,
-                            //             height: clickedQuestionPosition.height
-                            //         }
-                            //         : {})
-                            // }}
-                            // onClick={(e) => handleQuestionClick(question.question_id, e)} later implementation
-                        >
-                            <div className={styles.questionText}>
-                                {answer[language]}
-                            </div>
-                        </div>
-                    ))} */}
-
-                    {/* {activeQuestionData && (
-                        <div className={`${styles.overlay} ${isZooming ? styles.visible : ''}`}>
-                            <div className={`${styles.contentWrapper} ${isZooming ? styles.entering : styles.leaving}`}>
-                                <button
-                                    className={styles.backButton}
-                                    onClick={handleBack}
-                                >
-                                    <ArrowLeftIcon className="mr-2" size={20} />
-                                    <span>Back to Questions</span>
-                                </button>
-
-                                <div
-                                    className={styles.activeQuestion}
-                                    style={{
-                                        backgroundColor: activeQuestionData.color, // Dynamically set the color
-                                        boxShadow: `0 0 100px ${activeQuestionData.color}, inset 0 0 165px ${activeQuestionData.color}`
-                                    }}
-                                >
-                                    <div className={styles.questionText}>
-                                        {activeQuestionData.question[language]}
-                                    </div>
-                                </div>
-
-                                <div className={styles.answersContainer}>
-                                    {currentAnswers.map((answer, index, array) => (
-                                        <div
-                                            key={`answer-${index}-${currentPage}`}
-                                            className={styles.answerBox}
-                                            style={{
-                                                ...getAnswerPosition(index, array.length),
-                                                backgroundColor: activeQuestionData.color,
-                                                '--hover-color': activeQuestionData.color,
-                                            }}
-                                        >
-                                            {answer}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )} */}
                 </div>
             </div>
 
