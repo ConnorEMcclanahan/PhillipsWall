@@ -84,7 +84,6 @@ const AIQuestionsDisplay = () => {
     };
 
     // Function to get the position of each answer bubble
-  // Function to get the position of each answer bubble
     useEffect(() => {
         if (!answersData.length) return;
 
@@ -146,38 +145,71 @@ const AIQuestionsDisplay = () => {
         }
     };
 
+    // Keep the handleQuestionClick function but modify it to work with answer bubbles
+    const handleBubbleClick = async (answerId, questionId, event) => {
+        const element = event.currentTarget;
+        const rect = element.getBoundingClientRect();
+
+        setClickedQuestionPosition({
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height
+        });
+
+        setIsZooming(true);
+
+        // Add class to questionsGrid for zoom effect
+        const gridElement = document.querySelector(`.${styles.answersGrid}`);
+        gridElement?.classList.add(styles.zooming);
+
+        try {
+            const response = await fetch(`http://localhost:5000/question/${questionId}`);
+            const data = await response.json();
+
+            // Stagger the transitions
+            setTimeout(() => {
+                gridElement?.classList.add(styles.zoomed);
+                setActiveQuestion(questionId);
+                setActiveQuestionData(data);
+                setCurrentPage(1);
+            }, TRANSITION_DURATION / 2);
+        } catch (error) {
+            console.error("Error fetching question details:", error);
+        }
+    };
 
     const handleBack = () => {
         setIsZooming(false);
 
-        const gridElement = document.querySelector(`.${styles.questionsGrid}`);
+        const gridElement = document.querySelector(`.${styles.answersGrid}`);
         gridElement?.classList.remove(styles.zoomed);
 
         setTimeout(() => {
             gridElement?.classList.remove(styles.zooming);
             setActiveQuestion(null);
-            // setActiveQuestionData(null);
+            setActiveQuestionData(null);
             setCurrentPage(1);
             setClickedQuestionPosition(null);
         }, TRANSITION_DURATION);
     };
 
-    // useEffect(() => {
-    //     if (!activeQuestionData?.answers[language]) return;
+    useEffect(() => {
+        if (!activeQuestionData?.answers[language]) return;
 
-    //     const answers = activeQuestionData.answers[language]
-    //         .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-    //     setCurrentAnswers(answers);
+        const answers = activeQuestionData.answers[language]
+            .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+        setCurrentAnswers(answers);
 
-    //     const interval = setInterval(() => {
-    //         setCurrentPage(prev => {
-    //             const maxPage = Math.ceil(activeQuestionData.answers[language].length / ITEMS_PER_PAGE);
-    //             return prev === maxPage ? 1 : prev + 1;
-    //         });
-    //     }, 8000);
+        const interval = setInterval(() => {
+            setCurrentPage(prev => {
+                const maxPage = Math.ceil(activeQuestionData.answers[language].length / ITEMS_PER_PAGE);
+                return prev === maxPage ? 1 : prev + 1;
+            });
+        }, 8000);
 
-    //     return () => clearInterval(interval);
-    // }, [activeQuestionData, currentPage, language]);
+        return () => clearInterval(interval);
+    }, [activeQuestionData, currentPage, language]);
 
     // Function to set current month as active
     useEffect(() => {
@@ -209,91 +241,15 @@ const AIQuestionsDisplay = () => {
         <div className={styles.container}>
             <div className={styles.answersLayer}>
                 <div className={styles.answersGrid}>
-
                     {answersData.map((answer, index) => (    
                         <div
                             key={answer.answer_id}
                             className={styles.answerItem}
                             data-color={getQuestionColor(answer.question_id)}
                             style={bubbleStyles[index]}
-                        >
-                            <div className={styles.answerText}>
-                                {answer.answer_text}
-                            </div>
-                        </div>
+                            onClick={(e) => handleBubbleClick(answer.answer_id, answer.question_id, e)}
+                        />
                     ))}
-
-
-                    {/* {answersData.map((answer, index) => (
-                        <div
-                            key={answer.answer_id}
-                            className={`
-                                ${styles.answerItem}
-                                ${activeQuestion ? styles.inactiveQuestion : ''}
-                                ${isZooming && answer.answer_id ? styles.zoomTransition : ''}
-                            `}
-                            data-color={getQuestionColor(answer.question_id)}
-                            
-                            // style={{
-                            //     ...bubbleStyles[index],
-                            //     ...(clickedQuestionPosition && answer.answer_id
-                            //         ? {
-                            //             top: clickedQuestionPosition.top,
-                            //             left: clickedQuestionPosition.left,
-                            //             width: clickedQuestionPosition.width,
-                            //             height: clickedQuestionPosition.height
-                            //         }
-                            //         : {})
-                            // }}
-                            // onClick={(e) => handleQuestionClick(question.question_id, e)} later implementation
-                        >
-                            <div className={styles.questionText}>
-                                {answer[language]}
-                            </div>
-                        </div>
-                    ))} */}
-
-                    {/* {activeQuestionData && (
-                        <div className={`${styles.overlay} ${isZooming ? styles.visible : ''}`}>
-                            <div className={`${styles.contentWrapper} ${isZooming ? styles.entering : styles.leaving}`}>
-                                <button
-                                    className={styles.backButton}
-                                    onClick={handleBack}
-                                >
-                                    <ArrowLeftIcon className="mr-2" size={20} />
-                                    <span>Back to Questions</span>
-                                </button>
-
-                                <div
-                                    className={styles.activeQuestion}
-                                    style={{
-                                        backgroundColor: activeQuestionData.color, // Dynamically set the color
-                                        boxShadow: `0 0 100px ${activeQuestionData.color}, inset 0 0 165px ${activeQuestionData.color}`
-                                    }}
-                                >
-                                    <div className={styles.questionText}>
-                                        {activeQuestionData.question[language]}
-                                    </div>
-                                </div>
-
-                                <div className={styles.answersContainer}>
-                                    {currentAnswers.map((answer, index, array) => (
-                                        <div
-                                            key={`answer-${index}-${currentPage}`}
-                                            className={styles.answerBox}
-                                            style={{
-                                                ...getAnswerPosition(index, array.length),
-                                                backgroundColor: activeQuestionData.color,
-                                                '--hover-color': activeQuestionData.color,
-                                            }}
-                                        >
-                                            {answer}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )} */}
                 </div>
             </div>
 
@@ -344,6 +300,47 @@ const AIQuestionsDisplay = () => {
                     </filter>
                 </defs>
             </svg>
+
+            {activeQuestionData && (
+                <div className={`${styles.overlay} ${isZooming ? styles.visible : ''}`}>
+                    <div className={`${styles.contentWrapper} ${isZooming ? styles.entering : styles.leaving}`}>
+                        <button
+                            className={styles.backButton}
+                            onClick={handleBack}
+                        >
+                            <ArrowLeftIcon className="mr-2" size={20} />
+                            <span>Back to Questions</span>
+                        </button>
+
+                        <div
+                            className={styles.activeQuestion}
+                            style={{
+                                backgroundColor: activeQuestionData.color,
+                                boxShadow: `0 0 100px ${activeQuestionData.color}, inset 0 0 165px ${activeQuestionData.color}`
+                            }}
+                        >
+                            <div className={styles.questionText}>
+                                {activeQuestionData.question[language]}
+                            </div>
+                        </div>
+
+                        <div className={styles.answersContainer}>
+                            {currentAnswers.map((answer, index, array) => (
+                                <div
+                                    key={`answer-${index}-${currentPage}`}
+                                    className={styles.answerBox}
+                                    style={{
+                                        backgroundColor: activeQuestionData.color,
+                                        '--hover-color': activeQuestionData.color,
+                                    }}
+                                >
+                                    {answer}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
