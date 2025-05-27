@@ -18,7 +18,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background-image:
+    background-image: 
         /* Updated squares with blue-grayish tones */
         linear-gradient(45deg, rgba(172, 211, 210, 0.28) 0%, rgba(172, 211, 210, 0.28) 100%),
         linear-gradient(45deg, rgba(149, 199, 199, 0.25) 0%, rgba(149, 199, 199, 0.25) 100%),
@@ -237,11 +237,14 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.3s ease;
-    background-color: currentColor;
-    filter: url('#texture');
-    z-index: 1;
-    mix-blend-mode: normal;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 5;
+}
+
+.answerItem:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+    z-index: 10;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
 }
 
 .answerText {
@@ -249,7 +252,7 @@
     z-index: 2;
     color: white;
     mix-blend-mode: exclusion;
-    font-size: 0.7rem;
+    font-size: 0.4rem;
     font-weight: 500;
     text-align: center;
     padding: 0.5rem;
@@ -257,7 +260,7 @@
 
 
 /* Add hover effects */
-.questionItem:hover::before {
+.answerItem:hover::before {
     opacity: 0.25;
     transform: scale(1.1);
     filter: blur(2px);
@@ -329,24 +332,32 @@
 
 /* Modal Overlay */
 .overlay {
-    position: absolute;
-    inset: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1000; /* Much higher z-index */
+}
+
+.overlay.visible {
+    opacity: 1;
+    visibility: visible;
 }
 
 .contentWrapper {
     position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    transform: translateZ(0);
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 90%;
+    max-width: 1200px;
+    height: 80vh;
+    z-index: 1001; /* Even higher than overlay */
 }
 
 .backButton {
@@ -523,6 +534,7 @@
     }
 }
 
+/* Timeline component */
 .timeline {
     position: absolute;
     bottom: 20px;
@@ -536,15 +548,7 @@
     z-index: 4;
 }
 
-.timeline::before {
-    display: none;
-}
-
-.continuousLine {
-    display: none;
-}
-
-
+/* Create one continuous line behind all timeline points */
 .timeline::after {
     content: '';
     position: absolute;
@@ -566,12 +570,14 @@
     position: relative;
     z-index: 2;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
+/* Active state for timeline points */
 .timelinePoint.active {
     background-color: #000000; /* Solid black */
     transform: scale(1.2);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
 }
 
 .timelinePoint:hover {
@@ -584,6 +590,12 @@
     font-weight: 500; /* Match the axis label font weight */
     margin-top: 5px;
     text-align: center;
+}
+
+/* Style for the current month */
+.timelineMonth.current {
+    font-weight: 600;
+    color: #000;
 }
 
 .timelineItem {
@@ -608,8 +620,7 @@
         padding: 0 30px;
     }
     
-    .continuousLine,
-    .timeline::before {
+    .timeline::after {
         left: 30px;
         right: 30px;
     }
@@ -628,4 +639,21 @@
     .timelineMonth {
         font-size: 0.65rem;
     }
+}
+
+/* Optional: Add a subtle pulse effect for active point */
+@keyframes subtlePulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2);
+    }
+    70% {
+        box-shadow: 0 0 0 4px rgba(0, 0, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+.timelinePoint.active {
+    animation: subtlePulse 2s infinite;
 }

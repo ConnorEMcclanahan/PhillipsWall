@@ -1,19 +1,24 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styles from './AIQuestionsDisplay.module.css';
-
-// import { useLanguage } from './LanguageContext';
+import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
+import { useLanguage } from './LanguageContext';
 
 const AIQuestionsDisplay = () => {
     const [bubbleStyles, setBubbleStyles] = useState([]);
+    const { language } = useLanguage();
     const [questionsData, setQuestionsData] = useState([]);
+    const [activeQuestion, setActiveQuestion] = useState(null); //??
+    const [activeQuestionData, setActiveQuestionData] = useState(null); //??
+    const [currentPage, setCurrentPage] = useState(1);
+    const [currentAnswers, setCurrentAnswers] = useState([]);//??
     const [answersData, setAnswersData] = useState([]);
 
+    const [isZooming, setIsZooming] = useState(false);
+    const [clickedQuestionPosition, setClickedQuestionPosition] = useState(null);
     const [selectedMonth, setSelectedMonth] = useState(null);
-    // const [currentPage, setCurrentPage] = useState(1);
-    // const [isZooming, setIsZooming] = useState(false);
 
-    // const ITEMS_PER_PAGE = 20;
-    // const TRANSITION_DURATION = 500; 
+    const ITEMS_PER_PAGE = 20;
+    const TRANSITION_DURATION = 500; 
 
     const MONTHS = [
         'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
@@ -68,6 +73,16 @@ const AIQuestionsDisplay = () => {
         return questionColorMap[questionId] || '#7EDDDE';
     }, [questionColorMap]);
 
+    // Function to extract the first color from a linear gradient string - NOT used in this version
+    const extractColorFromGradient = (gradientString) => {
+        // Extract the first color from the linear gradient
+        const matches = gradientString.match(/#[a-fA-F0-9]{6}/g);
+        if (matches && matches.length > 0) {
+            return matches[0]; // Return the first color
+        }
+        return '#000000'; // Fallback color
+    };
+
     // Function to get the position of each answer bubble
     useEffect(() => {
         if (!answersData.length) return;
@@ -97,79 +112,143 @@ const AIQuestionsDisplay = () => {
         return () => clearInterval(interval);
     }, [answersData, getQuestionColor]);
 
-    // const handleQuestionClick = async (questionId, event) => {
-    //     const element = event.currentTarget;
-    //     const rect = element.getBoundingClientRect();
+    const handleQuestionClick = async (questionId, event) => {
+        const element = event.currentTarget;
+        const rect = element.getBoundingClientRect();
 
-    //     setClickedQuestionPosition({
-    //         top: rect.top,
-    //         left: rect.left,
-    //         width: rect.width,
-    //         height: rect.height
-    //     });
+        setClickedQuestionPosition({
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height
+        });
 
-    //     setIsZooming(true);
+        setIsZooming(true);
 
-    //     // Add class to questionsGrid for zoom effect
-    //     const gridElement = document.querySelector(`.${styles.questionsGrid}`);
-    //     gridElement?.classList.add(styles.zooming);
+        // Add class to questionsGrid for zoom effect
+        const gridElement = document.querySelector(`.${styles.questionsGrid}`);
+        gridElement?.classList.add(styles.zooming);
 
-    //     try {
-    //         const response = await fetch(`http://localhost:5000/question/${questionId}`);
-    //         const data = await response.json();
+        try {
+            const response = await fetch(`http://localhost:5000/question/${questionId}`);
+            const data = await response.json();
 
-    //         // Stagger the transitions
-    //         setTimeout(() => {
-    //             gridElement?.classList.add(styles.zoomed);
-    //             setActiveQuestion(questionId);
-    //             setActiveQuestionData(data);
-    //             setCurrentPage(1);
-    //         }, TRANSITION_DURATION / 2);
-    //     } catch (error) {
-    //         console.error("Error fetching question details:", error);
-    //     }
-    // };
+            // Stagger the transitions
+            setTimeout(() => {
+                gridElement?.classList.add(styles.zoomed);
+                setActiveQuestion(questionId);
+                setActiveQuestionData(data);
+                setCurrentPage(1);
+            }, TRANSITION_DURATION / 2);
+        } catch (error) {
+            console.error("Error fetching question details:", error);
+        }
+    };
 
-    // Function to handle back button click
-    // const handleBack = () => {
-    //     setIsZooming(false);
+    // Keep the handleQuestionClick function but modify it to work with answer bubbles
+    const handleBubbleClick = async (answerId, questionId, event) => {
+        const element = event.currentTarget;
+        const rect = element.getBoundingClientRect();
 
-    //     const gridElement = document.querySelector(`.${styles.questionsGrid}`);
-    //     gridElement?.classList.remove(styles.zoomed);
+        setClickedQuestionPosition({
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height
+        });
 
-    //     setTimeout(() => {
-    //         gridElement?.classList.remove(styles.zooming);
-    //         setActiveQuestion(null);
-    //         // setActiveQuestionData(null);
-    //         setCurrentPage(1);
-    //         setClickedQuestionPosition(null);
-    //     }, TRANSITION_DURATION);
-    // };
+        setIsZooming(true);
 
+        // Add class to questionsGrid for zoom effect
+        const gridElement = document.querySelector(`.${styles.answersGrid}`);
+        gridElement?.classList.add(styles.zooming);
 
-    const handleMonthClick = (month) => {
-        setSelectedMonth(prev => prev === month ? null : month);
+        try {
+            const response = await fetch(`http://localhost:5000/question/${questionId}`);
+            const data = await response.json();
+
+            // Stagger the transitions
+            setTimeout(() => {
+                gridElement?.classList.add(styles.zoomed);
+                setActiveQuestion(questionId);
+                setActiveQuestionData(data);
+                setCurrentPage(1);
+            }, TRANSITION_DURATION / 2);
+        } catch (error) {
+            console.error("Error fetching question details:", error);
+        }
+    };
+
+    const handleBack = () => {
+        setIsZooming(false);
+
+        const gridElement = document.querySelector(`.${styles.answersGrid}`);
+        gridElement?.classList.remove(styles.zoomed);
+
+        setTimeout(() => {
+            gridElement?.classList.remove(styles.zooming);
+            setActiveQuestion(null);
+            setActiveQuestionData(null);
+            setCurrentPage(1);
+            setClickedQuestionPosition(null);
+        }, TRANSITION_DURATION);
+    };
+
+    useEffect(() => {
+        if (!activeQuestionData?.answers[language]) return;
+
+        const answers = activeQuestionData.answers[language]
+            .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+        setCurrentAnswers(answers);
+
+        const interval = setInterval(() => {
+            setCurrentPage(prev => {
+                const maxPage = Math.ceil(activeQuestionData.answers[language].length / ITEMS_PER_PAGE);
+                return prev === maxPage ? 1 : prev + 1;
+            });
+        }, 8000);
+
+        return () => clearInterval(interval);
+    }, [activeQuestionData, currentPage, language]);
+
+    // Function to set current month as active
+    useEffect(() => {
+        // Get current date
+        const now = new Date();
+        const currentMonth = now.getMonth(); // 0-based (January is 0)
+        
+        // Set initial active month
+        setActiveMonth(currentMonth);
+    }, []);
+
+    // State for tracking active month
+    const [activeMonth, setActiveMonth] = useState(null);
+
+    const handleTimelinePointClick = (monthIndex) => {
+        setActiveMonth(monthIndex);
+       
+        const monthName = MONTHS[monthIndex];
+        console.log(`Showing data for ${monthName}`);
+        
+        // You can filter your answersData here based on the selected month
+        // setFilteredAnswers(answersData.filter(answer => {
+        //     const answerDate = new Date(answer.created_at);
+        //     return answerDate.getMonth() === monthIndex;
+        // }));
     };
 
     return (
         <div className={styles.container}>
             <div className={styles.answersLayer}>
                 <div className={styles.answersGrid}>
-
                     {answersData.map((answer, index) => (    
                         <div
                             key={answer.answer_id}
-                            className={`
-                                ${styles.answerItem}
-                            `}
+                            className={styles.answerItem}
                             data-color={getQuestionColor(answer.question_id)}
                             style={bubbleStyles[index]}
-                            // onClick={(e) => handleQuestionClick(question.question_id, e)}
-                        >
-                            <div className={styles.answerText}>
-                                {answer.answer_text}
-                            </div>
-                        </div>
+                            onClick={(e) => handleBubbleClick(answer.answer_id, answer.question_id, e)}
+                        />
                     ))}
                 </div>
             </div>
@@ -182,21 +261,24 @@ const AIQuestionsDisplay = () => {
             </div>
 
             <div className={styles.timeline}>
-                <div className={styles.continuousLine}></div>
-                
                 {MONTHS.map((month, index) => (
                     <div
                         key={month}
                         className={styles.timelineItem}
-                        onClick={() => handleMonthClick(month)}
+                        onClick={() => handleTimelinePointClick(index)}
                     >
                         <div 
                             className={`
                                 ${styles.timelinePoint} 
-                                ${selectedMonth === month ? styles.active : ''}
+                                ${activeMonth === index ? styles.active : ''}
                             `}
                         />
-                        <div className={styles.timelineMonth}>{month}</div>
+                        <div className={`
+                            ${styles.timelineMonth}
+                            ${activeMonth === index ? styles.current : ''}
+                        `}>
+                            {month}
+                        </div>
                     </div>
                 ))}
             </div>
@@ -218,6 +300,47 @@ const AIQuestionsDisplay = () => {
                     </filter>
                 </defs>
             </svg>
+
+            {activeQuestionData && (
+                <div className={`${styles.overlay} ${isZooming ? styles.visible : ''}`}>
+                    <div className={`${styles.contentWrapper} ${isZooming ? styles.entering : styles.leaving}`}>
+                        <button
+                            className={styles.backButton}
+                            onClick={handleBack}
+                        >
+                            <ArrowLeftIcon className="mr-2" size={20} />
+                            <span>Back to Questions</span>
+                        </button>
+
+                        <div
+                            className={styles.activeQuestion}
+                            style={{
+                                backgroundColor: activeQuestionData.color,
+                                boxShadow: `0 0 100px ${activeQuestionData.color}, inset 0 0 165px ${activeQuestionData.color}`
+                            }}
+                        >
+                            <div className={styles.questionText}>
+                                {activeQuestionData.question[language]}
+                            </div>
+                        </div>
+
+                        <div className={styles.answersContainer}>
+                            {currentAnswers.map((answer, index, array) => (
+                                <div
+                                    key={`answer-${index}-${currentPage}`}
+                                    className={styles.answerBox}
+                                    style={{
+                                        backgroundColor: activeQuestionData.color,
+                                        '--hover-color': activeQuestionData.color,
+                                    }}
+                                >
+                                    {answer}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
