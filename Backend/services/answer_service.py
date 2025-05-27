@@ -8,6 +8,12 @@ class AnswerService:
         self.portkey_client = portkey_client
         self.answer_dao = answer_dao
 
+    def get_answers(self) -> Dict[str, Any]:
+        answers = self.answer_dao.get_answers()
+        if not answers:
+            return {"error": "Answers not found."}, 500
+        return answers
+
     @staticmethod
     def validate_image_data(data: Dict[str, Any]):
         if not data or "image" not in data:
