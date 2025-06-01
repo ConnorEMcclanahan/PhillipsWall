@@ -20,6 +20,29 @@ class AnswerDAO:
         except Exception as e:
             print("Error fetching answers:", e)
             return []
+  
+    @staticmethod
+    def get_answers_with_translations():
+        query = """
+        SELECT 
+            *
+        FROM Answer a
+        LEFT JOIN AnswerTranslation t ON a.answer_id = t.answer_id;
+        """
+        try:
+            with create_connection() as connection:
+                cursor = connection.cursor()
+                cursor.execute(query)
+                rows = cursor.fetchall()
+                answers = [
+                    dict(zip([column[0] for column in cursor.description], row))
+                    for row in rows
+                ]
+            return answers
+        except Exception as e:
+            print("Error fetching answers with translations:", e)
+            return []
+
  
     @staticmethod
     def get_answer(answer_id):

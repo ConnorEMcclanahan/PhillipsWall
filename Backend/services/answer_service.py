@@ -9,7 +9,7 @@ class AnswerService:
         self.answer_dao = answer_dao
 
     def get_answers(self) -> Dict[str, Any]:
-        answers = self.answer_dao.get_answers()
+        answers = self.answer_dao.get_answers_with_translations()
         if not answers:
             return {"error": "Answers not found."}, 500
         return answers

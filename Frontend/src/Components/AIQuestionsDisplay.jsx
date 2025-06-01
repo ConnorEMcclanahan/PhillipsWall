@@ -55,7 +55,7 @@ const AIQuestionsDisplay = () => {
         fetchAnswers();
     }, []);
 
-    // TO DO - GET answer translations implementation
+    // TO DO - answer translations implementation
     
     // TO DO - GET answer bubbles implementation 
 
