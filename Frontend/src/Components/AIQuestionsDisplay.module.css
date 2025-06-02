@@ -18,107 +18,68 @@
     content: '';
     position: absolute;
     inset: 0;
-    background-image: 
-        /* Updated squares with blue-grayish tones */
-        linear-gradient(45deg, rgba(172, 211, 210, 0.28) 0%, rgba(172, 211, 210, 0.28) 100%),
-        linear-gradient(45deg, rgba(149, 199, 199, 0.25) 0%, rgba(149, 199, 199, 0.25) 100%),
-        linear-gradient(45deg, rgba(179, 229, 252, 0.27) 0%, rgba(179, 229, 252, 0.27) 100%),
-        linear-gradient(45deg, rgba(164, 217, 210, 0.24) 0%, rgba(164, 217, 210, 0.24) 100%),
-        linear-gradient(45deg, rgba(185, 210, 210, 0.22) 0%, rgba(185, 210, 210, 0.22) 100%),
-        linear-gradient(45deg, rgba(190, 219, 220, 0.23) 0%, rgba(190, 219, 220, 0.23) 100%),
-        linear-gradient(45deg, rgba(173, 216, 230, 0.25) 0%, rgba(173, 216, 230, 0.25) 100%),
-        linear-gradient(45deg, rgba(172, 205, 212, 0.22) 0%, rgba(172, 205, 212, 0.22) 100%),
-        /* Additional squares with blue-grayish tones */
-        linear-gradient(45deg, rgba(183, 220, 215, 0.26) 0%, rgba(183, 220, 215, 0.26) 100%),
-        linear-gradient(45deg, rgba(165, 211, 222, 0.24) 0%, rgba(165, 211, 222, 0.24) 100%),
-        linear-gradient(45deg, rgba(187, 222, 251, 0.25) 0%, rgba(187, 222, 251, 0.25) 100%),
-        linear-gradient(45deg, rgba(157, 197, 205, 0.23) 0%, rgba(157, 197, 205, 0.23) 100%),
-        /* 4 new squares with blue-grayish tones */
-        linear-gradient(45deg, rgba(142, 194, 194, 0.25) 0%, rgba(142, 194, 194, 0.25) 100%),
-        linear-gradient(45deg, rgba(180, 215, 225, 0.26) 0%, rgba(180, 215, 225, 0.26) 100%),
-        linear-gradient(45deg, rgba(170, 200, 205, 0.24) 0%, rgba(170, 200, 205, 0.24) 100%),
-        linear-gradient(45deg, rgba(155, 210, 215, 0.25) 0%, rgba(155, 210, 215, 0.25) 100%);
-    background-size: 
-        80px 80px,
-        120px 120px,
-        90px 90px,
-        100px 100px,
-        70px 70px,
-        110px 110px,
-        95px 95px,
-        85px 85px,
-        /* Sizes for new squares */
-        75px 75px,
-        105px 105px,
-        115px 115px,
-        88px 88px,
-        /* Sizes for extra squares */
-        92px 92px,
-        103px 103px,
-        78px 78px,
-        112px 112px;
+    background-color: white;
+    /* Veel clusters, elk in een cirkelvormig patroon */
+    background-image:
+        /* Cluster 1 */
+        linear-gradient(to bottom, #BDE6E4 0 0), linear-gradient(to bottom, #C7ECEB 0 0), linear-gradient(to bottom, #D5F4F3 0 0), linear-gradient(to bottom, #A8DEDD 0 0), linear-gradient(to bottom, #B3E9E7 0 0), linear-gradient(to bottom, #D8F6F5 0 0), linear-gradient(to bottom, #C0EDEA 0 0), linear-gradient(to bottom, #C9F0EF 0 0), linear-gradient(to bottom, #DFFBFA 0 0),
+        /* Cluster 2 */
+        linear-gradient(to bottom, #E7FDFC 0 0), linear-gradient(to bottom, #C2EBE9 0 0), linear-gradient(to bottom, #B0DFDD 0 0), linear-gradient(to bottom, #D1F5F4 0 0), linear-gradient(to bottom, #C9F1F0 0 0), linear-gradient(to bottom, #A8DEDD 0 0), linear-gradient(to bottom, #B3E9E7 0 0), linear-gradient(to bottom, #D8F6F5 0 0),
+        /* Cluster 3 */
+        linear-gradient(to bottom, #C0EDEA 0 0), linear-gradient(to bottom, #C7ECEB 0 0), linear-gradient(to bottom, #D5F4F3 0 0), linear-gradient(to bottom, #E7FDFC 0 0), linear-gradient(to bottom, #C2EBE9 0 0), linear-gradient(to bottom, #B0DFDD 0 0), linear-gradient(to bottom, #D1F5F4 0 0), linear-gradient(to bottom, #C9F1F0 0 0),
+        /* Cluster 4 */
+        linear-gradient(to bottom, #BDE6E4 0 0), linear-gradient(to bottom, #C7ECEB 0 0), linear-gradient(to bottom, #D5F4F3 0 0), linear-gradient(to bottom, #A8DEDD 0 0), linear-gradient(to bottom, #B3E9E7 0 0), linear-gradient(to bottom, #D8F6F5 0 0), linear-gradient(to bottom, #C0EDEA 0 0), linear-gradient(to bottom, #C9F0EF 0 0),
+        /* Cluster 5 */
+        linear-gradient(to bottom, #DFFBFA 0 0), linear-gradient(to bottom, #E7FDFC 0 0), linear-gradient(to bottom, #C2EBE9 0 0), linear-gradient(to bottom, #B0DFDD 0 0), linear-gradient(to bottom, #D1F5F4 0 0), linear-gradient(to bottom, #C9F1F0 0 0), linear-gradient(to bottom, #A8DEDD 0 0), linear-gradient(to bottom, #B3E9E7 0 0),
+        /* Cluster 6 */
+        linear-gradient(to bottom, #C7ECEB 0 0), linear-gradient(to bottom, #D5F4F3 0 0), linear-gradient(to bottom, #E1FAF9 0 0), linear-gradient(to bottom, #D0F1F0 0 0), linear-gradient(to bottom, #A8DEDD 0 0), linear-gradient(to bottom, #B3E9E7 0 0), linear-gradient(to bottom, #D8F6F5 0 0),
+        /* Cluster 7 */
+        linear-gradient(to bottom, #C0EDEA 0 0), linear-gradient(to bottom, #C9F0EF 0 0), linear-gradient(to bottom, #DFFBFA 0 0), linear-gradient(to bottom, #E7FDFC 0 0), linear-gradient(to bottom, #C2EBE9 0 0), linear-gradient(to bottom, #B0DFDD 0 0),
+        /* Cluster 8 */
+        linear-gradient(to bottom, #D1F5F4 0 0), linear-gradient(to bottom, #C9F1F0 0 0), linear-gradient(to bottom, #A8DEDD 0 0), linear-gradient(to bottom, #B3E9E7 0 0), linear-gradient(to bottom, #D8F6F5 0 0),
+        /* Cluster 9 */
+        linear-gradient(to bottom, #C0EDEA 0 0), linear-gradient(to bottom, #C7ECEB 0 0), linear-gradient(to bottom, #D5F4F3 0 0), linear-gradient(to bottom, #E7FDFC 0 0),
+        /* Cluster 10 */
+        linear-gradient(to bottom, #C2EBE9 0 0), linear-gradient(to bottom, #B0DFDD 0 0), linear-gradient(to bottom, #D1F5F4 0 0), linear-gradient(to bottom, #C9F1F0 0 0);
+    background-size:
+        15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px,
+        15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px,
+        15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px,
+        15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px,
+        15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px,
+        15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px,
+        15px 15px, 15px 15px;
     background-position:
-        15% 20%,
-        65% 15%,
-        85% 45%,
-        25% 70%,
-        75% 80%,
-        40% 30%,
-        60% 55%,
-        30% 85%,
-        /* Positions for new squares - spread out more */
-        10% 55%,
-        45% 85%,
-        90% 10%,
-        50% 5%,
-        /* Positions for extra squares - even more spread out */
-        5% 35%,
-        70% 40%,
-        35% 65%,
-        95% 30%;
+        /* Cluster 1 */
+        50px 50px, 50px 35px, 50px 65px, 35px 50px, 65px 50px, 35px 35px, 65px 35px, 35px 65px, 65px 65px,
+        /* Cluster 2 */
+        200px 100px, 200px 85px, 200px 115px, 185px 100px, 215px 100px, 185px 85px, 215px 85px, 185px 115px,
+        /* Cluster 3 */
+        400px 80px, 400px 65px, 400px 95px, 385px 80px, 415px 80px, 385px 65px, 415px 65px, 385px 95px, 415px 95px,
+        /* Cluster 4 */
+        600px 350px, 600px 335px, 600px 365px, 585px 350px, 615px 350px, 585px 335px, 615px 335px, 585px 365px, 615px 365px,
+        /* Cluster 5 */
+        80vw 80vh, calc(80vw + 15px) calc(80vh + 0px), calc(80vw + 30px) calc(80vh + 0px), 80vw calc(80vh + 15px), calc(80vw + 15px) calc(80vh + 15px), calc(80vw + 30px) calc(80vh + 15px), 80vw calc(80vh + 30px), calc(80vw + 15px) calc(80vh + 30px),
+        /* Cluster 6 */
+        100px 600px, 100px 615px, 100px 585px, 85px 600px, 115px 600px, 85px 615px, 115px 615px,
+        /* Cluster 7 */
+        900px 200px, 900px 215px, 900px 185px, 885px 200px, 915px 200px, 885px 215px,
+        /* Cluster 8 */
+        300px 500px, 315px 500px, 285px 500px, 300px 485px, 300px 515px,
+        /* Cluster 9 */
+        700px 100px, 715px 100px, 685px 100px, 700px 85px,
+        /* Cluster 10 */
+        500px 400px, 515px 400px, 485px 400px, 500px 415px;
     background-repeat: no-repeat;
     z-index: 0;
     pointer-events: none;
+    opacity: 1;
 }
 
-/* Add subtle shadow/depth effect */
+/* Verwijder de schaduw effecten */
 .container::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: 
-        /* Shadow squares with lighter opacity */
-        linear-gradient(45deg, rgba(0, 0, 0, 0.025) 0%, rgba(0, 0, 0, 0.025) 100%),
-        linear-gradient(45deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.02) 100%),
-        linear-gradient(45deg, rgba(0, 0, 0, 0.018) 0%, rgba(0, 0, 0, 0.018) 100%),
-        linear-gradient(45deg, rgba(0, 0, 0, 0.015) 0%, rgba(0, 0, 0, 0.015) 100%),
-        linear-gradient(45deg, rgba(0, 0, 0, 0.022) 0%, rgba(0, 0, 0, 0.022) 100%),
-        /* Additional shadow squares */
-        linear-gradient(45deg, rgba(0, 0, 0, 0.013) 0%, rgba(0, 0, 0, 0.013) 100%),
-        linear-gradient(45deg, rgba(0, 0, 0, 0.016) 0%, rgba(0, 0, 0, 0.016) 100%);
-    background-size: 
-        150px 150px,
-        120px 120px,
-        180px 180px,
-        140px 140px,
-        170px 170px,
-        /* Sizes for new shadow squares */
-        160px 160px,
-        130px 130px;
-    background-position:
-        30% 25%,
-        70% 60%,
-        20% 80%,
-        50% 35%,
-        80% 15%,
-        /* Positions for new shadow squares */
-        15% 50%,
-        90% 70%;
-    background-repeat: no-repeat;
-    z-index: 0;
-    pointer-events: none;
+    display: none;
 }
-
 
 .pixelGrid {
     position: absolute;
@@ -192,7 +153,9 @@
     font-weight: 500;
     z-index: 2;
     text-align: center;
-    white-space: nowrap;
+    white-space: pre-line;
+    line-height: 1.4;
+    width: 100%;
 }
 
 .labelTop {
@@ -208,23 +171,24 @@
 }
 
 .labelLeft, .labelRight {
-    writing-mode: vertical-rl;
     position: absolute;
     top: 50%;
     transform-origin: center;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 200px; /* Set fixed height for both labels */
+    height: 200px;
+    width: 120px;
+    text-align: center;
 }
 
 .labelLeft {
-    transform: rotate(180deg) translateY(50%);
+    transform: translateY(-50%);
     left: 40px;
 }
 
 .labelRight {
-    transform: rotate(0deg) translateY(-50%);
+    transform: translateY(-50%);
     right: 40px;
 }
 
@@ -239,12 +203,53 @@
     cursor: pointer;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     z-index: 5;
+    animation: float 12s ease-in-out infinite;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Voeg verschillende animatie-timings toe voor elk item */
+.answerItem:nth-child(2n) {
+    animation-duration: 13s;
+    animation-delay: 2s;
+}
+
+.answerItem:nth-child(3n) {
+    animation-duration: 14s;
+    animation-delay: 4s;
+}
+
+.answerItem:nth-child(4n) {
+    animation-duration: 12.5s;
+    animation-delay: 6s;
+}
+
+.answerItem:nth-child(5n) {
+    animation-duration: 13.5s;
+    animation-delay: 8s;
+}
+
+@keyframes float {
+    0% {
+        transform: translate(-50%, -50%) translate(0px, 0px) scale(1);
+    }
+    25% {
+        transform: translate(-50%, -50%) translate(-1px, -3px) scale(1.08);
+    }
+    50% {
+        transform: translate(-50%, -50%) translate(0px, -4px) scale(1);
+    }
+    75% {
+        transform: translate(-50%, -50%) translate(1px, -3px) scale(0.92);
+    }
+    100% {
+        transform: translate(-50%, -50%) translate(0px, 0px) scale(1);
+    }
 }
 
 .answerItem:hover {
     transform: translate(-50%, -50%) scale(1.2);
     z-index: 10;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
 }
 
 .answerText {
