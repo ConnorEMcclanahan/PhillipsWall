@@ -39,6 +39,7 @@ class AnswerService:
             return {"error": str(e)}, 400
         finally:
             self.translate_image(answer_data)
+            self.insert_answer_in_answer_group(answer_data, axis_value)
 
     def translate_image(self, answer_text: Dict[str, Any]):
         data = update_translate_prompt(Prompts.TRANSLATE_POSTIT.value, answer_text["answer_text"])
@@ -47,6 +48,9 @@ class AnswerService:
             raise ValueError("No completion choices returned")
         translation_data = json.loads(response.choices[0].message.content)
         self.answer_dao.insert_translated_answer(answer_text["answer_id"], translation_data)
+
+    def insert_answer_in_answer_group(self, answer_data: Dict[str, Any], axis_value):
+        self.answer_dao.insert_answer_in_answer_group(answer_data, axis_value)
 
     def get_axis_value(self, answer_text: Dict[str, Any]):
         data = update_axis_value_prompt(Prompts.GET_AXIS_VALUE.value, answer_text["question_text"], answer_text["answer_text"])
