@@ -256,8 +256,12 @@ const AIQuestionsDisplay = () => {
             <div className={styles.gridLines}>
                 <div className={`${styles.axisLabel} ${styles.labelTop}`}>AI enthusiast</div>
                 <div className={`${styles.axisLabel} ${styles.labelBottom}`}>AI skeptic</div>
-                <div className={`${styles.axisLabel} ${styles.labelLeft}`}>Little scared of the future</div>
-                <div className={`${styles.axisLabel} ${styles.labelRight}`}>Looking bright to the future</div>
+                <div className={`${styles.axisLabel} ${styles.labelLeft}`}>Little scared
+of the
+future</div>
+                <div className={`${styles.axisLabel} ${styles.labelRight}`}>Looking bright
+to the
+future</div>
             </div>
 
             <div className={styles.timeline}>
