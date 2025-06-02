@@ -42,7 +42,75 @@ class AnswerDAO:
         except Exception as e:
             print("Error fetching answers with translations:", e)
             return []
+        
+    @staticmethod
+    def get_answer_groups():
+        query = """
+        SELECT 
+            ag.answer_group_id, 
+            ag.x_axis_value, 
+            ag.y_axis_value, 
+            ag.question_id,
 
+            a.answer_id, 
+            a.answer_text,
+            a.answer_date, 
+            a.x_axis_value AS answer_x_axis_value, 
+            a.y_axis_value AS answer_y_axis_value,
+            a.answer_language,
+            a.image_url,
+
+            at.answer_dutch, 
+            at.answer_english,
+
+            COUNT(aig.answer_id) OVER (PARTITION BY ag.answer_group_id) AS answer_count
+
+        FROM AnswerGroup ag
+        JOIN AnswerInAnswerGroup aig ON ag.answer_group_id = aig.answer_group_id
+        JOIN Answer a ON aig.answer_id = a.answer_id
+        LEFT JOIN AnswerTranslation at ON a.answer_id = at.answer_id
+
+        ORDER BY ag.answer_group_id;
+        """
+        try:
+            with create_connection() as connection:
+                cursor = connection.cursor()
+                cursor.execute(query)
+                rows = cursor.fetchall()
+                columns = [column[0] for column in cursor.description]
+                raw_results = [dict(zip(columns, row)) for row in rows]
+
+            grouped = {}
+            for row in raw_results:
+                group_id = row["answer_group_id"]
+                if group_id not in grouped:
+                    grouped[group_id] = {
+                        "answer_group_id": group_id,
+                        "x_axis_value": row["x_axis_value"],
+                        "y_axis_value": row["y_axis_value"],
+                        "question_id": row["question_id"],
+                        "answer_count": row["answer_count"],
+                        "answers": []
+                    }
+                answer_data = {
+                    "answer_id": row["answer_id"],
+                    "answer_text": row["answer_text"],
+                    "answer_date": row["answer_date"],
+                    "x_axis_value": row["answer_x_axis_value"],
+                    "y_axis_value": row["answer_y_axis_value"],
+                    "answer_language": row["answer_language"],
+                    "image_url": row["image_url"],
+                    "answer_dutch": row["answer_dutch"],
+                    "answer_english": row["answer_english"],
+                }
+                grouped[group_id]["answers"].append(answer_data)
+
+            return list(grouped.values())
+
+        except Exception as e:
+            print("Error fetching answer groups:", e)
+            return []
+        
  
     @staticmethod
     def get_answer(answer_id):
