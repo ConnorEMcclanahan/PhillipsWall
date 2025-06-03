@@ -43,7 +43,7 @@ const AIQuestionsDisplay = () => {
     useEffect(() => {
         const fetchAnswers = async () => {
             try {
-                const response = await fetch('http://localhost:5000/answers');
+                const response = await fetch('http://localhost:5000/answer_groups');
                 const data = await response.json();
                 setAnswersData(data);
                 console.log("Answers data fetched:", data);
