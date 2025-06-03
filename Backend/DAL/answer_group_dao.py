@@ -71,25 +71,7 @@ class AnswerGroupDAO:
         except Exception as e:
             print("Error fetching answer groups:", e)
             return []
-        
-    
-    @staticmethod
-    def insert_answer_in_answer_group(answer_data, axis_values):
-        match = AnswerGroupDAO.get_answer_group_match(answer_data, axis_values)
-        if match:
-            # If a match is found, create a new anwerInAnswerGroup object
-            AnswerGroupDAO.create_answer_in_answer_group(answer_data, match)
-            return
-        else:
-            answer_group_id = AnswerGroupDAO.create_answer_group(answer_data, axis_values)
-            if answer_group_id is not None:
-                AnswerGroupDAO.create_answer_in_answer_group(answer_data, {"answer_group_id": answer_group_id})
-                return
-            else:
-                print("Failed to create answer in group.")
-                return
 
-        
     @staticmethod
     def create_answer_in_answer_group(answer_data, match):
         query = ("INSERT INTO AnswerInAnswerGroup (answer_id, answer_group_id) "
