@@ -2,6 +2,7 @@ import json
 from typing import Dict, Any
 from ..utils.prompt_manager import update_image_url_prompt, update_translate_prompt,  update_axis_value_prompt
 from ..utils.prompts import Prompts
+from ..DAL.answer_group_dao import AnswerGroupDAO
 
 class AnswerService:
     def __init__(self, portkey_client, answer_dao):
@@ -9,7 +10,7 @@ class AnswerService:
         self.answer_dao = answer_dao
 
     def get_answers(self) -> Dict[str, Any]:
-        answers = self.answer_dao.get_answer_groups()
+        answers = AnswerGroupDAO.get_answer_groups()
         if not answers:
             return {"error": "Answers not found."}, 500
         return answers
@@ -39,7 +40,7 @@ class AnswerService:
             return {"error": str(e)}, 400
         finally:
             self.translate_image(answer_data)
-            self.insert_answer_in_answer_group(answer_data, axis_value)
+            AnswerGroupDAO.insert_answer_in_answer_group(answer_data, axis_value)
 
     def translate_image(self, answer_text: Dict[str, Any]):
         data = update_translate_prompt(Prompts.TRANSLATE_POSTIT.value, answer_text["answer_text"])
@@ -48,9 +49,6 @@ class AnswerService:
             raise ValueError("No completion choices returned")
         translation_data = json.loads(response.choices[0].message.content)
         self.answer_dao.insert_translated_answer(answer_text["answer_id"], translation_data)
-
-    def insert_answer_in_answer_group(self, answer_data: Dict[str, Any], axis_value):
-        self.answer_dao.insert_answer_in_answer_group(answer_data, axis_value)
 
     def get_axis_value(self, answer_text: Dict[str, Any]):
         data = update_axis_value_prompt(Prompts.GET_AXIS_VALUE.value, answer_text["question_text"], answer_text["answer_text"])
