@@ -24,8 +24,17 @@ class AnswerDAO:
     @staticmethod
     def get_answers_with_translations():
         query = """
-        SELECT 
-            *
+        SELECT
+            a.answer_id, 
+            a.answer_text,
+            a.answer_date, 
+            a.x_axis_value AS answer_x_axis_value, 
+            a.y_axis_value AS answer_y_axis_value,
+            a.answer_language,
+            a.image_url,
+             
+            t.answer_dutch, 
+            t.answer_english,
         FROM Answer a
         LEFT JOIN AnswerTranslation t ON a.answer_id = t.answer_id;
         """
