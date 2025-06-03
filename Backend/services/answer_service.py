@@ -11,7 +11,7 @@ class AnswerService:
         self.answer_group_service = answer_group_service
 
     def get_answers(self) -> Dict[str, Any]:
-        answers = self.answer_group_service.get_answer_groups()
+        answers = self.answer_dao.get_answers()
         if not answers:
             return {"error": "Answers not found."}, 500
         return answers
