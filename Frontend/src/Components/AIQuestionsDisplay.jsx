@@ -43,7 +43,7 @@ const AIQuestionsDisplay = () => {
     useEffect(() => {
         const fetchAnswers = async () => {
             try {
-                const response = await fetch('http://localhost:5000/answers');
+                const response = await fetch('http://localhost:5000/answer_groups');
                 const data = await response.json();
                 setAnswersData(data);
                 console.log("Answers data fetched:", data);
@@ -55,9 +55,8 @@ const AIQuestionsDisplay = () => {
         fetchAnswers();
     }, []);
 
-    // TO DO - GET answer translations implementation
+    // TO DO - answer translations implementation and answer buubles in visualization
     
-    // TO DO - GET answer bubbles implementation 
 
     // Extract colors from questionsData and create a map for quick access
     const questionColorMap = useMemo(() => {
@@ -243,7 +242,7 @@ const AIQuestionsDisplay = () => {
                 <div className={styles.answersGrid}>
                     {answersData.map((answer, index) => (    
                         <div
-                            key={answer.answer_id}
+                            key={answer.answer_group_id}
                             className={styles.answerItem}
                             data-color={getQuestionColor(answer.question_id)}
                             style={bubbleStyles[index]}

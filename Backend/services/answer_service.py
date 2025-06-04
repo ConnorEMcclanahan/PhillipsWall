@@ -3,10 +3,12 @@ from typing import Dict, Any
 from ..utils.prompt_manager import update_image_url_prompt, update_translate_prompt,  update_axis_value_prompt
 from ..utils.prompts import Prompts
 
+
 class AnswerService:
-    def __init__(self, portkey_client, answer_dao):
+    def __init__(self, portkey_client, answer_dao, answer_group_service):
         self.portkey_client = portkey_client
         self.answer_dao = answer_dao
+        self.answer_group_service = answer_group_service
 
     def get_answers(self) -> Dict[str, Any]:
         answers = self.answer_dao.get_answers()
@@ -38,7 +40,8 @@ class AnswerService:
             print(e)
             return {"error": str(e)}, 400
         finally:
-            self.translate_image(answer_data)
+            self.translate_image(answer_data)    
+            self.answer_group_service.insert_answer_in_answer_group(answer_data, axis_value)
 
     def translate_image(self, answer_text: Dict[str, Any]):
         data = update_translate_prompt(Prompts.TRANSLATE_POSTIT.value, answer_text["answer_text"])
