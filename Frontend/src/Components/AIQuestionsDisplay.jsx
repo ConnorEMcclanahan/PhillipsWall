@@ -5,20 +5,24 @@ import { useLanguage } from './LanguageContext';
 
 const AIQuestionsDisplay = () => {
     const [bubbleStyles, setBubbleStyles] = useState([]);
-    const { language } = useLanguage();
+    const { language, setLanguage } = useLanguage();
     const [questionsData, setQuestionsData] = useState([]);
-    const [activeQuestion, setActiveQuestion] = useState(null); //??
-    const [activeQuestionData, setActiveQuestionData] = useState(null); //??
+    const [activeQuestion, setActiveQuestion] = useState(null);
+    const [activeQuestionData, setActiveQuestionData] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [currentAnswers, setCurrentAnswers] = useState([]);//??
+    const [currentAnswers, setCurrentAnswers] = useState([]);
     const [answersData, setAnswersData] = useState([]);
+    const [clusteredAnswers, setClusteredAnswers] = useState([]);
+    const [expandedCluster, setExpandedCluster] = useState(null);
 
     const [isZooming, setIsZooming] = useState(false);
     const [clickedQuestionPosition, setClickedQuestionPosition] = useState(null);
     const [selectedMonth, setSelectedMonth] = useState(null);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const ITEMS_PER_PAGE = 20;
-    const TRANSITION_DURATION = 500; 
+    const TRANSITION_DURATION = 500;
+    const CLUSTER_THRESHOLD = 15; // Distance threshold for clustering (in percentage points)
 
     const MONTHS = [
         'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
@@ -92,9 +96,6 @@ const AIQuestionsDisplay = () => {
                 const normalizedX = answer.x_axis_value * 50 + 50;
                 const normalizedY = answer.y_axis_value * 50 + 50;
 
-                console.log(`Answer ID: ${answer.answer_id}, X: ${normalizedX}, Y: ${normalizedY}`);
-                console.log(`coordinates: (${answer.x_axis_value}, ${answer.y_axis_value})`);
-
                 return {
                     bottom: `${normalizedY}%`,
                     left: `${normalizedX}%`,
@@ -108,8 +109,9 @@ const AIQuestionsDisplay = () => {
         };
 
         updateBubblePositions();
-        const interval = setInterval(updateBubblePositions, 8000);
-        return () => clearInterval(interval);
+        // Remove this interval
+        // const interval = setInterval(updateBubblePositions, 8000);
+        // return () => clearInterval(interval);
     }, [answersData, getQuestionColor]);
 
     const handleQuestionClick = async (questionId, event) => {
@@ -237,20 +239,230 @@ const AIQuestionsDisplay = () => {
         // }));
     };
 
+    // Function to calculate distance between two points
+    const calculateDistance = (point1, point2) => {
+        const dx = point1.x - point2.x;
+        const dy = point1.y - point2.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    // Function to cluster nearby answers from the same question
+    const clusterAnswers = useCallback(() => {
+        if (!answersData.length) return [];
+
+        const clusters = [];
+        const processed = new Set();
+
+        answersData.forEach((answer, index) => {
+            if (processed.has(index)) return;
+
+            const cluster = {
+                id: `cluster-${clusters.length}`,
+                questionId: answer.question_id,
+                answers: [answer],
+                // Use the original position of the first answer in cluster
+                centerX: answer.x_axis_value,
+                centerY: answer.y_axis_value,
+                size: 1
+            };
+
+            // Find nearby answers with the same question_id
+            answersData.forEach((otherAnswer, otherIndex) => {
+                if (
+                    otherIndex !== index &&
+                    !processed.has(otherIndex) &&
+                    otherAnswer.question_id === answer.question_id
+                ) {
+                    const distance = calculateDistance(
+                        { x: answer.x_axis_value, y: answer.y_axis_value },
+                        { x: otherAnswer.x_axis_value, y: otherAnswer.y_axis_value }
+                    );
+
+                    if (distance * 100 <= CLUSTER_THRESHOLD) { // Convert to percentage
+                        cluster.answers.push(otherAnswer);
+                        processed.add(otherIndex);
+                    }
+                }
+            });
+
+            // Don't recalculate the center - keep using the first answer's position
+            // This ensures stability in position
+
+            cluster.size = cluster.answers.length;
+            clusters.push(cluster);
+            processed.add(index);
+        });
+
+        return clusters;
+    }, [answersData]);
+
+    // Update clustered answers when answersData changes
+    useEffect(() => {
+        const clusters = clusterAnswers();
+        setClusteredAnswers(clusters);
+    }, [answersData, clusterAnswers]);
+
+    // Fix the useEffect that updates cluster positions - remove the interval
+    useEffect(() => {
+        if (!clusteredAnswers.length) return;
+
+        // Calculate positions once and keep them stable
+        const styles = clusteredAnswers.map((cluster) => {
+            // Use the first answer's position instead of averaging
+            const firstAnswer = cluster.answers[0];
+            const normalizedX = firstAnswer.x_axis_value * 50 + 50;
+            const normalizedY = firstAnswer.y_axis_value * 50 + 50;
+
+            const baseSize = 10;
+            const maxSize = 150;
+            const size = Math.min(maxSize, baseSize + (cluster.size - 1) * 8);
+            const zIndex = 1000 - (cluster.size * 100);
+
+            return {
+                bottom: `${normalizedY}%`,
+                left: `${normalizedX}%`,
+                position: 'absolute',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: getQuestionColor(cluster.questionId),
+                width: `${size}px`,
+                height: `${size}px`,
+                borderRadius: '50%',
+                cursor: 'pointer',
+                zIndex: zIndex
+            };
+        });
+
+        setBubbleStyles(styles);
+        
+        // No interval here anymore
+    }, [clusteredAnswers, getQuestionColor]);
+
+    // Handle cluster click - show individual answers in cluster
+    const handleClusterClick = async (cluster, event) => {
+        if (cluster.size === 1) {
+            // Single answer - behave like before
+            return handleBubbleClick(cluster.answers[0].answer_id, cluster.questionId, event);
+        }
+
+        // Multiple answers - show cluster expansion
+        if (expandedCluster?.id === cluster.id) {
+            setExpandedCluster(null);
+            return;
+        }
+
+        setExpandedCluster(cluster);
+
+        // Also fetch question data if needed
+        try {
+            const response = await fetch(`http://localhost:5000/question/${cluster.questionId}`);
+            const data = await response.json();
+            setActiveQuestionData(data);
+        } catch (error) {
+            console.error("Error fetching question details:", error);
+        }
+    };
+
+    // Update renderExpandedCluster to use the first answer's position
+    const renderExpandedCluster = () => {
+        if (!expandedCluster) return null;
+
+        const clusterAnswers = expandedCluster.answers;
+        const radius = 80; // Distance from center for individual bubbles
+        
+        // Use the first answer's position instead of the calculated center
+        const firstAnswer = clusterAnswers[0];
+        const normalizedX = firstAnswer.x_axis_value * 50 + 50;
+        const normalizedY = firstAnswer.y_axis_value * 50 + 50;
+
+        return (
+            <div className={styles.expandedCluster}>
+                {clusterAnswers.map((answer, index) => {
+                    // Calculate position around cluster center
+                    const angle = (index / clusterAnswers.length) * 2 * Math.PI;
+                    const offsetX = Math.cos(angle) * radius;
+                    const offsetY = Math.sin(angle) * radius;
+
+                    return (
+                        <div
+                            key={answer.answer_id}
+                            className={styles.expandedAnswer}
+                            style={{
+                                bottom: `calc(${normalizedY}% + ${offsetY}px)`,
+                                left: `calc(${normalizedX}% + ${offsetX}px)`,
+                                // Rest of styles remain the same
+                                position: 'absolute',
+                                transform: 'translate(-50%, -50%)',
+                                backgroundColor: getQuestionColor(answer.question_id),
+                                width: '25px',
+                                height: '25px',
+                                borderRadius: '50%',
+                                cursor: 'pointer',
+                                zIndex: 20,
+                                border: '2px solid white',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                            }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleBubbleClick(answer.answer_id, answer.question_id, e);
+                            }}
+                            title={`Answer ${index + 1}`}
+                        />
+                    );
+                })}
+                
+                {/* Cluster info tooltip */}
+                <div
+                    className={styles.clusterInfo}
+                    style={{
+                        bottom: `calc(${normalizedY}% + 100px)`,
+                        left: `${normalizedX}%`,
+                        position: 'absolute',
+                        transform: 'translateX(-50%)',
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        color: 'white',
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        whiteSpace: 'nowrap',
+                        zIndex: 25
+                    }}
+                >
+                    {clusterAnswers.length} answers clustered here
+                </div>
+            </div>
+        );
+    };
+
+    const toggleLanguage = (lang) => {
+        setLanguage(lang);
+        setDropdownOpen(false);
+    };
+
     return (
         <div className={styles.container}>
             <div className={styles.answersLayer}>
                 <div className={styles.answersGrid}>
-                    {answersData.map((answer, index) => (    
+                    {clusteredAnswers.map((cluster, index) => (    
                         <div
-                            key={answer.answer_id}
-                            className={styles.answerItem}
-                            data-color={getQuestionColor(answer.question_id)}
+                            key={cluster.id}
+                            className={`${styles.answerItem} ${cluster.size > 1 ? styles.cluster : ''}`}
+                            data-color={getQuestionColor(cluster.questionId)}
+                            data-cluster-size={cluster.size}
                             style={bubbleStyles[index]}
-                            onClick={(e) => handleBubbleClick(answer.answer_id, answer.question_id, e)}
-                        />
+                            onClick={(e) => handleClusterClick(cluster, e)}
+                            title={cluster.size > 1 ? `${cluster.size} answers` : 'Single answer'}
+                        >
+                            {cluster.size > 1 && (
+                                <span className={styles.clusterCount}>
+                                    {cluster.size}
+                                </span>
+                            )}
+                        </div>
                     ))}
                 </div>
+                
+                {/* Render expanded cluster */}
+                {renderExpandedCluster()}
             </div>
 
             <div className={styles.gridLines}>
@@ -285,6 +497,32 @@ future</div>
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* Language selector - add this after your timeline div */}
+            <div className={styles.languageSelector}>
+                <div 
+                    className={styles.languageToggle}
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                >
+                    {language.toUpperCase()}
+                </div>
+                {dropdownOpen && (
+                    <div className={styles.languageDropdown}>
+                        <div 
+                            className={`${styles.languageOption} ${language === 'en' ? styles.active : ''}`}
+                            onClick={() => toggleLanguage('en')}
+                        >
+                            EN
+                        </div>
+                        <div 
+                            className={`${styles.languageOption} ${language === 'nl' ? styles.active : ''}`}
+                            onClick={() => toggleLanguage('nl')}
+                        >
+                            NL
+                        </div>
+                    </div>
+                )}
             </div>
 
             <svg style={{ position: 'absolute', width: 0, height: 0 }}>
