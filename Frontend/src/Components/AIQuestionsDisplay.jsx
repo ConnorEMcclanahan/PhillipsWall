@@ -47,7 +47,7 @@ const AIQuestionsDisplay = () => {
     useEffect(() => {
         const fetchAnswers = async () => {
             try {
-                const response = await fetch('http://localhost:5000/answers');
+                const response = await fetch('http://localhost:5000/answer_groups');
                 const data = await response.json();
                 setAnswersData(data);
                 console.log("Answers data fetched:", data);
@@ -59,9 +59,8 @@ const AIQuestionsDisplay = () => {
         fetchAnswers();
     }, []);
 
-    // TO DO - GET answer translations implementation
+    // TO DO - answer translations implementation and answer buubles in visualization
     
-    // TO DO - GET answer bubbles implementation 
 
     // Extract colors from questionsData and create a map for quick access
     const questionColorMap = useMemo(() => {
@@ -444,10 +443,16 @@ const AIQuestionsDisplay = () => {
                 <div className={styles.answersGrid}>
                     {clusteredAnswers.map((cluster, index) => (    
                         <div
+<<<<<<< HEAD
                             key={cluster.id}
                             className={`${styles.answerItem} ${cluster.size > 1 ? styles.cluster : ''}`}
                             data-color={getQuestionColor(cluster.questionId)}
                             data-cluster-size={cluster.size}
+=======
+                            key={answer.answer_group_id}
+                            className={styles.answerItem}
+                            data-color={getQuestionColor(answer.question_id)}
+>>>>>>> bf658720e36da13643ffc9e4daa24c582c923fe3
                             style={bubbleStyles[index]}
                             onClick={(e) => handleClusterClick(cluster, e)}
                             title={cluster.size > 1 ? `${cluster.size} answers` : 'Single answer'}
