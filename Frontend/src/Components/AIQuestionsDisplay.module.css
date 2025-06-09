@@ -558,8 +558,8 @@
     content: '';
     position: absolute;
     top: 50%;
-    left: 7.5%; 
-    right: 7.5%; 
+    left: 9%; 
+    right: 9%; 
     height: 1px;
     background-color: rgba(0, 0, 0, 0.3);
     transform: translateY(-50%);
