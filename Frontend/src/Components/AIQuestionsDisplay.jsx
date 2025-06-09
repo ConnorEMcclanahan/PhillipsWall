@@ -400,14 +400,37 @@ const AIQuestionsDisplay = () => {
         }
     };
 
-    // Updated filtering function to ensure each season has data
+    // Improved filtering function
     const filterClustersBySeason = (seasonIndex) => {
         if (!clusteredAnswers.length) return;
         
         console.log(`Filtering for ${SEASONS[seasonIndex]} - before filter: ${clusteredAnswers.length} clusters`);
         
-        // First try to filter by real dates
-        const realDateFiltered = clusteredAnswers.filter(cluster => {
+        // Check if any answers actually have dates
+        let hasDateCount = 0;
+        let invalidDateCount = 0;
+        
+        clusteredAnswers.forEach(cluster => {
+            cluster.answers.forEach(answer => {
+                const dateField = answer.scan_date || 
+                              answer.created_at || 
+                              answer.createdAt || 
+                              answer.date || 
+                              answer.timestamp;
+                
+                if (dateField) {
+                    hasDateCount++;
+                    if (getSeasonIndex(dateField) === null) {
+                        invalidDateCount++;
+                    }
+                }
+            });
+        });
+        
+        console.log(`Found ${hasDateCount} answers with date fields, ${invalidDateCount} invalid dates`);
+        
+        // Now filter clusters
+        const filtered = clusteredAnswers.filter(cluster => {
             for (const answer of cluster.answers) {
                 const dateField = answer.scan_date || 
                               answer.created_at || 
@@ -418,33 +441,16 @@ const AIQuestionsDisplay = () => {
                 if (dateField) {
                     const parsed = getSeasonIndex(dateField);
                     if (parsed === seasonIndex) {
-                        return true; // Include this cluster - it has a matching date
+                        return true; // Include this cluster
                     }
                 }
             }
-            return false;
-        });
-        
-        // If we have enough real date matches, use those
-        if (realDateFiltered.length >= 5) {
-            console.log(`Found ${realDateFiltered.length} clusters with real dates for ${SEASONS[seasonIndex]}`);
-            setFilteredClusters(realDateFiltered);
-            return;
-        }
-        
-        // Otherwise, distribute clusters deterministically across seasons
-        console.log(`Insufficient real date matches, using deterministic distribution for ${SEASONS[seasonIndex]}`);
-        
-        const assignedClusters = clusteredAnswers.filter(cluster => {
-            // Use numeric portion of cluster ID (or answer ID) for deterministic assignment
-            const hash = parseInt((cluster.id || '').replace(/\D/g, '')) || 
-                        parseInt((cluster.answers[0].answer_id || '').toString().replace(/\D/g, '')) || 0;
             
-            return hash % SEASONS.length === seasonIndex;
+            return false; // Skip this cluster if no matching dates
         });
         
-        console.log(`Assigned ${assignedClusters.length} clusters to ${SEASONS[seasonIndex]}`);
-        setFilteredClusters(assignedClusters);
+        console.log(`Filtered to ${filtered.length} clusters for ${SEASONS[seasonIndex]}`);
+        setFilteredClusters(filtered);
     };
 
     // Add this after the data is fetched
@@ -707,8 +713,7 @@ const AIQuestionsDisplay = () => {
             <div className={styles.timeline} style={{
                 opacity: expandedCluster ? 0 : 1,
                 transition: 'opacity 0.3s ease',
-                pointerEvents: expandedCluster ? 'none' : 'auto',
-                transform: 'scale(0.85)', // Scale down the timeline to 85% of original size
+                pointerEvents: expandedCluster ? 'none' : 'auto'
             }}>
                 {SEASONS.map((season, index) => (
                     <div
