@@ -13,4 +13,8 @@ def create_answer_blueprint(answer_service):
         data = request.get_json()
         return answer_service.process_image(data)
 
+    @answer_bp.route("/get_newest_answer")
+    def get_latest_answer_id():
+        return jsonify(answer_service.get_latest_answer_id())
+
     return answer_bp
