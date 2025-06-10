@@ -20,10 +20,14 @@ import styles from './ImagesCaptureLoad.module.css';
 import { styled } from "@mui/material/styles";
 import translations from "../Pages/translations.json";
 import { useLanguage } from "./LanguageContext";
+import config from '../config';
+
+const { API_BASE } = config;
+
 
 const ImagesCaptureLoad = () => {
     // Add a step state to track the flow
-    const [scanningStep, setScanningStep] = useState('start'); // 'start', 'scanning', 'preview', 'results'
+    const [scanningStep, setScanningStep] = useState('start'); // 'start', 'scanning', 'preview', 'loading', 'results'
     const [isLoading, setIsLoading] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
     const [modelResult, setModelResult] = useState(null);
@@ -62,7 +66,7 @@ const ImagesCaptureLoad = () => {
     const fetchQuestionColors = async (questionId) => {
         try {
             setIsLoading(true);
-            const response = await fetch(`http://localhost:5000/question-color/${questionId}`);
+            const response = await fetch(`${API_BASE}/question-color/${questionId}`);
             const data = await response.json();
             setPostItColors({
                 color: data.color || '#feff9c',
@@ -76,30 +80,67 @@ const ImagesCaptureLoad = () => {
         }
     };
 
+    // Extract color from image (if available) or use question color
     useEffect(() => {
         if (modelResult?.question_id) {
             fetchQuestionColors(modelResult.question_id);
         }
-    }, [modelResult?.question_id]);
+        
+        // If modelResult has a color property, use that directly
+        if (modelResult?.color) {
+            setPostItColors(prev => ({
+                ...prev,
+                color: modelResult.color
+            }));
+        }
+    }, [modelResult]);
 
+    // Add this helper function to the top of your component
+    const fetchWithTimeout = async (url, options, timeout = 30000) => {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+        
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal
+        });
+        
+        clearTimeout(id);
+        return response;
+    };
+
+    // Replace your complex processImage function with this simpler version:
     const processImage = async (imageData) => {
         if (!imageData || isProcessing) return;
 
         setIsProcessing(true);
         try {
             setIsLoading(true);
-            const response = await fetch('http://localhost:5000/process-image', {
+            
+            // Use direct endpoint URL for debugging
+            const processUrl = `${API_BASE}/process-image`;
+            console.log("Processing image at URL:", processUrl);
+            
+            const response = await fetch(processUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ image: imageData }),
             });
+            
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+            
             const result = await response.json();
+            console.log("Scan result:", result);
+            
             setModelResult(result);
-            setScanningStep('results'); // Move to results after processing
+            setScanningStep('results');
         } catch (err) {
             console.error('Error processing image:', err);
+            alert(`Processing error: ${err.message}`);
         } finally {
             setIsProcessing(false);
             setIsLoading(false);
@@ -120,10 +161,12 @@ const ImagesCaptureLoad = () => {
 
     const startCamera = async () => {
         try {
+            console.log("Attempting to start camera");
             const videoStream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: 'environment' },
             });
 
+            console.log("Camera started successfully");
             setStream(videoStream);
             setPreviewImage(null);
 
@@ -132,7 +175,8 @@ const ImagesCaptureLoad = () => {
             }
         } catch (err) {
             console.error('Error accessing camera:', err);
-            setScanningStep('start');
+            alert("Couldn't access your camera. You can use the 'Upload photo instead' option below.");
+            // Stay on scanning step so they can use the upload button
         }
     };
 
@@ -146,27 +190,38 @@ const ImagesCaptureLoad = () => {
         }
     };
 
-    // Modify the captureImage function to skip preview
+    // Replace your captureImage function with this enhanced version
     const captureImage = () => {
         if (!videoRef.current) return;
 
-        // Show loading state
-        setIsProcessing(true);
-
-        const canvas = document.createElement('canvas');
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        canvas.getContext('2d').drawImage(videoRef.current, 0, 0);
-        const imageData = canvas.toDataURL('image/jpeg');
-        
-        // Save the preview image
-        setPreviewImage(imageData);
-        
-        // Stop camera
-        stopCamera();
-        
-        // Process image directly - will set scanningStep to 'results' when done
-        processImage(imageData);
+        try {
+            setIsProcessing(true);
+            
+            const canvas = document.createElement('canvas');
+            // IMPORTANT: Use higher resolution for OCR
+            const width = videoRef.current.videoWidth;
+            const height = videoRef.current.videoHeight;
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // CRITICAL FIX: Apply contrast enhancement for better OCR
+            ctx.filter = 'contrast(1.4) brightness(1.1)';
+            ctx.drawImage(videoRef.current, 0, 0, width, height);
+            
+            // Use higher quality for OCR
+            const imageData = canvas.toDataURL('image/jpeg', 0.9); // Higher quality
+            console.log("Image captured, size:", Math.round(imageData.length/1024), "KB");
+            
+            setPreviewImage(imageData);
+            stopCamera();
+            setScanningStep('loading');
+            processImage(imageData);
+        } catch (error) {
+            console.error("Error capturing image:", error);
+        }
     };
 
     const handleRetry = () => {
@@ -185,7 +240,6 @@ const ImagesCaptureLoad = () => {
             setScanningStep('preview');
         } else if (scanningStep === 'preview') {
             setScanningStep('scanning');
-            startCamera();
         } else if (scanningStep === 'scanning') {
             stopCamera();
             setScanningStep('start');
@@ -200,6 +254,15 @@ const ImagesCaptureLoad = () => {
     };
 
     const handleScanNew = () => {
+        setPreviewImage(null);
+        setModelResult(null);
+        setPostItColors({ color: '#feff9c', gradientColor: null });
+        setScanningStep('scanning');
+        startCamera();
+    };
+
+    // Add a new function for the "Scan another" button after successful save
+    const handleScanAnother = () => {
         setPreviewImage(null);
         setModelResult(null);
         setPostItColors({ color: '#feff9c', gradientColor: null });
@@ -319,6 +382,39 @@ const ImagesCaptureLoad = () => {
                         </Button>
                     </Box>
                 </Box>
+
+                {/* File upload fallback for tablets with camera issues */}
+                <Box sx={{ mt: 3, textAlign: 'center' }}>
+                    <Typography variant="body2" className={styles.uploadFallbackText}>
+                        Camera not working?
+                    </Typography>
+                    <Button
+                        variant="outlined"
+                        component="label"
+                        size="small"
+                        sx={{ mt: 1 }}
+                    >
+                        Upload photo instead
+                        <input
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => {
+                                        const imageData = reader.result;
+                                        setPreviewImage(imageData);
+                                        stopCamera();
+                                        setScanningStep('loading');
+                                        processImage(imageData);
+                                    };
+                                    reader.readAsDataURL(e.target.files[0]);
+                                }
+                            }}
+                        />
+                    </Button>
+                </Box>
             </Box>
         </Box>
     );
@@ -371,6 +467,9 @@ const ImagesCaptureLoad = () => {
             );
         }
         
+        // Check if we have valid detected text
+        const hasValidText = !!modelResult.answer && modelResult.answer.trim().length > 0;
+        
         return (
             <Box className={styles.scanningContainer}>
                 <IconButton 
@@ -390,24 +489,43 @@ const ImagesCaptureLoad = () => {
                             }}
                         >
                             <Typography className={styles.postItHeading}>
-                                {modelResult.question || "Who should be responsible for AI?"}
+                                {modelResult.question || "[No question detected]"}
                             </Typography>
                             <Typography className={styles.postItText}>
-                                {modelResult.answer || "All the people that have designed it should be responsible for it!"}
+                                {modelResult.answer || "[No text detected]"}
                             </Typography>
+                            
+                            {/* Status indicator */}
+                            <Box sx={{ 
+                                position: 'absolute', 
+                                top: 10, 
+                                right: 10, 
+                                background: hasValidText ? 'green' : 'red',
+                                color: 'white',
+                                padding: '5px 10px',
+                                borderRadius: '4px',
+                                fontSize: '14px',
+                                zIndex: 1000
+                            }}>
+                                {hasValidText ? '✓ Valid' : '⚠️ No text detected'}
+                            </Box>
                         </Box>
                     </Box>
                     
                     {/* Right side - Success message and buttons */}
                     <Box className={styles.successMessageContainer}>
                         <Typography variant="h1" className={styles.successHeading}>
-                            Scanned successful!
+                            {hasValidText ? 'Scan successful!' : 'Scan incomplete'}
                         </Typography>
                         <Typography className={styles.successMessage}>
-                            Now... turn around and take a look at the AI wall!
+                            {hasValidText 
+                                ? 'Now... turn around and take a look at the AI wall!' 
+                                : 'No text was detected in your image.'}
                         </Typography>
                         <Typography className={styles.successSubmessage}>
-                            Your idea will appear there shortly — and you can interact with other people's ideas too.
+                            {hasValidText 
+                                ? 'Your idea will appear there shortly — and you can interact with other people\'s ideas too.'
+                                : 'Please ensure your writing is clear and the post-it is fully visible.'}
                         </Typography>
                         
                         <Box className={styles.successButtonsContainer}>
@@ -416,20 +534,130 @@ const ImagesCaptureLoad = () => {
                                 className={styles.incorrectScanButton}
                                 onClick={handleIncorrectScan}
                             >
-                                Incorrect scanned
+                                Incorrect scan
                             </Button>
                             <Button 
                                 variant="contained" 
                                 className={styles.scanNewButton}
-                                onClick={handleScanNew}
+                                onClick={saveToDatabase}
+                                disabled={isLoading}
                             >
-                                Scan new post-it
+                                {isLoading ? (
+                                    <>
+                                        <CircularProgress size={20} sx={{ mr: 1 }} />
+                                        Sending...
+                                    </>
+                                ) : (
+                                    "Send to wall"
+                                )}
                             </Button>
                         </Box>
                     </Box>
                 </Box>
             </Box>
         );
+    };
+
+    // Add this new function to render the loading screen
+    const renderLoading = () => (
+        <Box className={styles.scanningContainer}>
+            <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column',
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '70vh' 
+            }}>
+                <CircularProgress size={60} thickness={5} />
+                <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
+                    Processing your post-it...
+                </Typography>
+                <Typography variant="body1" sx={{ textAlign: 'center', maxWidth: '80%' }}>
+                    We're analyzing the text and preparing your contribution
+                </Typography>
+            </Box>
+        </Box>
+    );
+
+    // Add this new function to save to database
+    const saveToDatabase = async () => {
+        if (!modelResult) return;
+        
+        try {
+            setIsLoading(true);
+            console.log("Saving to database:", modelResult);
+            
+            // Create a completely new object rather than using modelResult properties
+            const cleanedResult = {
+                answer: modelResult.answer || modelResult.answer_text || "No text detected",
+                question_id: parseInt(modelResult.question_id) || 1,
+                color: modelResult.color || '#feff9c'
+            };
+            
+            // Define the endpoint variable
+            const endpoint = `${API_BASE}/answers`;
+            console.log("Using endpoint:", endpoint);
+            
+            // Format the data exactly as your backend expects it with FIXED LANGUAGE
+            const payload = {
+                answer_text: cleanedResult.answer,
+                question_id: cleanedResult.question_id,
+                created_at: new Date().toISOString(),
+                x_axis_value: Math.random(),
+                y_axis_value: Math.random(),
+                answer_language: "en"  // Use a proper language code that will fit in DB column
+            };
+            
+            console.log("Sending clean payload:", payload);
+            
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload),
+                credentials: 'omit',
+                mode: 'cors'
+            });
+            
+            console.log("Response status:", response.status);
+            
+            const responseText = await response.text();
+            console.log("Raw response:", responseText);
+            
+            let result;
+            try {
+                result = JSON.parse(responseText);
+                console.log("Parsed result:", result);
+            } catch (e) {
+                console.log("Response was not JSON");
+                // Still success if status is 2xx
+                if (response.ok) {
+                    alert('Successfully added to the wall!');
+                    setPreviewImage(null);
+                    setModelResult(null);
+                    setScanningStep('start');
+                    return;
+                }
+                throw new Error(`Server returned: ${responseText}`);
+            }
+            
+            // Store the answer ID if available
+            if (result && (result.id || result.answer_id)) {
+                localStorage.setItem('yourRecentAnswerId', result.id || result.answer_id);
+            }
+            
+            alert('Successfully added to the wall!');
+            setPreviewImage(null);
+            setModelResult(null);
+            setScanningStep('start');
+        } catch (err) {
+            console.error('Error saving to database:', err);
+            alert(`Error saving to wall: ${err.message}`);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const renderCurrentStep = () => {
@@ -440,6 +668,8 @@ const ImagesCaptureLoad = () => {
                 return renderCamera();
             case 'preview':
                 return renderPreview();
+            case 'loading':  // Add this new case
+                return renderLoading();
             case 'results':
                 return renderResults();
             default:

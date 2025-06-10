@@ -2,10 +2,14 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styles from './AIQuestionsDisplay.module.css';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import { useLanguage } from './LanguageContext';
+import config from '../config';
+
+const { API_BASE } = config;
 
 const AIQuestionsDisplay = () => {
+    // Core state
     const [bubbleStyles, setBubbleStyles] = useState([]);
-    const { language } = useLanguage(); // Using the up-to-date version (no setLanguage destructuring)
+    const { language } = useLanguage();
     const [questionsData, setQuestionsData] = useState([]);
     const [activeQuestion, setActiveQuestion] = useState(null);
     const [activeQuestionData, setActiveQuestionData] = useState(null);
@@ -13,41 +17,44 @@ const AIQuestionsDisplay = () => {
     const [currentAnswers, setCurrentAnswers] = useState([]);
     const [answersData, setAnswersData] = useState([]);
     
-    // Adding clustering state from your feature branch
+    // Clustering state
     const [clusteredAnswers, setClusteredAnswers] = useState([]);
     const [expandedCluster, setExpandedCluster] = useState(null);
+    const [previousExpandedCluster, setPreviousExpandedCluster] = useState(null);
+    const [filteredClusters, setFilteredClusters] = useState([]);
 
+    // UI state
     const [isZooming, setIsZooming] = useState(false);
     const [clickedQuestionPosition, setClickedQuestionPosition] = useState(null);
-    const [selectedMonth, setSelectedMonth] = useState(null);
-    const [activeMonth, setActiveMonth] = useState(null);
+    const [yourRecentAnswerId, setYourRecentAnswerId] = useState(null);
+    
+    // Timeline state
+    const [activeSeason, setActiveSeason] = useState(6); // Default to Summer 2025
 
+    // Constants
     const ITEMS_PER_PAGE = 20;
     const TRANSITION_DURATION = 500;
-    
-    // Adding clustering threshold from your feature branch
     const CLUSTER_THRESHOLD = 15; // Distance threshold for clustering (in percentage points)
-
-    // Change the SEASONS array to only include seasons up to Summer 2025
     const SEASONS = [
         'Winter 2024', 'Spring 2024', 'Summer 2024', 'Fall 2024',
         'Winter 2025', 'Spring 2025', 'Summer 2025'
     ];
 
-    // Add this state variable
-    const [activeSeason, setActiveSeason] = useState(6); // Default to Summer 2025
+    // Check for user's recent submission
+    useEffect(() => {
+        const storedId = localStorage.getItem('yourRecentAnswerId');
+        if (storedId) {
+            setYourRecentAnswerId(storedId);
+        }
+    }, []);
 
-    // Add a new state for filtered clusters
-    const [filteredClusters, setFilteredClusters] = useState([]);
-
-    // Fetch questions - keeping the up-to-date version
+    // Fetch questions
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
-                const response = await fetch('http://localhost:5000/questions');
+                const response = await fetch(`${API_BASE}/questions`);
                 const data = await response.json();
                 setQuestionsData(data);
-                console.log("Questions data fetched:", data);
             } catch (error) {
                 console.error("Error fetching questions:", error);
             }
@@ -56,24 +63,26 @@ const AIQuestionsDisplay = () => {
         fetchQuestions();
     }, []);
 
-    // Fetch answers - keeping the up-to-date endpoint but using 'answers' for clustering
+    // Fetch answers with polling
     useEffect(() => {
         const fetchAnswers = async () => {
             try {
-                // Using the up-to-date endpoint but adapting for clustering
-                const response = await fetch('http://localhost:5000/answers'); // Changed back to 'answers' for clustering
+                const response = await fetch(`${API_BASE}/answers`);
                 const data = await response.json();
                 setAnswersData(data);
-                console.log("Answers data fetched:", data);
             } catch (error) {
                 console.error("Error fetching answers:", error);
             }
         };
-
-        fetchAnswers();
+        
+        // Set up polling every 5 seconds
+        fetchAnswers(); // Initial fetch
+        const refreshInterval = setInterval(fetchAnswers, 5000);
+        
+        return () => clearInterval(refreshInterval);
     }, []);
 
-    // Extract colors from questionsData and create a map for quick access
+    // Extract colors from questionsData
     const questionColorMap = useMemo(() => {
         const map = {};
         for (const q of questionsData) {
@@ -82,20 +91,17 @@ const AIQuestionsDisplay = () => {
         return map;
     }, [questionsData]);
     
-    // Update the color function with exact hex values
     const getQuestionColor = useCallback((questionId) => {
         return questionColorMap[questionId] || '#7EDDDE';
     }, [questionColorMap]);
 
-    // Adding clustering functions from your feature branch
-    // Function to calculate distance between two points
+    // Clustering functions
     const calculateDistance = (point1, point2) => {
         const dx = point1.x - point2.x;
         const dy = point1.y - point2.y;
         return Math.sqrt(dx * dx + dy * dy);
     };
 
-    // Function to cluster nearby answers from the same question
     const clusterAnswers = useCallback(() => {
         if (!answersData.length) return [];
 
@@ -141,13 +147,13 @@ const AIQuestionsDisplay = () => {
         return clusters;
     }, [answersData]);
 
-    // Update clustered answers when answersData changes
+    // Update clustered answers when data changes
     useEffect(() => {
         const clusters = clusterAnswers();
         setClusteredAnswers(clusters);
     }, [answersData, clusterAnswers]);
 
-    // Update the bubble positioning in the useEffect that sets bubble styles
+    // Create visual styles for clusters
     useEffect(() => {
         if (!clusteredAnswers.length) return;
 
@@ -155,15 +161,12 @@ const AIQuestionsDisplay = () => {
             const firstAnswer = cluster.answers[0];
             
             // Add padding to keep bubbles away from edges (15% padding on each side)
-            // This changes range from 0-100% to 15-85%
             const normalizedX = firstAnswer.x_axis_value * 70 + 50;
             const normalizedY = firstAnswer.y_axis_value * 70 + 50;
             
             // Constrain values to stay within the safe area
             const constrainedX = Math.max(15, Math.min(85, normalizedX));
             const constrainedY = Math.max(15, Math.min(85, normalizedY));
-
-            console.log(`Cluster ID: ${cluster.id}, X: ${constrainedX}, Y: ${constrainedY}`);
             
             // Use consistent sizing for all clusters
             const baseSize = 10;
@@ -186,13 +189,9 @@ const AIQuestionsDisplay = () => {
         });
 
         setBubbleStyles(styles);
-
-        // Keeping the interval from the existing version
-        const interval = setInterval(() => setBubbleStyles(styles), 8000);
-        return () => clearInterval(interval);
     }, [clusteredAnswers, getQuestionColor]);
 
-    // Keeping the up-to-date handleQuestionClick
+    // Handle clicking on a question
     const handleQuestionClick = async (questionId, event) => {
         const element = event.currentTarget;
         const rect = element.getBoundingClientRect();
@@ -206,12 +205,11 @@ const AIQuestionsDisplay = () => {
 
         setIsZooming(true);
 
-        // Add class to questionsGrid for zoom effect
         const gridElement = document.querySelector(`.${styles.questionsGrid}`);
         gridElement?.classList.add(styles.zooming);
 
         try {
-            const response = await fetch(`http://localhost:5000/question/${questionId}`);
+            const response = await fetch(`${API_BASE}/question/${questionId}`);
             const data = await response.json();
 
             // Stagger the transitions
@@ -226,10 +224,7 @@ const AIQuestionsDisplay = () => {
         }
     };
 
-    // Add a new state variable to store the previous expanded cluster
-    const [previousExpandedCluster, setPreviousExpandedCluster] = useState(null);
-
-    // Modified handleBubbleClick to preserve the cluster state
+    // Handle clicking on a bubble/answer
     const handleBubbleClick = async (answerId, questionId, event) => {
         const element = event.currentTarget;
         const rect = element.getBoundingClientRect();
@@ -248,30 +243,33 @@ const AIQuestionsDisplay = () => {
             setPreviousExpandedCluster(expandedCluster);
         }
 
-        // Add class to answersGrid for zoom effect
         const gridElement = document.querySelector(`.${styles.answersGrid}`);
         gridElement?.classList.add(styles.zooming);
 
         try {
-            const response = await fetch(`http://localhost:5000/question/${questionId}`);
+            const response = await fetch(`${API_BASE}/question/${questionId}`);
             const data = await response.json();
 
-            // Stagger the transitions
             setTimeout(() => {
                 gridElement?.classList.add(styles.zoomed);
                 setActiveQuestion(questionId);
                 setActiveQuestionData(data);
                 setCurrentPage(1);
-                // Don't clear the expanded cluster state here
             }, TRANSITION_DURATION / 2);
         } catch (error) {
             console.error("Error fetching question details:", error);
         }
     };
 
-    // Update the handleClusterClick function to handle single answers like clusters
+    // Handle clicking on a cluster
     const handleClusterClick = async (cluster, event) => {
-        // Multiple answers OR single answer - show cluster expansion with flash cards
+        // Remove "YOU" label if this is the user's cluster
+        if (cluster.answers.some(answer => answer.answer_id === yourRecentAnswerId)) {
+            setYourRecentAnswerId(null);
+            localStorage.removeItem('yourRecentAnswerId');
+        }
+        
+        // Toggle cluster expansion
         if (expandedCluster?.id === cluster.id) {
             setExpandedCluster(null);
             return;
@@ -279,9 +277,9 @@ const AIQuestionsDisplay = () => {
 
         setExpandedCluster(cluster);
 
-        // Fetch question data for either cluster or single answer
+        // Fetch question data
         try {
-            const response = await fetch(`http://localhost:5000/question/${cluster.questionId}`);
+            const response = await fetch(`${API_BASE}/question/${cluster.questionId}`);
             const data = await response.json();
             setActiveQuestionData(data);
         } catch (error) {
@@ -289,7 +287,7 @@ const AIQuestionsDisplay = () => {
         }
     };
 
-    // Keeping the up-to-date handleBack
+    // Handle going back from detail view
     const handleBack = () => {
         setIsZooming(false);
 
@@ -311,7 +309,7 @@ const AIQuestionsDisplay = () => {
         }, TRANSITION_DURATION);
     };
 
-    // Keeping the up-to-date answer pagination
+    // Handle answer pagination
     useEffect(() => {
         if (!activeQuestionData?.answers[language]) return;
 
@@ -329,66 +327,48 @@ const AIQuestionsDisplay = () => {
         return () => clearInterval(interval);
     }, [activeQuestionData, currentPage, language]);
 
-    // Keeping the up-to-date month initialization
-    useEffect(() => {
-        // Get current date
-        const now = new Date();
-        const currentMonth = now.getMonth(); // 0-based (January is 0)
-        
-        // Set initial active month
-        setActiveMonth(currentMonth);
-    }, []);
-
-    // Keeping the up-to-date timeline handler
+    // Handle timeline point clicks
     const handleTimelinePointClick = (seasonIndex) => {
         setActiveSeason(seasonIndex);
         filterClustersBySeason(seasonIndex);
     };
 
-    // Add a useEffect to filter clusters by season
+    // Filter clusters when data or season changes
     useEffect(() => {
-        // Only proceed if we have clustered answers
         if (clusteredAnswers.length > 0) {
             filterClustersBySeason(activeSeason);
         }
     }, [clusteredAnswers, activeSeason]);
 
-    // Fix the getSeasonIndex function to be more tolerant of date formats
+    // Determine which season a date belongs to
     const getSeasonIndex = (dateString) => {
-        if (!dateString) return 6; // Default to Summer 2025 for missing dates
+        if (!dateString) return 6; // Default to Summer 2025
         
-        // Try to parse the date - handle different formats
+        // Try to parse the date
         let date;
         try {
-            // Try standard format first
             date = new Date(dateString);
             
-            // Check if we got an invalid date
             if (isNaN(date.getTime())) {
-                // Try to extract date from non-standard format if possible
+                // Try to extract date from non-standard format
                 const numbers = dateString.match(/\d+/g);
                 if (numbers && numbers.length >= 3) {
-                    // Try to construct a date from the extracted numbers
                     date = new Date(numbers[0], numbers[1] - 1, numbers[2]);
                     if (isNaN(date.getTime())) {
-                        console.log(`Failed to parse date: ${dateString}`);
                         return 6; // Default to Summer 2025
                     }
                 } else {
-                    console.log(`Invalid date format: ${dateString}`);
                     return 6; // Default to Summer 2025
                 }
             }
         } catch (e) {
-            console.log(`Date parsing error for: ${dateString}`);
             return 6; // Default to Summer 2025
         }
         
         const month = date.getMonth(); // 0-indexed
         const year = date.getFullYear();
         
-        // More permissive approach - assign all dates to a season regardless of year
-        // Just map to our 7 seasons based on month pattern
+        // Map dates to seasons
         if (month <= 2) {
             return year >= 2025 ? 4 : 0; // Winter (Jan-Mar)
         } else if (month <= 5) {
@@ -400,11 +380,9 @@ const AIQuestionsDisplay = () => {
         }
     };
 
-    // Updated filtering function to ensure each season has data
+    // Filter clusters by season
     const filterClustersBySeason = (seasonIndex) => {
         if (!clusteredAnswers.length) return;
-        
-        console.log(`Filtering for ${SEASONS[seasonIndex]} - before filter: ${clusteredAnswers.length} clusters`);
         
         // First try to filter by real dates
         const realDateFiltered = clusteredAnswers.filter(cluster => {
@@ -418,64 +396,44 @@ const AIQuestionsDisplay = () => {
                 if (dateField) {
                     const parsed = getSeasonIndex(dateField);
                     if (parsed === seasonIndex) {
-                        return true; // Include this cluster - it has a matching date
+                        return true;
                     }
                 }
             }
             return false;
         });
         
-        // If we have enough real date matches, use those
+        // If enough real date matches, use those
         if (realDateFiltered.length >= 5) {
-            console.log(`Found ${realDateFiltered.length} clusters with real dates for ${SEASONS[seasonIndex]}`);
             setFilteredClusters(realDateFiltered);
             return;
         }
         
-        // Otherwise, distribute clusters deterministically across seasons
-        console.log(`Insufficient real date matches, using deterministic distribution for ${SEASONS[seasonIndex]}`);
-        
+        // Otherwise, distribute clusters deterministically
         const assignedClusters = clusteredAnswers.filter(cluster => {
-            // Use numeric portion of cluster ID (or answer ID) for deterministic assignment
+            // Use numeric portion of cluster ID for deterministic assignment
             const hash = parseInt((cluster.id || '').replace(/\D/g, '')) || 
                         parseInt((cluster.answers[0].answer_id || '').toString().replace(/\D/g, '')) || 0;
             
             return hash % SEASONS.length === seasonIndex;
         });
         
-        console.log(`Assigned ${assignedClusters.length} clusters to ${SEASONS[seasonIndex]}`);
         setFilteredClusters(assignedClusters);
     };
 
-    // Add this after the data is fetched
+    // Initial filtering 
     useEffect(() => {
         if (answersData.length > 0) {
-            // Log the first few answers to check date fields
-            console.log("Sample answers to check date fields:", 
-                answersData.slice(0, 3).map(a => ({
-                    answer_id: a.answer_id,
-                    date_fields: {
-                        created_at: a.created_at,
-                        createdAt: a.createdAt,
-                        date: a.date,
-                        timestamp: a.timestamp,
-                        scan_date: a.scan_date
-                    }
-                }))
-            );
-            
-            // Initial filtering using current season
             filterClustersBySeason(activeSeason);
         }
     }, [answersData, activeSeason]);
 
-    // Update the renderExpandedCluster function to remove the redundant circle
-
+    // Render expanded cluster view
     const renderExpandedCluster = () => {
         if (!expandedCluster) return null;
 
         const clusterAnswers = expandedCluster.answers;
-        const radius = 300; // Much larger radius to spread cards out
+        const radius = 300; // Radius to spread cards out
         const questionColor = getQuestionColor(expandedCluster.questionId);
 
         return (
@@ -499,13 +457,13 @@ const AIQuestionsDisplay = () => {
                     }}
                 />
 
-                {/* Central question - now fixed in center of page */}
+                {/* Central question */}
                 <div
                     className={styles.centralQuestion}
                     style={{
-                        position: 'fixed', // Changed to fixed
-                        top: '50%', // Center vertically
-                        left: '50%', // Center horizontally
+                        position: 'fixed',
+                        top: '50%',
+                        left: '50%',
                         transform: 'translate(-50%, -50%)',
                         backgroundColor: questionColor,
                         color: 'white',
@@ -526,35 +484,26 @@ const AIQuestionsDisplay = () => {
                     {activeQuestionData?.question[language] || 'Loading question...'}
                 </div>
                 
-                {/* Answer cards - now positioned around center of page */}
+                {/* Answer cards */}
                 <div className={styles.expandedCluster}>
                     {clusterAnswers.map((answer, index) => {
                         const angle = (index / clusterAnswers.length) * 2 * Math.PI;
-                        const rotation = Math.random() * 6 - 3; // Small random rotation
                         const offsetX = Math.cos(angle) * radius;
                         const offsetY = Math.sin(angle) * radius;
                         
-                        // Get the actual answer text - handle different possible formats
+                        // Get the answer text from various possible fields
                         const answerText = (() => {
-                            // First try to get English content specifically
                             if (answer.en) return answer.en;
                             if (answer.english) return answer.english;
-                            
-                            // Then try common locations for answer text
                             if (answer.body) return answer.body;
                             if (typeof answer.answer === 'string') return answer.answer;
                             if (answer.content) return answer.content;
                             if (answer.text) return answer.text;
                             if (answer.answer_text) return answer.answer_text;
-                            
-                            // Only use other languages as a last resort
                             if (answer[language] && language === 'en') return answer[language];
-                            
-                            // Last resort fallback
                             return "That despite all technology, in 2044 we still answer these questions on paper with a pencil...";
                         })();
 
-                        // Update the answer card styling to properly align text with the lines
                         return (
                             <div
                                 key={answer.answer_id}
@@ -567,18 +516,17 @@ const AIQuestionsDisplay = () => {
                                     backgroundColor: questionColor,
                                     width: '220px',
                                     minHeight: '150px',
-                                    padding: '0', // Remove default padding
+                                    padding: '0',
                                     borderRadius: '8px',
                                     zIndex: 20,
                                     boxShadow: '0 6px 12px rgba(0,0,0,0.3)',
                                     overflow: 'visible',
                                     display: 'flex',
-                                    alignItems: 'flex-start', // Align from the top
+                                    alignItems: 'flex-start',
                                     justifyContent: 'center',
                                     color: 'white',
                                     fontWeight: '500',
                                     border: '2px solid rgba(255,255,255,0.3)',
-                                    // Improved line styling with more accurate measurements
                                     backgroundImage: `
                                         linear-gradient(transparent 0px, transparent 19px, rgba(255,255,255,0.4) 19px, rgba(255,255,255,0.4) 20px)
                                     `,
@@ -589,26 +537,24 @@ const AIQuestionsDisplay = () => {
                                 <div style={{
                                     fontFamily: "'Comic Sans MS', cursive, sans-serif",
                                     fontSize: '14px',
-                                    lineHeight: '20px', // Exactly match the background line height
+                                    lineHeight: '20px',
                                     width: '100%',
                                     height: '100%',
-                                    padding: '19px 15px 0 15px', // Padding top aligns with first line
+                                    padding: '19px 15px 0 15px',
                                     boxSizing: 'border-box',
                                     textShadow: '0 0 1px rgba(0,0,0,0.2)',
                                     letterSpacing: '0.5px',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     textAlign: 'left',
-                                    // Apply no rotation to text so it stays aligned with lines
                                 }}>
-                                    {/* Split text into lines for better alignment with background */}
                                     {answerText.split('\n').map((line, i) => (
                                         <div key={i} style={{ 
-                                            marginBottom: '0', // No margin between lines
-                                            lineHeight: '20px', // Match background line height exactly
-                                            paddingTop: i === 0 ? '0' : '0' // No padding for consistent line height
+                                            marginBottom: '0',
+                                            lineHeight: '20px',
+                                            paddingTop: i === 0 ? '0' : '0'
                                         }}>
-                                            {line || '\u00A0'} {/* Use non-breaking space for empty lines */}
+                                            {line || '\u00A0'}
                                         </div>
                                     ))}
                                 </div>
@@ -624,9 +570,12 @@ const AIQuestionsDisplay = () => {
         <div className={styles.container}>
             <div className={styles.answersLayer}>
                 <div className={styles.answersGrid}>
-                    {/* Only show clusters if there are filtered results for this season */}
                     {(filteredClusters.length > 0 ? filteredClusters : []).map((cluster, index) => {
-                        // Use existing style if found, otherwise generate one
+                        // Check if this is the user's recent submission
+                        const isYourCluster = yourRecentAnswerId && 
+                            cluster.answers.some(answer => answer.answer_id === yourRecentAnswerId);
+                        
+                        // Get style for this cluster
                         const styleIndex = clusteredAnswers.findIndex(c => c.id === cluster.id);
                         const style = styleIndex >= 0 ? bubbleStyles[styleIndex] : {
                             bottom: `${Math.max(15, Math.min(85, cluster.answers[0].y_axis_value * 70 + 15))}%`,
@@ -642,7 +591,7 @@ const AIQuestionsDisplay = () => {
                         return (
                             <div
                                 key={cluster.id}
-                                className={`${styles.answerItem} ${cluster.size > 1 ? styles.cluster : ''}`}
+                                className={`${styles.answerItem} ${cluster.size > 1 ? styles.cluster : ''} ${isYourCluster ? styles.yourCluster : ''}`}
                                 data-color={getQuestionColor(cluster.questionId)}
                                 data-cluster-size={cluster.size}
                                 style={{
@@ -650,11 +599,18 @@ const AIQuestionsDisplay = () => {
                                     opacity: 1,
                                     pointerEvents: 'auto', 
                                     cursor: 'pointer',
-                                    zIndex: 10
+                                    zIndex: isYourCluster ? 11 : 10,
+                                    boxShadow: isYourCluster ? '0 0 15px rgba(255,255,255,0.5)' : 'none',
                                 }}
                                 onClick={(e) => handleClusterClick(cluster, e)}
                                 title={cluster.size > 1 ? `${cluster.size} answers` : 'Single answer'}
                             >
+                                {isYourCluster && (
+                                    <div className={styles.youIndicator}>
+                                        <span>YOU</span>
+                                    </div>
+                                )}
+                                
                                 {cluster.size > 1 && (
                                     <span className={styles.clusterCount}>
                                         {cluster.size}
@@ -664,7 +620,6 @@ const AIQuestionsDisplay = () => {
                         );
                     })}
                     
-                    {/* Show message when no data for this season */}
                     {filteredClusters.length === 0 && (
                         <div className={styles.noDataMessage} style={{
                             position: 'absolute',
@@ -684,11 +639,9 @@ const AIQuestionsDisplay = () => {
                     )}
                 </div>
                 
-                {/* Render expanded cluster */}
                 {renderExpandedCluster()}
             </div>
 
-            {/* Keeping all the up-to-date UI elements */}
             <div className={styles.gridLines} style={{ 
                 opacity: expandedCluster ? 0 : 1,
                 transition: 'opacity 0.3s ease',
@@ -708,7 +661,7 @@ const AIQuestionsDisplay = () => {
                 opacity: expandedCluster ? 0 : 1,
                 transition: 'opacity 0.3s ease',
                 pointerEvents: expandedCluster ? 'none' : 'auto',
-                transform: 'scale(0.85)', // Scale down the timeline to 85% of original size
+                transform: 'scale(0.85)',
             }}>
                 {SEASONS.map((season, index) => (
                     <div
@@ -774,7 +727,7 @@ const AIQuestionsDisplay = () => {
                         </div>
 
                         <div className={styles.answersContainer}>
-                            {currentAnswers.map((answer, index, array) => (
+                            {currentAnswers.map((answer, index) => (
                                 <div
                                     key={`answer-${index}-${currentPage}`}
                                     className={styles.answerBox}
