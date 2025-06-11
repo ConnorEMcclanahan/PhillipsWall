@@ -77,3 +77,23 @@ class AnswerDAO:
                 connection.commit()
         except Exception as e:
             print("Error inserting translated answer:", e)
+
+    @staticmethod
+    def get_latest_answer_id():
+        # Simply get the highest ID - most reliable for finding newest record
+        query = ("SELECT TOP 1 answer_id FROM Answer ORDER BY answer_id DESC")
+        try:
+            with create_connection() as connection:
+                cursor = connection.cursor()
+                cursor.execute(query)
+                result = cursor.fetchone()
+                if result:
+                    print(f"Latest answer ID found: {result[0]}")  # Add logging
+                    return result[0]
+                else:
+                    print("No answers found in database")
+                    return None
+        except Exception as e:
+            print("Error retrieving most recently added answer:", e)
+            return None
+
