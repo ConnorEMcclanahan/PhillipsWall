@@ -30,7 +30,7 @@ def create_app():
     question_service = QuestionService(answers_for_questions_dao, question_dao)
     answer_group_service = AnswerGroupService(portkey_client, answer_group_dao)
     answer_service = AnswerService(portkey_client, answer_dao, answer_group_service)
-    utility_service = UtilityService(question_dao, answer_dao)
+    utility_service = UtilityService(question_dao, answers_for_questions_dao)
 
     # Create blueprint by calling the factory function with the service instance
     question_bp = qr.create_question_blueprint(question_service)

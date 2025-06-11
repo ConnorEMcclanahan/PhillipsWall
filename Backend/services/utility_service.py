@@ -4,15 +4,15 @@ from typing import List, Dict
 
 
 class UtilityService:
-    def __init__(self, question_dao, answer_dao):
+    def __init__(self, question_dao, answer_for_questions_dao):
         self.qd = question_dao
-        self.ad = answer_dao
+        self.aqd = answer_for_questions_dao
 
     def get_statistics(self):
         questions = self.qd.get_questions() or []
         all_answers = []
         for question in questions:
-            answers = self.ad.get_answers(question.get("question_id")) or []
+            answers = self.aqd.get_answers_for_question(question.get("question_id")) or []
             all_answers.extend(answers)
 
         return self.generate_statistics(questions, all_answers)
@@ -77,12 +77,16 @@ class UtilityService:
         }
 
     def calculate_response_distribution(self, questions: List) -> Dict:
+        print ('QUESTIONS!!!')
+        print (questions)
         question_answer_counts = {
-            question["question_id"]: len(self.ad.get_answers(question["question_id"]))
+            question["question_id"]: len(self.aqd.get_answers_for_question(question["question_id"]) or [])
             for question in questions
         }
 
+
         answer_lengths = list(question_answer_counts.values())
+        print (answer_lengths)
 
         return {
             "max_answers_for_question": max(answer_lengths) if answer_lengths else 0,
