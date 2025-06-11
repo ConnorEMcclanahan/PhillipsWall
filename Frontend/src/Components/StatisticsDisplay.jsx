@@ -50,12 +50,8 @@ const StatisticsDashboard = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [currentPage, setCurrentPage] = useState(0);
 
     const COLORS = ['#64b5f6', '#2196f3', '#1976d2', '#0d47a1', '#82b1ff'];
-    const PAGES = ['metrics', 'distribution', 'engagement'];
-    const AUTO_CYCLE_TIME = 15000;
-
     const translate = (key) => translations[language]?.[key] || key;
     const { language } = useLanguage();
 
@@ -70,13 +66,6 @@ const StatisticsDashboard = () => {
                 setError(err.message);
                 setLoading(false);
             });
-    }, []);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentPage((prev) => (prev + 1) % PAGES.length);
-        }, AUTO_CYCLE_TIME);
-        return () => clearInterval(interval);
     }, []);
 
     if (loading) {
@@ -108,15 +97,15 @@ const StatisticsDashboard = () => {
         .map(([name, value]) => ({name, value}));
 
     const GeneralMetrics = () => (
-        <Fade in={currentPage === 0} timeout={800}>
+        <Fade in={true} timeout={800}>
             <Grid container spacing={3}>
                 <Grid item xs={12} md={4}>
                     <GlassCard>
                         <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}>
-                            <Typography variant="h6">{translate('totalQuestions')}</Typography>
-                            <PeopleIcon sx={{color: 'rgba(255,255,255,0.7)'}}/>
+                            <Typography variant="h6" sx={{color: 'black'}}>{translate('totalQuestions')}</Typography>
+                            <PeopleIcon sx={{color: 'rgba(0,0,0,0.7)'}}/>
                         </Box>
-                        <Typography variant="h3">
+                        <Typography variant="h3" sx={{color: 'black'}}>
                             {stats.general_metrics.total_questions}
                         </Typography>
                     </GlassCard>
@@ -124,10 +113,10 @@ const StatisticsDashboard = () => {
                 <Grid item xs={12} md={4}>
                     <GlassCard>
                         <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}>
-                            <Typography variant="h6">{translate('totalAnswers')}</Typography>
-                            <MessageIcon sx={{color: 'rgba(255,255,255,0.7)'}}/>
+                            <Typography variant="h6" sx={{color: 'black'}}>{translate('totalAnswers')}</Typography>
+                            <MessageIcon sx={{color: 'rgba(0,0,0,0.7)'}}/>
                         </Box>
-                        <Typography variant="h3">
+                        <Typography variant="h3" sx={{color: 'black'}}>
                             {stats.general_metrics.total_answers}
                         </Typography>
                     </GlassCard>
@@ -135,10 +124,10 @@ const StatisticsDashboard = () => {
                 <Grid item xs={12} md={4}>
                     <GlassCard>
                         <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}>
-                            <Typography variant="h6">{translate('avgAnswersPerQuestion')}</Typography>
-                            <PieChartIcon sx={{color: 'rgba(255,255,255,0.7)'}}/>
+                            <Typography variant="h6" sx={{color: 'black'}}>{translate('avgAnswersPerQuestion')}</Typography>
+                            <PieChartIcon sx={{color: 'rgba(0,0,0,0.7)'}}/>
                         </Box>
-                        <Typography variant="h3">
+                        <Typography variant="h3" sx={{color: 'black'}}>
                             {stats.general_metrics.average_answers_per_question}
                         </Typography>
                     </GlassCard>
@@ -148,11 +137,11 @@ const StatisticsDashboard = () => {
     );
 
     const Distribution = () => (
-        <Fade in={currentPage === 1} timeout={800}>
+        <Fade in={true} timeout={800}>
             <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                     <GlassCard sx={{height: '400px'}}>
-                        <Typography variant="h6" gutterBottom>{translate('languageDistribution')}</Typography>
+                        <Typography variant="h6" gutterBottom sx={{color: 'black'}}>{translate('languageDistribution')}</Typography>
                         <ResponsiveContainer width="100%" height="90%">
                             <PieChart>
                                 <Pie
@@ -176,13 +165,13 @@ const StatisticsDashboard = () => {
                 </Grid>
                 <Grid item xs={12} md={6}>
                     <GlassCard sx={{height: '400px'}}>
-                        <Typography variant="h6" gutterBottom>{translate('responseDistribution')}</Typography>
+                        <Typography variant="h6" gutterBottom sx={{color: 'black'}}>{translate('responseDistribution')}</Typography>
                         <ResponsiveContainer width="100%" height="90%">
                             <BarChart data={responseDistData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)"/>
-                                <XAxis dataKey="name" stroke="white"/>
-                                <YAxis stroke="white"/>
-                                <Tooltip contentStyle={{background: 'rgba(80,80,80,0.8)'}}/>
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)"/>
+                                <XAxis dataKey="name" stroke="black"/>
+                                <YAxis stroke="black"/>
+                                <Tooltip contentStyle={{background: 'rgba(255,255,255,0.8)'}}/>
                                 <Legend/>
                                 <Bar dataKey="value" fill="#64b5f6"/>
                             </BarChart>
@@ -194,30 +183,30 @@ const StatisticsDashboard = () => {
     );
 
     const Engagement = () => (
-        <Fade in={currentPage === 2} timeout={800}>
+        <Fade in={true} timeout={800}>
             <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                     <GlassCard>
-                        <Typography variant="h6" gutterBottom>{translate('mostEngagingQuestions')}</Typography>
+                        <Typography variant="h6" gutterBottom sx={{color: 'black'}}>{translate('mostEngagingQuestions')}</Typography>
                         <List>
                             {stats.engagement_metrics.most_engaging_questions.map((question, index) => (
                                 <React.Fragment key={question.question_id}>
                                     <ListItem>
                                         <ListItemText
                                             primary={
-                                                <Typography sx={{color: 'white'}}>
+                                                <Typography sx={{color: 'black'}}>
                                                     {question[`question_text_${language}`]}
                                                 </Typography>
                                             }
                                             secondary={
-                                                <Typography sx={{color: 'rgba(211,211,211,0.7)'}}>
+                                                <Typography sx={{color: 'rgba(0,0,0,0.7)'}}>
                                                     {question.answer_count} answers
                                                 </Typography>
                                             }
                                         />
                                     </ListItem>
                                     {index < stats.engagement_metrics.most_engaging_questions.length - 1 &&
-                                        <Divider sx={{borderColor: 'rgba(255,255,255,0.1)'}}/>
+                                        <Divider sx={{borderColor: 'rgba(0,0,0,0.1)'}}/>
                                     }
                                 </React.Fragment>
                             ))}
@@ -227,16 +216,16 @@ const StatisticsDashboard = () => {
                 <Grid item xs={12} md={6}>
                     <GlassCard>
                         <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                            <Typography variant="h6">{translate('colorUsage')}</Typography>
-                            <PaletteIcon sx={{ml: 1, color: 'rgba(255,255,255,0.7)'}}/>
+                            <Typography variant="h6" sx={{color: 'black'}}>{translate('colorUsage')}</Typography>
+                            <PaletteIcon sx={{ml: 1, color: 'rgba(0,0,0,0.7)'}}/>
                         </Box>
                         <Grid container spacing={2}>
                             {colorData.map(({name, value}) => (
                                 <Grid item xs={12} key={name}>
                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
                                         <Box sx={{width: 20, height: 20, borderRadius: 1, bgcolor: name}}/>
-                                        <Typography sx={{flexGrow: 1}}>{name}</Typography>
-                                        <Typography fontWeight="bold">{value}</Typography>
+                                        <Typography sx={{flexGrow: 1, color: 'black'}}>{name}</Typography>
+                                        <Typography sx={{fontWeight: 'bold', color: 'black'}}>{value}</Typography>
                                     </Box>
                                 </Grid>
                             ))}
@@ -247,34 +236,17 @@ const StatisticsDashboard = () => {
         </Fade>
     );
 
-    const PageIndicator = () => (
-        <Box sx={{display: 'flex', justifyContent: 'center', mt: 4, gap: 1}}>
-            {PAGES.map((_, index) => (
-                <Box
-                    key={index}
-                    sx={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: '50%',
-                        bgcolor: currentPage === index ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
-                        transition: 'background-color 0.3s'
-                    }}
-                />
-            ))}
-        </Box>
-    );
-
     return (
-        <Container className={styles.container}>
-            <Typography variant="h4" gutterBottom sx={{mb: 4}} className={styles.statTitle}>
+        <Container className={styles.container} sx={{ maxWidth: '1400px', width: '100%' }}>
+            <Typography variant="h4" gutterBottom sx={{mb: 4, color: 'black'}} className={styles.statTitle}>
                 {translate('postWallStatistics')}
             </Typography>
 
-            {currentPage === 0 && <GeneralMetrics/>}
-            {currentPage === 1 && <Distribution/>}
-            {currentPage === 2 && <Engagement/>}
-
-            <PageIndicator/>
+            <GeneralMetrics />
+            <Box sx={{ mt: 4 }} />
+            <Distribution />
+            <Box sx={{ mt: 4 }} />
+            <Engagement />
         </Container>
     );
 };
