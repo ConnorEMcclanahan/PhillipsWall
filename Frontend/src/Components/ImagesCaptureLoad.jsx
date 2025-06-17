@@ -9,6 +9,7 @@ import {
     ArrowBack as ArrowBackIcon,
     Fullscreen as FullscreenIcon,
     FullscreenExit as FullscreenExitIcon
+
 } from '@mui/icons-material';
 import styles from './ImagesCaptureLoad.module.css';
 import { styled } from "@mui/material/styles";
@@ -21,6 +22,8 @@ const { API_BASE } = config;
 const ImagesCaptureLoad = () => {
     // Core state
     const [scanningStep, setScanningStep] = useState('start'); 
+
+
     const [isLoading, setIsLoading] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
     const [modelResult, setModelResult] = useState(null);
@@ -36,6 +39,7 @@ const ImagesCaptureLoad = () => {
     const translate = (key) => translations[language]?.[key] || key;
 
     // Styled Post-it component 
+
     const PostItNote = styled(Card)(({ bgcolor = '#feff9c', gradientColor }) => ({
         background: gradientColor || bgcolor,
         borderRadius: '2px',
@@ -77,6 +81,7 @@ const ImagesCaptureLoad = () => {
         try {
             setIsLoading(true);
             const response = await fetch(`${API_BASE}/question-color/${questionId}`);
+
             const data = await response.json();
             setPostItColors({
                 color: data.color || '#feff9c',
@@ -114,6 +119,7 @@ const ImagesCaptureLoad = () => {
             
             // Make sure we're sending the data with the correct 'image' key
             const response = await fetch(`${API_BASE}/process-image`, {
+
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -156,6 +162,7 @@ const ImagesCaptureLoad = () => {
             
             setModelResult(normalizedResult);
             setScanningStep('results');
+
         } catch (err) {
             console.error('Error processing image:', err);
             setScanError(err.message);
@@ -205,6 +212,7 @@ const ImagesCaptureLoad = () => {
                 },
             };
 
+
             const videoStream = await navigator.mediaDevices.getUserMedia(constraints);
             setStream(videoStream);
             setPreviewImage(null);
@@ -241,6 +249,7 @@ const ImagesCaptureLoad = () => {
         } catch (err) {
             console.error('Camera access error:', err);
             alert("Couldn't access your camera. You can use the 'Upload photo instead' option below.");
+
         }
     };
 
@@ -463,6 +472,7 @@ const ImagesCaptureLoad = () => {
                         Ready to share your idea with the AI wall?
                     </Typography>
                 </Box>
+
 
                 <Box className={styles.rulesContainer}>
                     {/* Left column - Positive rules */}
@@ -797,6 +807,7 @@ const ImagesCaptureLoad = () => {
             case 'loading': return renderLoading();
             case 'results': return renderResults();
             default: return renderScanningInfo();
+
         }
     };
 

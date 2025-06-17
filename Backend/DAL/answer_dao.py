@@ -80,8 +80,10 @@ class AnswerDAO:
 
     @staticmethod
     def get_latest_answer_id():
+
         # Simply get the highest ID - most reliable for finding newest record
         query = ("SELECT TOP 1 answer_id FROM Answer ORDER BY answer_id DESC")
+
         try:
             with create_connection() as connection:
                 cursor = connection.cursor()
@@ -96,4 +98,3 @@ class AnswerDAO:
         except Exception as e:
             print("Error retrieving most recently added answer:", e)
             return None
-

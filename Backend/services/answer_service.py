@@ -14,6 +14,9 @@ class AnswerService:
             return {"error": "Answers not found."}, 500
         return answers
 
+    def get_latest_answer_id(self):
+        return self.answer_dao.get_latest_answer_id()
+
     @staticmethod
     def validate_image_data(data: Dict[str, Any]):
         if not data or "image" not in data:

@@ -55,7 +55,7 @@ const createRandomShadowGrid = (gridCols, gridRows) => {
 const AIQuestionsDisplay = () => {
     // Core state
     const [bubbleStyles, setBubbleStyles] = useState([]);
-    const { language } = useLanguage();
+    const { language } = useLanguage(); // Using the up-to-date version (no setLanguage destructuring)
     const [questionsData, setQuestionsData] = useState([]);
     const [activeQuestion, setActiveQuestion] = useState(null);
     const [activeQuestionData, setActiveQuestionData] = useState(null);
@@ -69,12 +69,14 @@ const AIQuestionsDisplay = () => {
     const [previousExpandedCluster, setPreviousExpandedCluster] = useState(null);
     const [filteredClusters, setFilteredClusters] = useState([]);
 
+
     // UI state
     const [isZooming, setIsZooming] = useState(false);
     const [newestAnswerId, setNewestAnswerId] = useState(null);
     
     // Timeline state
     const [activeSeason, setActiveSeason] = useState(5); // Default to Spring 2025
+
 
     // Constants
     const ITEMS_PER_PAGE = 20;
@@ -90,6 +92,7 @@ const AIQuestionsDisplay = () => {
     const gridRows = 30; 
 
     // Fetch questions
+
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
@@ -109,6 +112,7 @@ const AIQuestionsDisplay = () => {
         const fetchAnswers = async () => {
             try {
                 const response = await fetch(`${API_BASE}/answers`);
+
                 const data = await response.json();
                 setAnswersData(data);
             } catch (error) {
@@ -124,6 +128,7 @@ const AIQuestionsDisplay = () => {
     }, []);
 
     // Extract colors from questionsData
+
     const questionColorMap = useMemo(() => {
         const map = {};
         for (const q of questionsData) {
@@ -137,12 +142,14 @@ const AIQuestionsDisplay = () => {
     }, [questionColorMap]);
 
     // Clustering functions
+
     const calculateDistance = (point1, point2) => {
         const dx = point1.x - point2.x;
         const dy = point1.y - point2.y;
         return Math.sqrt(dx * dx + dy * dy);
     };
 
+    // Function to cluster nearby answers from the same question
     const clusterAnswers = useCallback(() => {
         if (!answersData.length) return [];
 
@@ -194,6 +201,7 @@ const AIQuestionsDisplay = () => {
         setClusteredAnswers(clusters);
     }, [answersData, clusterAnswers]);
 
+
     // Create visual styles for clusters
     useEffect(() => {
         if (!clusteredAnswers.length) return;
@@ -243,17 +251,20 @@ const AIQuestionsDisplay = () => {
 
         setExpandedCluster(cluster);
 
+
         // Fetch question data
         try {
             const response = await fetch(`${API_BASE}/question/${cluster.questionId}`);
             const data = await response.json();
             setActiveQuestionData(data);
+
         } catch (error) {
             console.error("Error fetching question details:", error);
         }
     };
 
     // Handle going back from detail view
+
     const handleBack = () => {
         setIsZooming(false);
 
@@ -276,6 +287,7 @@ const AIQuestionsDisplay = () => {
     };
 
     // Handle answer pagination
+
     useEffect(() => {
         if (!activeQuestionData?.answers[language]) return;
 
@@ -300,6 +312,7 @@ const AIQuestionsDisplay = () => {
     };
 
     // Filter clusters when data or season changes
+
     useEffect(() => {
         if (clusteredAnswers.length > 0) {
             filterClustersBySeason(activeSeason);
@@ -382,21 +395,25 @@ const AIQuestionsDisplay = () => {
     // Initial filtering 
     useEffect(() => {
         if (answersData.length > 0) {
+
             filterClustersBySeason(activeSeason);
         }
     }, [answersData, activeSeason]);
 
     // Render expanded cluster view
+
     const renderExpandedCluster = () => {
         if (!expandedCluster) return null;
 
         const clusterAnswers = expandedCluster.answers;
         const baseRadius = 350; // Base radius for card positioning
+
         const questionColor = getQuestionColor(expandedCluster.questionId);
 
         return (
             <>
                 {/* Overlay with transition */}
+
                 <div 
                     className={styles.clusterOverlay}
                     onClick={(e) => {
@@ -431,6 +448,7 @@ const AIQuestionsDisplay = () => {
                         height: '200px',
                         borderRadius: '50%',
                         padding: '25px', 
+
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -440,6 +458,7 @@ const AIQuestionsDisplay = () => {
                         fontSize: '16px',
                         fontWeight: 'bold',
                         transition: 'all 0.5s ease-out',
+
                     }}
                 >
                     {activeQuestionData?.question[language] || 'Loading question...'}
@@ -452,6 +471,7 @@ const AIQuestionsDisplay = () => {
                         const answerText = (() => {
                             if (answer.en) return answer.en;
                             if (answer.english) return answer.english;
+
                             if (answer.body) return answer.body;
                             if (typeof answer.answer === 'string') return answer.answer;
                             if (answer.content) return answer.content;
@@ -481,6 +501,7 @@ const AIQuestionsDisplay = () => {
                         return (
                             <div
                                 key={answer.answer_id || index}
+
                                 className={styles.answerCard}
                                 style={{
                                     position: 'fixed',
@@ -546,6 +567,7 @@ const AIQuestionsDisplay = () => {
                                             wordWrap: 'break-word'
                                         }}>
                                             {line || '\u00A0'}
+
                                         </div>
                                     ))}
                                 </div>
@@ -718,6 +740,7 @@ useEffect(() => {
                         );
                     })}
                     
+
                     {filteredClusters.length === 0 && (
                         <div className={styles.noDataMessage} style={{
                             position: 'absolute',
@@ -740,6 +763,7 @@ useEffect(() => {
                 {renderExpandedCluster()}
             </div>
 
+
             <div className={styles.gridLines} style={{ 
                 opacity: expandedCluster ? 0 : 1,
                 transition: 'opacity 0.3s ease',
@@ -760,6 +784,7 @@ useEffect(() => {
                 transition: 'opacity 0.3s ease',
                 pointerEvents: expandedCluster ? 'none' : 'auto',
                 transform: 'scale(0.85)',
+
             }}>
                 {SEASONS.map((season, index) => (
                     <div
