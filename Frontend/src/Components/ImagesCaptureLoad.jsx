@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
     Box, Button, Card, Typography, IconButton, CircularProgress,
 } from '@mui/material';
@@ -9,21 +9,26 @@ import {
     ArrowBack as ArrowBackIcon,
     Fullscreen as FullscreenIcon,
     FullscreenExit as FullscreenExitIcon
-
 } from '@mui/icons-material';
 import styles from './ImagesCaptureLoad.module.css';
 import { styled } from "@mui/material/styles";
-import { useLanguage } from "../LanguageContext";
+import translations from "../Pages/translationsMain.json";
+import { useLanguage } from "./LanguageContextMain";
 import config from '../config';
-
 
 const { API_BASE } = config;
 
 const ImagesCaptureLoad = () => {
+    // Get language and setLanguage from context
+    const { language, setLanguage } = useLanguage();
+    
+    // Create translate function
+    const translate = (key) => {
+        return translations[language]?.[key] || key;
+    };
+
     // Core state
     const [scanningStep, setScanningStep] = useState('start'); 
-
-
     const [isLoading, setIsLoading] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
     const [modelResult, setModelResult] = useState(null);
@@ -33,12 +38,15 @@ const ImagesCaptureLoad = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [scanError, setScanError] = useState(null);
     const [isFullScreen, setIsFullScreen] = useState(false);
+    const [userExitedFullscreen, setUserExitedFullscreen] = useState(false);
     const captureContainerRef = useRef(null);
+    const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
 
-    const { language } = useLanguage();
+    // New state for questions data
+    const [questionsData, setQuestionsData] = useState([]);
+    const [questionColorMap, setQuestionColorMap] = useState({}); // New state for color map
 
     // Styled Post-it component 
-
     const PostItNote = styled(Card)(({ bgcolor = '#feff9c', gradientColor }) => ({
         background: gradientColor || bgcolor,
         borderRadius: '2px',
@@ -80,7 +88,6 @@ const ImagesCaptureLoad = () => {
         try {
             setIsLoading(true);
             const response = await fetch(`${API_BASE}/question-color/${questionId}`);
-
             const data = await response.json();
             setPostItColors({
                 color: data.color || '#feff9c',
@@ -108,7 +115,7 @@ const ImagesCaptureLoad = () => {
         }
     }, [modelResult]);
 
-    // Improved process image function with better error handling and debugging
+    // Update the processImage function to not worry about extracting color
     const processImage = async (imageData) => {
         try {
             setIsProcessing(true);
@@ -116,15 +123,13 @@ const ImagesCaptureLoad = () => {
             
             console.log("Sending image data to backend...");
             
-            // Make sure we're sending the data with the correct 'image' key
             const response = await fetch(`${API_BASE}/process-image`, {
-
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    image: imageData  // Make sure the key is 'image' to match backend expectations
+                    image: imageData
                 })
             });
 
@@ -135,33 +140,22 @@ const ImagesCaptureLoad = () => {
             const result = await response.json();
             console.log("Processing result:", result);
             
-            // Ensure result has required fields
+            // Create normalized result with question ID but don't use color from image
             const normalizedResult = {
                 answer: result.answer || result.answer_text || "",
                 question: result.question || result.question_text || "What are your thoughts on AI?",
                 question_id: parseInt(result.question_id) || 1,
                 
-                // Extract post-it color from the OpenAI response
-                color: result.post_it_color || result.color || '#feff9c',
+                // Don't extract color from the image/AI response
+                // color: result.post_it_color || result.color || '#feff9c',
                 
-                // Extract language from the OpenAI response
                 language: result.language || result.answer_language || "en",
-                
-                // Extract positioning
                 x_axis_value: parseFloat(result.x) || parseFloat(result.x_axis_value) || null,
                 y_axis_value: parseFloat(result.y) || parseFloat(result.y_axis_value) || null
             };
             
-            console.log("Extracted from image:", {
-                color: normalizedResult.color,
-                language: normalizedResult.language,
-                x: normalizedResult.x_axis_value,
-                y: normalizedResult.y_axis_value
-            });
-            
             setModelResult(normalizedResult);
             setScanningStep('results');
-
         } catch (err) {
             console.error('Error processing image:', err);
             setScanError(err.message);
@@ -211,7 +205,6 @@ const ImagesCaptureLoad = () => {
                 },
             };
 
-
             const videoStream = await navigator.mediaDevices.getUserMedia(constraints);
             setStream(videoStream);
             setPreviewImage(null);
@@ -248,7 +241,6 @@ const ImagesCaptureLoad = () => {
         } catch (err) {
             console.error('Camera access error:', err);
             alert("Couldn't access your camera. You can use the 'Upload photo instead' option below.");
-
         }
     };
 
@@ -375,13 +367,31 @@ const ImagesCaptureLoad = () => {
 
     // Navigation handling simplified
     const handleBack = () => {
+        // Prevent potential browser fullscreen exit during navigation
+        event?.preventDefault?.();
+        
+        // Keep track of current fullscreen state
+        const wasFullscreen = !!document.fullscreenElement;
+        
+        // Navigate between steps - UPDATED FLOW
         if (scanningStep === 'results') {
-            setScanningStep('preview');
+            // Skip the preview step completely and go back to scanning
+            resetScanState('scanning', true);
         } else if (scanningStep === 'preview') {
             setScanningStep('scanning');
         } else if (scanningStep === 'scanning') {
             stopCamera();
             setScanningStep('start');
+        }
+        
+        // If we were in fullscreen, make sure we restore it after navigation
+        if (wasFullscreen && !userExitedFullscreen) {
+            // Short delay to allow the DOM to update
+            setTimeout(() => {
+                if (!document.fullscreenElement) {
+                    toggleFullScreen(false);
+                }
+            }, 100);
         }
     };
 
@@ -391,45 +401,15 @@ const ImagesCaptureLoad = () => {
                window.navigator.standalone === true;
     };
 
-    const toggleFullScreen = async () => {
-        try {
-            if (!document.fullscreenElement) {
-                // Try to request fullscreen on the container or document
-                const element = captureContainerRef.current || document.documentElement;
-                
-                if (element.requestFullscreen) {
-                    await element.requestFullscreen();
-                } else if (element.webkitRequestFullscreen) {
-                    await element.webkitRequestFullscreen(); // Safari/Chrome
-                } else if (element.mozRequestFullScreen) {
-                    await element.mozRequestFullScreen(); // Firefox
-                } else if (element.msRequestFullscreen) {
-                    await element.msRequestFullscreen(); // IE/Edge
-                }
-                setIsFullScreen(true);
-            } else {
-                if (document.exitFullscreen) {
-                    await document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    await document.webkitExitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    await document.mozCancelFullScreen();
-                } else if (document.msExitFullscreen) {
-                    await document.msExitFullscreen();
-                }
-                setIsFullScreen(false);
-            }
-        } catch (err) {
-            console.error('Fullscreen API error:', err);
-            // If fullscreen API fails, we'll still use our CSS approach
-            setIsFullScreen(!isFullScreen);
-        }
-    };
+    // Create a ref to track fullscreen transition state
+    const fullscreenTransitionRef = useRef(false);
+    const fullscreenTimerRef = useRef(null);
 
-    // Add a listener for fullscreen changes
+    // Single consolidated fullscreen management
     useEffect(() => {
         const handleFullscreenChange = () => {
             setIsFullScreen(!!document.fullscreenElement);
+            fullscreenTransitionRef.current = false;
         };
         
         document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -437,483 +417,643 @@ const ImagesCaptureLoad = () => {
         document.addEventListener('mozfullscreenchange', handleFullscreenChange);
         document.addEventListener('MSFullscreenChange', handleFullscreenChange);
         
+        // Controlled entrance to fullscreen mode with debouncing
+        const ensureFullscreen = (debounceTime = 300) => {
+            // Don't try to re-enter fullscreen if we're already in transition
+            if (fullscreenTransitionRef.current || document.fullscreenElement || userExitedFullscreen) {
+                return;
+            }
+            
+            // Clear any pending fullscreen attempts
+            if (fullscreenTimerRef.current) {
+                clearTimeout(fullscreenTimerRef.current);
+            }
+            
+            fullscreenTimerRef.current = setTimeout(() => {
+                if (!document.fullscreenElement && !userExitedFullscreen) {
+                    console.log("Ensuring fullscreen mode...");
+                    fullscreenTransitionRef.current = true;
+                    
+                    const element = captureContainerRef.current || document.documentElement;
+                    
+                    if (element.requestFullscreen) {
+                        element.requestFullscreen().catch(err => {
+                            fullscreenTransitionRef.current = false;
+                            console.log("Fullscreen error:", err);
+                        });
+                    } else if (element.webkitRequestFullscreen) {
+                        element.webkitRequestFullscreen().catch(err => {
+                            fullscreenTransitionRef.current = false;
+                            console.log("Fullscreen error:", err);
+                        });
+                    } else if (element.mozRequestFullScreen) {
+                        element.mozRequestFullScreen().catch(err => {
+                            fullscreenTransitionRef.current = false;
+                            console.log("Fullscreen error:", err);
+                        });
+                    } else if (element.msRequestFullscreen) {
+                        element.msRequestFullscreen().catch(err => {
+                            fullscreenTransitionRef.current = false;
+                            console.log("Fullscreen error:", err);
+                        });
+                    }
+                }
+            }, debounceTime);
+        };
+        
+        // Initial attempt to go fullscreen (longer delay to ensure UI is ready)
+        ensureFullscreen(800);
+        
+        // Check fullscreen status after scanning step changes (with debouncing)
+        if (scanningStep && !userExitedFullscreen) {
+            ensureFullscreen(500);
+        }
+        
         return () => {
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
             document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
             document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+            
+            if (fullscreenTimerRef.current) {
+                clearTimeout(fullscreenTimerRef.current);
+            }
         };
+    }, [scanningStep, userExitedFullscreen]);
+
+    // Update the toggleFullScreen function to respect the transition state
+    const toggleFullScreen = async (isUserAction = true) => {
+        try {
+            if (fullscreenTransitionRef.current) {
+                return; // Don't toggle during transition
+            }
+            
+            fullscreenTransitionRef.current = true;
+            
+            if (!document.fullscreenElement) {
+                if (!isUserAction && userExitedFullscreen) {
+                    fullscreenTransitionRef.current = false;
+                    return;
+                }
+                
+                const element = captureContainerRef.current || document.documentElement;
+                await element.requestFullscreen();
+                setUserExitedFullscreen(false);
+            } else {
+                await document.exitFullscreen();
+                
+                if (isUserAction) {
+                    setUserExitedFullscreen(true);
+                }
+            }
+            
+            setIsFullScreen(!isFullScreen);
+        } catch (err) {
+            console.error('Fullscreen API error:', err);
+        } finally {
+            fullscreenTransitionRef.current = false;
+        }
+    };
+
+    // Detect orientation changes
+    useEffect(() => {
+        const handleResize = () => {
+            setIsLandscape(window.innerWidth > window.innerHeight);
+        };
+        
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Try to go fullscreen automatically when entering camera mode
+    // Fetch questions data on component mount
     useEffect(() => {
-        if (scanningStep === 'scanning') {
-            // Small delay to ensure UI is ready
-            const timer = setTimeout(() => {
-                toggleFullScreen().catch(err => {
-                    console.log("Auto fullscreen failed:", err);
-                });
-            }, 500);
-            
-            return () => clearTimeout(timer);
+        const fetchQuestions = async () => {
+            try {
+                const response = await fetch(`${API_BASE}/questions`);
+                const data = await response.json();
+                setQuestionsData(data);
+            } catch (error) {
+                console.error("Error fetching questions:", error);
+            }
+        };
+        
+        fetchQuestions();
+    }, []);
+
+    // Modify your code that creates the color map
+    useEffect(() => {
+        const map = {};
+        for (const q of questionsData) {
+            // Force string keys for consistent lookup
+            map[String(q.question_id)] = q.color;
+            // Also add numeric key for safety
+            map[q.question_id] = q.color;
         }
-    }, [scanningStep]);
+        
+        console.log("Created color map:", map);
+        setQuestionColorMap(map);
+    }, [questionsData]);
 
-    const texts = {
-        en: {
-            title: "Scan your post-it here!",
-            subtitle: "Ready to share your idea with the AI wall?",
-            positiveRules: [
-            "Only the post-it is in the photo",
-            "The text is clearly readable",
-            "Your idea will be added to the AI database",
-            "Your post-it will be shown anonymously",
-            ],
-            negativeRules: [
-            "No personal data like names, email addresses or phone numbers",
-            "No hands, backgrounds, or unrelated objects",
-            "No swear words, hate speech, or harmful content allowed",
-            ],
-            startButton: "Start scanning",
-            finePrint:
-            'By tapping "Start scanning", you agree that your input may be used for research and public display in the AI exhibition.',
-        },
-        nl: {
-            title: "Scan hier je post-it!",
-            subtitle: "Klaar om je idee te delen met de AI-muur?",
-            positiveRules: [
-            "Alleen de post-it staat op de foto",
-            "De tekst is duidelijk leesbaar",
-            "Je idee wordt toegevoegd aan de AI-database",
-            "Je post-it wordt anoniem getoond",
-            ],
-            negativeRules: [
-            "Geen persoonlijke gegevens zoals namen, e-mailadressen of telefoonnummers",
-            "Geen handen, achtergronden of niet-gerelateerde objecten",
-            "Geen vloekwoorden, haatspraak of schadelijke inhoud toegestaan",
-            ],
-            startButton: "Begin met scannen",
-            finePrint:
-            'Door op "Begin met scannen" te tikken, ga je akkoord dat je input kan worden gebruikt voor onderzoek en publieke tentoonstelling in de AI-expositie.',
-        },
-    };
+    // Then update your getQuestionColor to handle both string and number types
+    const getQuestionColor = useCallback((questionId) => {
+        // Add debugging
+        console.log("Color mapping debug:", {
+            questionId: questionId,
+            availableMaps: Object.keys(questionColorMap),
+            requestedColor: questionColorMap[questionId],
+            fallbackUsed: !questionColorMap[questionId]
+        });
+        
+        return questionColorMap[questionId] || '#7EDDDE';
+    }, [questionColorMap]);
 
-    const t = texts[language] || texts.en;
-
-
-    // Render functions
-    const renderScanningInfo = () => (
-        <Box className={styles.scanningContainer}>
-            <Box className={styles.scanningContent}>
-                <Box className={styles.scanningInfo}>
-                    <Typography variant="h1" className={styles.scanningTitle}>
-                        {t.title}
-                    </Typography>
-                    <Typography variant="h2" className={styles.scanningSubtitle}>
-                        {t.subtitle}
-                    </Typography>
-                </Box>
-
-
-                <Box className={styles.rulesContainer}>
-                    {/* Left column - Positive rules */}
-                    <Box className={styles.positiveRules}>
-                        {t.positiveRules.map((rule, index) => (
-                        <Box key={index} className={styles.ruleItem}>
-                            <CheckCircleIcon className={styles.checkMark} />
-                            <Typography>{rule}</Typography>
-                        </Box>
-                        ))}
-                    </Box>
-
-                    {/* Right column - Negative rules */}
-                    <Box className={styles.negativeRules}>
-                        {t.negativeRules.map((rule, index) => (
-                        <Box key={index} className={styles.ruleItem}>
-                            <span className={styles.crossMark}>✕</span>
-                            <Typography>{rule}</Typography>
-                        </Box>
-                        ))}
-                    </Box>
-                </Box>
-
-                <Button
-                    variant="contained"
-                    className={styles.startButton}
-                    onClick={() => setScanningStep('scanning')}
-                >
-                    {t.startButton}
-                </Button>
-                <Typography variant="body2" className={styles.finePrint}>
-                    {t.finePrint}
-                </Typography>
-            </Box>
-        </Box>
-    );
-
-    const textsCamera = {
-        en: {
-            title: "Take a picture",
-            subtitle: "Ready to share your idea with the AI wall?",
-            trouble: "Camera not working?",
-            upload: "Upload photo instead",
-        },
-        nl: {
-            title: "Maak een foto",
-            subtitle: "Klaar om je idee te delen met de AI-muur?",
-            trouble: "Camera werkt niet?",
-            upload: "Upload foto insted",
-            
-        },
-    }
-    const tC= textsCamera[language] || textsCamera.en;
-    const renderCamera = () => (
-        <Box className={styles.scanningContainer}>
-            <Box className={styles.scanningContent}>
-                <Box className={styles.scanningInfo}>
-                    <Typography variant="h1" className={styles.scanningTitle}>
-                        {tC.title}
-                    </Typography>
-                    <Typography variant="h2" className={styles.scanningSubtitle}>
-                        {tC.subtitle}
-                    </Typography>
-                </Box>
-                
-                <Box className={styles.cameraViewfinderContainer}>
-                    <IconButton 
-                        className={styles.cameraBackButton}
-                        onClick={handleBack}
-                    >
-                        <ArrowBackIcon />
-                    </IconButton>
-                    
-                    <Box className={styles.cameraViewfinder}>
-                        <video
-                            ref={videoRef}
-                            autoPlay
-                            playsInline
-                            className={styles.cameraFeed}
-                        />
-                        
-                        {/* Corner brackets */}
-                        <div className={`${styles.cornerBracket} ${styles.topLeft}`}></div>
-                        <div className={`${styles.cornerBracket} ${styles.topRight}`}></div>
-                        <div className={`${styles.cornerBracket} ${styles.bottomLeft}`}></div>
-                        <div className={`${styles.cornerBracket} ${styles.bottomRight}`}></div>
-                        
-                        <Button 
-                            className={styles.captureButton}
-                            onClick={captureImage}
-                            aria-label="Take picture"
-                        >
-                            <div className={styles.innerCaptureButton}></div>
-                        </Button>
-                    </Box>
-                </Box>
-
-                {/* File upload fallback */}
-                <Box sx={{ mt: 3, textAlign: 'center' }}>
-                    <Typography variant="body2" className={styles.uploadFallbackText}>
-                        {tC.trouble}
-                    </Typography>
-                    <Button
-                        variant="outlined"
-                        component="label"
-                        size="small"
-                        sx={{ mt: 1 }}
-                    >
-                        {tC.upload}
-                        <input
-                            type="file"
-                            accept="image/*"
-                            hidden
-                            onChange={(e) => {
-                                if (e.target.files && e.target.files[0]) {
-                                    const reader = new FileReader();
-                                    reader.onloadend = () => {
-                                        const imageData = reader.result;
-                                        setPreviewImage(imageData);
-                                        stopCamera();
-                                        setScanningStep('loading');
-                                        processImage(imageData);
-                                    };
-                                    reader.readAsDataURL(e.target.files[0]);
-                                }
-                            }}
-                        />
-                    </Button>
-                </Box>
-            </Box>
-        </Box>
-    );
-
-    const textPreview = {
-        en: "Preview your post-it",
-        nl: "Voorbeeld van je post-it",
-    }
-    const tP = textPreview[language] || textPreview.en;
-    const renderPreview = () => (
-        <Box className={styles.previewContainer}>
-            <Box sx={{ position: 'absolute', top: 16, left: 16, zIndex: 10 }}>
-                <IconButton onClick={handleBack} color="primary">
-                    <ArrowBackIcon />
-                </IconButton>
-            </Box>
-            <Typography variant="h5" sx={{ mb: 2 }}>{tP}</Typography>
-            <Box sx={{ position: 'relative', mb: 3 }}>
-                <img
-                    src={previewImage}
-                    alt="Preview"
-                    className={styles.previewImage}
-                />
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '300px' }}>
-                <Button
-                    variant="outlined"
-                    onClick={() => resetScanState('scanning', true)}
-                    startIcon={<RetryIcon />}
-                >
-                    Retake
-                </Button>
-                <Button
-                    variant="contained"
-                    onClick={() => processImage(previewImage)}
-                    disabled={isProcessing}
-                    startIcon={<SendIcon />}
-                >
-                    Submit
-                </Button>
-            </Box>
-        </Box>
-    );
-
-    const textResults = {
-    en: {
-        validStatus: '✓ Valid',
-        noTextStatus: '⚠️ No text detected',
-        scanSuccess: 'Scan successful!',
-        scanIncomplete: 'Scan incomplete',
-        successMessage: 'Now... turn around and take a look at the AI wall!',
-        incompleteMessage: 'No text was detected in your image.',
-        successSubmessage: 'Your idea will appear there shortly — and you can interact with other people\'s ideas too.',
-        incompleteSubmessage: 'Please ensure your writing is clear and the post-it is fully visible.',
-        manualEntryLabel: 'Add text manually:',
-        manualEntryPlaceholder: 'Type your post-it text here...',
-        rescanButton: 'Rescan',
-        sendButton: 'Send to wall',
-        sendingText: 'Sending...',
-    },
-    nl: {
-        validStatus: '✓ Geldig',
-        noTextStatus: '⚠️ Geen tekst gedetecteerd',
-        scanSuccess: 'Scan geslaagd!',
-        scanIncomplete: 'Scan onvolledig',
-        successMessage: 'Draai nu om en bekijk de AI-muur!',
-        incompleteMessage: 'Er werd geen tekst gedetecteerd in je afbeelding.',
-        successSubmessage: 'Je idee verschijnt daar binnenkort — en je kunt ook met andermans ideeën interactie hebben.',
-        incompleteSubmessage: 'Zorg ervoor dat je schrijven duidelijk is en de post-it volledig zichtbaar is.',
-        manualEntryLabel: 'Voeg handmatig tekst toe:',
-        manualEntryPlaceholder: 'Typ hier je post-it tekst...',
-        rescanButton: 'Opnieuw scannen',
-        sendButton: 'Naar muur verzenden',
-        sendingText: 'Verzenden...',
-    },
-    };
-
-    const renderResults = () => {
-    const tR = textResults[language] || textResults.en;
-
-    if (!modelResult) {
+    // Add this custom component for the language toggle
+    const LanguageToggle = ({ onToggle, currentLang }) => {
         return (
-        <Box className={styles.scanningContainer}>
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-            <CircularProgress />
-            </Box>
-        </Box>
-        );
-    }
-
-    const hasValidText = !!modelResult.answer && modelResult.answer.trim().length > 0;
-
-    return (
-        <Box className={styles.scanningContainer}>
-        <IconButton className={styles.cameraBackButton} onClick={handleBack}>
-            <ArrowBackIcon />
-        </IconButton>
-
-        <Box className={styles.successContainer}>
-            {/* Left side - Scanned post-it */}
-            <Box className={styles.scannedPostItContainer}>
-            <Box
-                className={styles.scannedPostIt}
-                style={{
-                backgroundColor: modelResult.color || postItColors.color || '#B5EAE7',
+            <Box 
+                className={styles.languageToggle}
+                sx={{
+                    display: 'flex',
+                    position: 'absolute',
+                    right: '0', // Changed from 20px
+                    top: '22px',
+                    overflow: 'hidden',
+                    border: '1px solid rgba(0,0,0,0.2)',
+                    width: '80px', // Fixed width
+                    height: '30px', // Fixed height
                 }}
             >
-                <Typography className={styles.postItHeading}>
-                {modelResult.question || "[No question detected]"}
-                </Typography>
-                <Typography className={styles.postItText}>
-                {modelResult.answer || "[No text detected]"}
-                </Typography>
-
-                {/* Status indicator */}
                 <Box
-                sx={{
-                    position: 'absolute',
-                    top: 10,
-                    right: 10,
-                    background: hasValidText ? 'green' : 'red',
-                    color: 'white',
-                    padding: '5px 10px',
-                    borderRadius: '4px',
-                    fontSize: '14px',
-                    zIndex: 1000,
-                }}
+                    onClick={() => onToggle('en')}
+                    sx={{
+                        padding: '4px 0',
+                        cursor: 'pointer',
+                        backgroundColor: currentLang === 'en' ? '#000' : '#fff',
+                        color: currentLang === 'en' ? '#fff' : '#000',
+                        fontWeight: 500,
+                        fontSize: '14px',
+                        transition: 'all 0.3s ease',
+                        width: '50%',
+                        textAlign: 'center',
+                    }}
                 >
-                {hasValidText ? tR.validStatus : tR.noTextStatus}
+                    EN
+                </Box>
+                <Box
+                    onClick={() => onToggle('nl')}
+                    sx={{
+                        padding: '4px 0',
+                        cursor: 'pointer',
+                        backgroundColor: currentLang === 'nl' ? '#000' : '#fff',
+                        color: currentLang === 'nl' ? '#fff' : '#000',
+                        fontWeight: 500,
+                        fontSize: '14px',
+                        transition: 'all 0.3s ease',
+                        width: '50%',
+                        textAlign: 'center',
+                    }}
+                >
+                    NL
                 </Box>
             </Box>
-            </Box>
-
-            {/* Right side - Success message and buttons */}
-            <Box className={styles.successMessageContainer}>
-            <Typography variant="h1" className={styles.successHeading}>
-                {hasValidText ? tR.scanSuccess : tR.scanIncomplete}
-            </Typography>
-            <Typography className={styles.successMessage}>
-                {hasValidText ? tR.successMessage : tR.incompleteMessage}
-            </Typography>
-            <Typography className={styles.successSubmessage}>
-                {hasValidText ? tR.successSubmessage : tR.incompleteSubmessage}
-            </Typography>
-
-            {/* Add manual text entry option when OCR fails */}
-            {!hasValidText && (
-                <Box sx={{ mt: 2, mb: 2, p: 2, border: '1px solid #ddd', borderRadius: '4px' }}>
-                <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    {tR.manualEntryLabel}
-                </Typography>
-                <textarea
-                    style={{
-                    width: '100%',
-                    minHeight: '100px',
-                    padding: '8px',
-                    fontFamily: 'inherit',
-                    marginBottom: '10px',
-                    }}
-                    placeholder={tR.manualEntryPlaceholder}
-                    onChange={(e) => {
-                    setModelResult({
-                        ...modelResult,
-                        answer: e.target.value,
-                    });
-                    }}
-                />
-                </Box>
-            )}
-
-            <Box className={styles.successButtonsContainer}>
-                <Button
-                variant="outlined"
-                className={styles.incorrectScanButton}
-                onClick={() => resetScanState('scanning', true)}
-                >
-                {tR.rescanButton}
-                </Button>
-                <Button
-                variant="contained"
-                className={styles.scanNewButton}
-                onClick={saveToDatabase}
-                disabled={isLoading || (!hasValidText && !modelResult.answer)}
-                >
-                {isLoading ? (
-                    <>
-                    <CircularProgress size={20} sx={{ mr: 1 }} />
-                    {tR.sendingText}
-                    </>
-                ) : (
-                    tR.sendButton
-                )}
-                </Button>
-            </Box>
-            </Box>
-        </Box>
-        </Box>
         );
     };
 
-
-    const loadingTexts = {
-    en: {
-        processing: "Processing your post-it...",
-        analyzing: "We're analyzing the text with AI vision",
-        errorPrefix: "Error:",
-    },
-    nl: {
-        processing: "Je post-it wordt verwerkt...",
-        analyzing: "We analyseren de tekst met AI-vision",
-        errorPrefix: "Fout:",
-    },
-    // Agrega más idiomas si quieres
-    };
-
-    const renderLoading = () => {
-        const t = loadingTexts[language] || loadingTexts.en;
-
+    // Render functions
+    const renderScanningInfo = () => {
+        // Add language toggle handler
+        const handleLanguageToggle = (newLang) => {
+            console.log("Language toggled to:", newLang);
+            if (setLanguage) {
+                setLanguage(newLang);
+            }
+        };
+        
         return (
             <Box className={styles.scanningContainer}>
-                <Box
-                    sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: "70vh",
-                    }}
-                >
-                    <CircularProgress size={60} thickness={5} />
-                    <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
-                        {t.processing}
-                    </Typography>
-                    <Typography variant="body1" sx={{ textAlign: "center", maxWidth: "80%" }}>
-                        {t.analyzing}
-                    </Typography>
-
-                    {scanError && (
-                        <Typography
-                            variant="body2"
-                            sx={{
-                            color: "error.main",
-                            mt: 2,
-                            textAlign: "center",
-                            maxWidth: "80%",
-                            }}
-                        >
-                            {t.errorPrefix} {scanError}
+                <Box className={styles.scanningContent}>
+                    <Box className={styles.scanningInfo} sx={{ position: 'relative' }}>
+                        <Typography variant="h1" className={styles.scanningTitle}>
+                            {translate('scanYourPostItHere')}
                         </Typography>
-                    )}
+                        
+                        <LanguageToggle 
+                            onToggle={handleLanguageToggle} 
+                            currentLang={language} 
+                        />
+                        
+                        <Typography variant="h2" className={styles.scanningSubtitle}>
+                            {translate('readyToShareYourIdea')}
+                        </Typography>
+                    </Box>
+
+                    <Box className={styles.rulesContainer}>
+                        {/* Left column - Positive rules */}
+                        <Box className={styles.positiveRules}>
+                            <Box className={styles.ruleItem}>
+                                <CheckCircleIcon className={styles.checkMark} />
+                                <Typography>{translate('onlyPostItInPhoto')}</Typography>
+                            </Box>
+                            <Box className={styles.ruleItem}>
+                                <CheckCircleIcon className={styles.checkMark} />
+                                <Typography>{translate('textClearlyReadable')}</Typography>
+                            </Box>
+                            <Box className={styles.ruleItem}>
+                                <CheckCircleIcon className={styles.checkMark} />
+                                <Typography>{translate('ideaAddedToDatabase')}</Typography>
+                            </Box>
+                            <Box className={styles.ruleItem}>
+                                <CheckCircleIcon className={styles.checkMark} />
+                                <Typography>{translate('postItShownAnonymously')}</Typography>
+                            </Box>
+                        </Box>
+                        
+                        {/* Right column - Negative rules */}
+                        <Box className={styles.negativeRules}>
+                            <Box className={styles.ruleItem}>
+                                <span className={styles.crossMark}>✕</span>
+                                <Typography>{translate('noPersonalData')}</Typography>
+                            </Box>
+                            <Box className={styles.ruleItem}>
+                                <span className={styles.crossMark}>✕</span>
+                                <Typography>{translate('noHandsOrBackground')}</Typography>
+                            </Box>
+                            <Box className={styles.ruleItem}>
+                                <span className={styles.crossMark}>✕</span>
+                                <Typography>{translate('noInappropriateContent')}</Typography>
+                            </Box>
+                        </Box>
+                    </Box>
+
+                    <Button
+                        variant="contained"
+                        className={styles.startButton}
+                        onClick={() => setScanningStep('scanning')}
+                    >
+                        {translate('startScanning')}
+                    </Button>
+                    <Typography variant="body2" className={styles.finePrint}>
+                        {translate('privacyConsent')}
+                    </Typography>
+                    <Typography 
+                        variant="body2" 
+                        className={styles.finePrint}
+                        dangerouslySetInnerHTML={{ __html: translate('termsNotice') }}
+                    />
                 </Box>
             </Box>
         );
     };
 
+    // Update the renderCamera function to add vertical padding and make it responsive
+    const renderCamera = () => (
+        <Box className={`${styles.scanningContainer} ${isLandscape ? styles.landscape : ''}`}
+            sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '100vh',
+            }}
+        >
+            <Box className={styles.scanningContent} 
+                sx={isLandscape ? {
+                    padding: '32px 24px', // Add both vertical and horizontal padding
+                    maxWidth: '1200px',
+                    margin: '0 auto',
+                    width: '90%',
+                    height: 'auto',
+                    maxHeight: '90vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    // Responsive padding based on screen size
+                    '@media (max-height: 600px)': {
+                        padding: '16px 24px', // Less padding for smaller screens
+                    },
+                    '@media (min-height: 800px)': {
+                        padding: '48px 32px', // More padding for larger screens
+                    }
+                } : {}}
+            >
+                {isLandscape ? (
+                    // Landscape layout
+                    <>
+                        <Box className={styles.scanningInfo}
+                            sx={{
+                                mb: 2,
+                                '@media (max-height: 600px)': {
+                                    mb: 1, // Less margin for smaller screens
+                            }
+                        }}
+                        >
+                            <Typography variant="h1" className={styles.scanningTitle}
+                                sx={{
+                                    fontSize: {
+                                        xs: '1.5rem',
+                                        sm: '1.8rem',
+                                        md: '2rem'
+                                    }
+                                }}
+                            >
+                                {translate('takeAPicture')}
+                            </Typography>
+                            <Typography variant="h2" className={styles.scanningSubtitle}
+                                sx={{
+                                    fontSize: {
+                                        xs: '1rem',
+                                        sm: '1.2rem',
+                                        md: '1.4rem'
+                                    }
+                                }}
+                            >
+                                {translate('readyToShareYourIdea')}
+                            </Typography>
+                        </Box>
+                        
+                        <Box className={styles.cameraViewfinderContainer}
+                            sx={{ 
+                                width: '100%',
+                                padding: '0 5%',
+                                boxSizing: 'border-box',
+                                // Increase height by reducing subtracted pixels
+                                height: {
+                                    xs: 'calc(100vh - 180px)', // Was 200px
+                                    sm: 'calc(100vh - 200px)', // Was 220px 
+                                    md: 'calc(100vh - 220px)'  // Was 240px
+                                },
+                                maxHeight: '70vh', // Increase from 60vh to 70vh
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <IconButton 
+                                className={styles.cameraBackButton}
+                                onClick={handleBack}
+                            >
+                                <ArrowBackIcon />
+                            </IconButton>
+                            
+                            <Box className={styles.cameraViewfinder}
+                                sx={{
+                                    width: '100%',
+                                    maxWidth: '900px',
+                                    margin: '0 auto',
+                                    height: '100%',
+                                    maxHeight: '700px', // Increase from 600px to 700px
+                                    borderRadius: '8px',
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                <video
+                                    ref={videoRef}
+                                    autoPlay
+                                    playsInline
+                                    className={styles.cameraFeed}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover'
+                                    }}
+                                />
+                                
+                                {/* Corner brackets */}
+                                <div className={`${styles.cornerBracket} ${styles.topLeft}`}></div>
+                                <div className={`${styles.cornerBracket} ${styles.topRight}`}></div>
+                                <div className={`${styles.cornerBracket} ${styles.bottomLeft}`}></div>
+                                <div className={`${styles.cornerBracket} ${styles.bottomRight}`}></div>
+                                
+                                <Button 
+                                    className={styles.captureButton}
+                                    onClick={captureImage}
+                                    aria-label="Take picture"
+                                >
+                                    <div className={styles.innerCaptureButton}></div>
+                                </Button>
+                            </Box>
+                        </Box>
+                    </>
+                ) : (
+                    // Portrait layout 
+                    <>
+                        <Box className={styles.scanningInfo}>
+                            <Typography variant="h1" className={styles.scanningTitle}>
+                                {translate('takeAPicture')}
+                            </Typography>
+                            <Typography variant="h2" className={styles.scanningSubtitle}>
+                                {translate('readyToShareYourIdea')}
+                            </Typography>
+                        </Box>
+                        
+                        <Box className={styles.cameraViewfinderContainer}>
+                            <IconButton 
+                                className={styles.cameraBackButton}
+                                onClick={handleBack}
+                            >
+                                <ArrowBackIcon />
+                            </IconButton>
+                            
+                            <Box className={styles.cameraViewfinder}>
+                                <video
+                                    ref={videoRef}
+                                    autoPlay
+                                    playsInline
+                                    className={styles.cameraFeed}
+                                />
+                                
+                                {/* Corner brackets */}
+                                <div className={`${styles.cornerBracket} ${styles.topLeft}`}></div>
+                                <div className={`${styles.cornerBracket} ${styles.topRight}`}></div>
+                                <div className={`${styles.cornerBracket} ${styles.bottomLeft}`}></div>
+                                <div className={`${styles.cornerBracket} ${styles.bottomRight}`}></div>
+                                
+                                <Button 
+                                    className={styles.captureButton}
+                                    onClick={captureImage}
+                                    aria-label="Take picture"
+                                >
+                                    <div className={styles.innerCaptureButton}></div>
+                                </Button>
+                            </Box>
+                        </Box>
+                    </>
+                )}
+            </Box>
+        </Box>
+    );
+
+    // Update the renderResults function to remove the green check mark and change button behavior
+    const renderResults = () => {
+        if (!modelResult) {
+            return (
+                <Box className={styles.scanningContainer}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                        <CircularProgress />
+                    </Box>
+                </Box>
+            );
+        }
+        
+        const hasValidText = !!modelResult.answer && modelResult.answer.trim().length > 0;
+        
+        return (
+            <Box className={styles.scanningContainer}>
+                <IconButton 
+                    className={styles.cameraBackButton}
+                    onClick={handleBack}
+                >
+                    <ArrowBackIcon />
+                </IconButton>
+                
+                <Box className={styles.successContainer}>
+                    {/* Left side - Scanned post-it */}
+                    <Box className={styles.scannedPostItContainer}>
+                        <Box 
+                            className={styles.scannedPostIt}
+                            style={{ 
+                                backgroundColor: questionColorMap[modelResult.question_id] || '#FFA500'
+                            }}
+                        >
+                            <Typography className={styles.postItHeading}>
+                                {modelResult.question || "[No question detected]"}
+                            </Typography>
+                            <Typography className={styles.postItText}>
+                                {modelResult.answer || "[No text detected]"}
+                            </Typography>
+                        </Box>
+                    </Box>
+                    
+                    {/* Right side - Success message and buttons */}
+                    <Box className={styles.successMessageContainer}>
+                        <Typography variant="h1" className={styles.successHeading}>
+                            {hasValidText ? translate('scanSuccessful') : translate('scanIncomplete')}
+                        </Typography>
+                        <Typography className={styles.successMessage}>
+                            {hasValidText 
+                                ? translate('turnAroundAndLook')
+                                : translate('noTextDetected')
+                            }
+                        </Typography>
+                        <Typography className={styles.successSubmessage}>
+                            {hasValidText 
+                                ? translate('noteSuccessfullyScanned')
+                                : translate('typeMessageForWall')
+                            }
+                        </Typography>
+
+                        {!hasValidText && (
+                            <Box sx={{ width: '100%', mt: 2 }}>
+                                <textarea
+                                    value={modelResult.answer || ''}
+                                    style={{
+                                        width: '100%',
+                                        minHeight: '100px',
+                                        padding: '10px',
+                                        marginBottom: '10px'
+                                    }}
+                                    placeholder={translate('typePostItText')}
+                                    onChange={(e) => {
+                                        setModelResult({
+                                            ...modelResult,
+                                            answer: e.target.value
+                                        });
+                                    }}
+                                />
+                            </Box>
+                        )}
+                        
+                        <Box className={styles.successButtonsContainer}>
+                            <Button 
+                                variant="outlined" 
+                                className={styles.incorrectScanButton}
+                                onClick={() => resetScanState('scanning', true)}
+                            >
+                                {translate('rescan')}
+                            </Button>
+                            <Button 
+                                variant="contained" 
+                                className={styles.scanNewButton}
+                                onClick={() => {
+                                    resetScanState('start', false);
+                                }}
+                                disabled={isLoading || (!hasValidText && !modelResult.answer)}
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <CircularProgress size={20} sx={{ mr: 1 }} />
+                                        {translate('sending')}
+                                    </>
+                                ) : (
+                                    translate('finish')
+                                )}
+                            </Button>
+                        </Box>
+                    </Box>
+                </Box>
+            </Box>
+        );
+    };
+
+    const renderLoading = () => (
+        <Box className={styles.scanningContainer}>
+            <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column',
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '70vh' 
+            }}>
+                <CircularProgress size={60} thickness={5} />
+                <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
+                    {translate('processingYourPostIt')}
+                </Typography>
+                <Typography variant="body1" sx={{ textAlign: 'center', maxWidth: '80%' }}>
+                    {translate('analyzingWithAI')}
+                </Typography>
+                
+                {scanError && (
+                    <Typography variant="body2" sx={{ 
+                        color: 'error.main', 
+                        mt: 2, 
+                        textAlign: 'center', 
+                        maxWidth: '80%' 
+                    }}>
+                        {translate('error')} {scanError}
+                    </Typography>
+                )}
+            </Box>
+        </Box>
+    );
 
     const renderCurrentStep = () => {
         switch (scanningStep) {
             case 'start': return renderScanningInfo();
             case 'scanning': return renderCamera();
-            case 'preview': return renderPreview();
             case 'loading': return renderLoading();
             case 'results': return renderResults();
             default: return renderScanningInfo();
-
         }
     };
 
     return (
         <Box className={styles.scanningContainer}>
             {renderCurrentStep()}
+            
+            {/* Fullscreen toggle button - always visible */}
+            <IconButton 
+                className={styles.fullscreenToggleButton}
+                onClick={() => toggleFullScreen(true)}
+                style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    zIndex: 100,
+                    color: 'white',
+                    background: 'rgba(0,0,0,0.3)',
+                }}
+            >
+                {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+            </IconButton>
         </Box>
     );
 };

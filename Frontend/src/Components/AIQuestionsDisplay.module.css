@@ -95,13 +95,12 @@
     position: absolute;
     inset: 0;
     z-index: 3;
-    padding: 80px;
+    padding: 80px 80px 80px 80px; /* Reduced top padding from 80px to 50px */
 }
 
 .answersGrid {
     width: 100%;
     height: 100%;
-    padding: 4rem;
     position: relative;
 }
 
@@ -129,10 +128,10 @@
     content: '';
     position: absolute;
     left: 50%;
-    top: 80px;
-    bottom: 80px;
-    width: 1px;
-    background: rgba(0, 0, 0, 0.1);
+    top: 50px; /* Reduced from 80px to 50px */
+    bottom: 110px;
+    width: 2px;
+    background: rgba(0, 0, 0, 0.182);
 }
 
 .gridLines::after {
@@ -141,8 +140,8 @@
     top: 50%;
     left: 80px; 
     right: 80px;
-    height: 1px;
-    background: rgba(0, 0, 0, 0.1);
+    height: 2px;
+    background: rgba(0, 0, 0, 0.182);
 }
 
 /* Update the axis labels */
@@ -159,13 +158,13 @@
 }
 
 .labelTop {
-    top: 40px;
+    top: 20px; /* Changed from 40px to 20px */
     left: 50%;
     transform: translateX(-50%);
 }
 
 .labelBottom {
-    bottom: 80px;
+    bottom: 90px; /* Adjusted from 80px to 90px */
     left: 50%;
     transform: translateX(-50%);
 }
@@ -202,7 +201,7 @@
     justify-content: center;
     cursor: pointer;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    z-index: 5;
+    z-index: 5; /* Base z-index that will be modified by inline styles */
     animation: float 12s ease-in-out infinite;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
@@ -248,9 +247,10 @@
 
 .answerItem:hover {
     transform: translate(-50%, -50%) scale(1.2);
-    z-index: 10;
+    z-index: 2000 !important; /* Much higher than any dynamically set z-index */
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
 }
+
 .answerCard {
   /* existing styles */
   will-change: transform;
@@ -751,27 +751,25 @@
 
 .yourCluster {
     position: relative;
-    z-index: 15 !important;
+    /* z-index is set inline now */
     animation: pulse 2s infinite !important;
 }
 
-/* Background grid styles */
-.axisLines {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
+/* Add a class for yourCluster after it's been moved */
+.yourCluster.moved {
+    /* Will use the size-based z-index after being moved */
 }
+
 
 /* Vertical line (between Looking Bright/Little Scared) */
 .axisLines::before {
     content: '';
     position: absolute;
     left: 50%;
-    top: 70px;
-    bottom: 110px;
-    width: 1.5px;
-    background: rgba(0, 0, 0, 0.2);
+    top: 0;
+    width: 2px; /* Was 1px */
+    height: 100%;
+    transform: translateX(-50%);
 }
 
 /* Horizontal line (between AI Enthusiastic/Skeptical) */
@@ -779,10 +777,10 @@
     content: '';
     position: absolute;
     top: 50%;
-    left: 150px;
-    right: 150px;
-    height: 1.5px;
-    background: rgba(0, 0, 0, 0.2);
+    left: 0;
+    height: 2px; /* Was 1px */
+    width: 100%;
+    transform: translateY(-50%);
 }
 
 /* Grid background */
@@ -802,4 +800,116 @@
     width: 100%;
     height: 100%;
     background-color: white;
+}
+
+@keyframes flipOutNext {
+    0% { transform: rotateY(0deg) translateZ(0); }
+    100% { transform: rotateY(-90deg) translateZ(100px); }
+}
+
+@keyframes flipOutPrev {
+    0% { transform: rotateY(0deg) translateZ(0); }
+    100% { transform: rotateY(90deg) translateZ(100px); }
+}
+
+@keyframes flipInNext {
+    0% { transform: rotateY(90deg) translateZ(100px); }
+    100% { transform: rotateY(0deg) translateZ(0); }
+}
+
+@keyframes flipInPrev {
+    0% { transform: rotateY(-90deg) translateZ(100px); }
+    100% { transform: rotateY(0deg) translateZ(0); }
+}
+
+.stackedCard {
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+}
+.cardFlipOutNext {
+    animation: flipOutNext 0.6s forwards;
+}
+
+.cardFlipOutPrev {
+    animation: flipOutPrev 0.6s forwards;
+}
+
+.cardFlipInNext {
+    animation: flipInNext 0.6s forwards;
+}
+
+.cardFlipInPrev {
+    animation: flipInPrev 0.6s forwards;
+}
+
+/* Add these animations at the end of your CSS file */
+
+@keyframes cardZoomIn {
+  from {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes cardZoomOut {
+  from {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+}
+
+@keyframes cardFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.wallLanguageToggle {
+    position: absolute;
+    right: 20px;
+    top: -40px;
+    z-index: 20;
+}
+
+.axisLines {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* Update the border widths below - add 1px to each */
+  border-right: 2px solid rgba(255, 255, 255, 0.2); /* Was 1px */
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2); /* Was 1px */
+}
+
+.axisLines::before, .axisLines::after {
+  content: "";
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.axisLines::before {
+  left: 50%;
+  top: 0;
+  width: 2px; /* Was 1px */
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+.axisLines::after {
+  top: 50%;
+  left: 0;
+  height: 2px; /* Was 1px */
+  width: 100%;
+  transform: translateY(-50%);
 }
