@@ -1,8 +1,12 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import styles from './AIQuestionsDisplay.module.css';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import { useLanguage } from './LanguageContext';
 import config from '../config';
+import translations from "../Pages/translations.json";
+import { Box } from "@mui/material"; // Add missing import
+
+let lastSeenAnswerId = null; 
 
 const { API_BASE } = config;
 const createRandomShadowGrid = (gridCols, gridRows) => {
@@ -50,18 +54,75 @@ const createRandomShadowGrid = (gridCols, gridRows) => {
     }
     return cells;
 };
-
+const LanguageToggle = ({ onToggle, currentLang }) => {
+    return (
+        <div className={styles.wallLanguageToggle}>
+            <Box 
+                sx={{
+                    display: 'flex',
+                    overflow: 'hidden',
+                    border: '1px solid rgba(255,255,255,0.5)',
+                    width: '80px',
+                    height: '30px',
+                    borderRadius: '4px',
+                    backgroundColor: 'rgba(0,0,0,0.3)',
+                }}
+            >
+                <Box
+                    onClick={() => onToggle('en')}
+                    sx={{
+                        padding: '4px 0',
+                        cursor: 'pointer',
+                        backgroundColor: currentLang === 'en' ? '#000' : 'transparent',
+                        color: currentLang === 'en' ? '#fff' : 'rgba(255,255,255,0.8)',
+                        fontWeight: 500,
+                        fontSize: '14px',
+                        transition: 'all 0.3s ease',
+                        width: '50%',
+                        textAlign: 'center',
+                    }}
+                >
+                    EN
+                </Box>
+                <Box
+                    onClick={() => onToggle('nl')}
+                    sx={{
+                        padding: '4px 0',
+                        cursor: 'pointer',
+                        backgroundColor: currentLang === 'nl' ? '#000' : 'transparent',
+                        color: currentLang === 'nl' ? '#fff' : 'rgba(255,255,255,0.8)',
+                        fontWeight: 500,
+                        fontSize: '14px',
+                        transition: 'all 0.3s ease',
+                        width: '50%',
+                        textAlign: 'center',
+                    }}
+                >
+                    NL
+                </Box>
+            </Box>
+        </div>
+    );
+};
 
 const AIQuestionsDisplay = () => {
     // Core state
     const [bubbleStyles, setBubbleStyles] = useState([]);
-    const { language } = useLanguage();
+    const { language, setLanguage } = useLanguage();
     const [questionsData, setQuestionsData] = useState([]);
     const [activeQuestion, setActiveQuestion] = useState(null);
+    const [scanningStep, setScanningStep] = useState('info');
+    
+    // MOVE TRANSLATE FUNCTION INSIDE THE COMPONENT
+    const translate = (key, fallback = '') => {
+        return translations[language]?.[key] || fallback || key;
+    };
+    
     const [activeQuestionData, setActiveQuestionData] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [currentAnswers, setCurrentAnswers] = useState([]);
     const [answersData, setAnswersData] = useState([]);
+    const [clickedQuestionPosition, setClickedQuestionPosition] = useState(null);
     
     // Clustering state
     const [clusteredAnswers, setClusteredAnswers] = useState([]);
@@ -72,18 +133,40 @@ const AIQuestionsDisplay = () => {
     // UI state
     const [isZooming, setIsZooming] = useState(false);
     const [newestAnswerId, setNewestAnswerId] = useState(null);
+    const [youLabelDismissed, setYouLabelDismissed] = useState(false);
     
     // Timeline state
     const [activeSeason, setActiveSeason] = useState(5); // Default to Spring 2025
 
+    // Card animation state
+    const [activeCardIndex, setActiveCardIndex] = useState(0);
+    const [animationDirection, setAnimationDirection] = useState(null);
+    const [isAnimating, setIsAnimating] = useState(false);
+
+    // Auto-hover state
+    const [autoHoverActive, setAutoHoverActive] = useState(false);
+    const [autoHoverIndex, setAutoHoverIndex] = useState(null);
+    const autoHoverIntervalRef = useRef(null);
+
+    // Additional state for card hovering and focusing
+    const [hoveredCard, setHoveredCard] = useState(null);
+    const [focusedCard, setFocusedCard] = useState(null);
+
     // Constants
-    const ITEMS_PER_PAGE = 20;
+    const ITEMS_PER_PAGE = 50;
     const TRANSITION_DURATION = 500;
     const CLUSTER_THRESHOLD = 15; // Distance threshold for clustering (in percentage points)
-    const SEASONS = [
-        'Winter 2024', 'Spring 2024', 'Summer 2024', 'Fall 2024',
-        'Winter 2025', 'Spring 2025'
+    const getSeasonNames = (lang) => [
+        translate('winter2024', 'Winter 2024'),
+        translate('spring2024', 'Spring 2024'),
+        translate('summer2024', 'Summer 2024'),
+        translate('fall2024', 'Fall 2024'),
+        translate('winter2025', 'Winter 2025'),
+        translate('spring2025', 'Spring 2025')
     ];
+
+    // Update seasons when language changes
+    const SEASONS = useMemo(() => getSeasonNames(language), [language]);
 
     // Grid dimensions
     const gridCols = 55; 
@@ -235,12 +318,27 @@ const AIQuestionsDisplay = () => {
 
     // Handle clicking on a cluster
     const handleClusterClick = async (cluster, event) => {
+        // Check if this is "your" cluster, but DON'T hide the "YOU" label
+        const isYourCluster = newestAnswerId && 
+            cluster.answers.some(answer => answer.answer_id === newestAnswerId);
+        
         // Toggle cluster expansion
         if (expandedCluster?.id === cluster.id) {
             setExpandedCluster(null);
+            setFocusedCard(null);
+            setHoveredCard(null);
+            
+            // Only dismiss the "YOU" highlighting when closing the cluster
+            if (isYourCluster) {
+                setNewestAnswerId(null);
+                setYouLabelDismissed(true);
+            }
             return;
         }
 
+        // Reset card states when opening a new cluster
+        setFocusedCard(null);
+        setHoveredCard(null);
         setExpandedCluster(cluster);
 
         // Fetch question data
@@ -251,6 +349,11 @@ const AIQuestionsDisplay = () => {
         } catch (error) {
             console.error("Error fetching question details:", error);
         }
+
+        // Reset card index when viewing a new cluster
+        setActiveCardIndex(0);
+        setAnimationDirection(null);
+        setIsAnimating(false);
     };
 
     // Handle going back from detail view
@@ -391,17 +494,29 @@ const AIQuestionsDisplay = () => {
         if (!expandedCluster) return null;
 
         const clusterAnswers = expandedCluster.answers;
-        const baseRadius = 350; // Base radius for card positioning
         const questionColor = getQuestionColor(expandedCluster.questionId);
+        const questionText = activeQuestionData?.question[language] || 'Loading question...';
 
         return (
             <>
-                {/* Overlay with transition */}
+                {/* Overlay background */}
                 <div 
                     className={styles.clusterOverlay}
                     onClick={(e) => {
                         if (e.target === e.currentTarget) {
+                            // Check if this is "your" cluster
+                            const isYourCluster = newestAnswerId && 
+                                expandedCluster.answers.some(answer => answer.answer_id === newestAnswerId);
+                            
+                            // Close the expanded view
                             setExpandedCluster(null);
+                            setFocusedCard(null);
+                            
+                            // Also dismiss the "YOU" label when closing via background click
+                            if (isYourCluster) {
+                                setNewestAnswerId(null);
+                                setYouLabelDismissed(true);
+                            }
                         }
                     }}
                     style={{
@@ -410,241 +525,427 @@ const AIQuestionsDisplay = () => {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        zIndex: 15,
-                        opacity: 1,
+                        backgroundColor: 'rgba(25, 25, 35, 0.85)',
+                        backdropFilter: 'blur(3px)',
+                        zIndex: 1500,
                         transition: 'opacity 0.4s ease-in-out',
                     }}
                 />
-
-                {/* Central question with smooth transition */}
-                <div
-                    className={styles.centralQuestion}
-                    style={{
-                        position: 'fixed',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%) scale(1)',
-                        backgroundColor: questionColor,
-                        color: 'white',
-                        width: '200px',
-                        height: '200px',
-                        borderRadius: '50%',
-                        padding: '25px', 
+                
+                {/* Card hand layout - much larger cards */}
+                <div style={{
+                    position: 'fixed',
+                    bottom: '2%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '98%', // INCREASED from 95% to 98%
+                    height: '500px',
+                    zIndex: 1600,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    perspective: '1200px',
+                }}>
+                    <div style={{
+                        position: 'relative',
+                        width: '100%',
+                        height: '100%',
                         display: 'flex',
-                        alignItems: 'center',
                         justifyContent: 'center',
-                        textAlign: 'center',
-                        zIndex: 25,
-                        boxShadow: `0 0 30px ${questionColor}, inset 0 0 60px ${questionColor}`,
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        transition: 'all 0.5s ease-out',
-                    }}
-                >
-                    {activeQuestionData?.question[language] || 'Loading question...'}
+                        transformStyle: 'preserve-3d',
+                    }}>
+                        {clusterAnswers.map((answer, index) => {
+                            // Calculate card positioning in an arc
+                            const totalCards = clusterAnswers.length;
+                            const maxAngle = Math.min(35, totalCards * 2.5); 
+                            const angle = (index - (totalCards - 1) / 2) * (maxAngle / totalCards);
+                            
+                            // Check if this is the user's answer
+                            const isYourAnswer = newestAnswerId && answer.answer_id === newestAnswerId && !youLabelDismissed;
+                            
+                            // Get answer text
+                            const answerText = getAnswerText(answer, language);
+                            
+                            // Consider a card hovered if it's either manually hovered OR currently auto-hovered
+                            const isHovered = hoveredCard === index || (autoHoverActive && autoHoverIndex === index);
+                            const isFocused = focusedCard === index;
+                            
+                            return (
+                                <div
+                                    key={`card-hand-${index}`}
+                                    onClick={() => {
+                                        // Turn off auto-hover when clicking any card
+                                        setAutoHoverActive(false);
+                                        setAutoHoverIndex(null);
+                                        
+                                        // Your existing click handler
+                                        handleCardClick(index);
+                                    }}
+                                    onMouseEnter={() => {
+                                        // Turn off auto-hover when manually hovering
+                                        setAutoHoverActive(false);
+                                        setAutoHoverIndex(null);
+                                        setHoveredCard(index);
+                                    }}
+                                    onMouseLeave={() => setHoveredCard(null)}
+                                    style={{
+                                        position: 'absolute',
+                                        width: isFocused ? '600px' : '450px',
+                                        height: isFocused ? '550px' : '450px',
+                                        backgroundColor: questionColor,
+                                        borderRadius: '12px',
+                                        boxShadow: isFocused
+                                            ? '0 25px 50px rgba(0,0,0,0.5)'
+                                            : (isHovered 
+                                                ? '0 15px 30px rgba(0,0,0,0.4)'
+                                                : '0 5px 15px rgba(0,0,0,0.3)'),
+                                        transform: isFocused
+                                            ? 'translateY(-150px) translateX(0) rotate(0deg) scale(1.1)'
+                                            : `translateX(${angle * 35}px) translateY(${isHovered ? -40 : 0}px) rotate(${angle}deg)`,
+                                        transition: 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                                        transformOrigin: 'bottom center',
+                                        zIndex: isFocused ? 100 : (isHovered ? 50 + index : index),
+                                        cursor: 'pointer',
+                                        overflow: 'hidden',
+                                        opacity: isFocused ? 1 : (isHovered ? 1 : 0.95),
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        border: isYourAnswer ? '3px solid black' : 'none', // Black border for user's card
+                                    }}
+                                >
+                                    {/* Fixed card content with better text centering */}
+                                    <div style={{
+                                        position: 'relative',
+                                        width: '100%',
+                                        height: '100%',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        padding: '50px 30px 20px',
+                                        boxSizing: 'border-box',
+                                    }}>
+                                        {/* Thumbtack */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '15px',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            width: '24px',
+                                            height: '24px',
+                                            borderRadius: '50%',
+                                            backgroundColor: 'rgba(0,0,0,0.4)',
+                                            boxShadow: 'inset 0 0 8px rgba(0,0,0,0.5)',
+                                            zIndex: 3,
+                                        }}></div>
+                                        
+                                        {/* Card number/close button - now shows "YOU" for user's card */}
+                                        <div 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (isFocused) {
+                                                    setFocusedCard(null);
+                                                }
+                                                // RESTORE this code to dismiss the YOU label when clicking it
+                                                if (isYourAnswer) {
+                                                    setNewestAnswerId(null);
+                                                    setYouLabelDismissed(true);
+                                                }
+                                            }}
+                                            style={{
+                                                position: 'absolute',
+                                                top: '15px',
+                                                right: '15px',
+                                                width: isYourAnswer ? 'auto' : '32px',
+                                                height: '32px',
+                                                borderRadius: isYourAnswer ? '16px' : '50%',
+                                                backgroundColor: isYourAnswer ? 'black' : 'rgba(0,0,0,0.2)',
+                                                color: '#fff',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '14px',
+                                                fontWeight: 'bold',
+                                                zIndex: 2,
+                                                cursor: 'pointer',
+                                                padding: isYourAnswer ? '0 12px' : '0',
+                                            }}
+                                        >
+                                            {isYourAnswer ? 'YOU' : (isFocused ? '✕' : index + 1)}
+                                        </div>
+                                        
+                                        {/* Question - IMPROVED CENTERING WITHOUT HYPHENATION */}
+                                        <div style={{
+                                            fontSize: isFocused ? '22px' : '18px',
+                                            fontWeight: 'bold',
+                                            color: '#000',
+                                            textAlign: 'center',
+                                            marginBottom: '20px',
+                                            paddingLeft: '20px',
+                                            paddingRight: '20px',
+                                            wordWrap: 'break-word',
+                                            width: '100%',
+                                            maxWidth: '100%',
+                                            margin: '0 auto 20px',
+                                            boxSizing: 'border-box',
+                                            overflowWrap: 'break-word',
+                                            hyphens: 'none', // CHANGED from 'auto' to 'none' to prevent hyphenation
+                                        }}>
+                                            {questionText}
+                                        </div>
+                                        
+                                        {/* Answer text - WITHOUT HYPHENATION */}
+                                        <div style={{
+                                            color: '#000',
+                                            fontSize: isFocused ? '18px' : '16px',
+                                            lineHeight: '1.5',
+                                            textAlign: 'left',
+                                            overflow: 'hidden',
+                                            flex: 1,
+                                            wordWrap: 'break-word',
+                                            paddingLeft: '20px',
+                                            paddingRight: '20px',
+                                            boxSizing: 'border-box',
+                                            width: '100%',
+                                            maxWidth: '100%',
+                                            hyphens: 'none', // ADDED to explicitly prevent hyphenation
+                                        }}>
+                                            {answerText.split('\n').map((line, i) => (
+                                                <div key={i} style={{ 
+                                                    marginBottom: '10px',
+                                                    wordBreak: 'break-word',
+                                                }}>
+                                                    {line || '\u00A0'}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
                 
-                {/* Answer cards - with smooth animations */}
-                <div className={styles.expandedCluster}>
-                    {clusterAnswers.map((answer, index) => {
-                        // Get the answer text
-                        const answerText = (() => {
-                            if (answer.en) return answer.en;
-                            if (answer.english) return answer.english;
-                            if (answer.body) return answer.body;
-                            if (typeof answer.answer === 'string') return answer.answer;
-                            if (answer.content) return answer.content;
-                            if (answer.text) return answer.text;
-                            if (answer.answer_text) return answer.answer_text;
-                            if (answer[language] && language === 'en') return answer[language];
-                            return "That despite all technology, in 2044 we still answer these questions on paper with a pencil...";
-                        })();
-                        
-                        // Determine radius based on text length - push longer texts further out
-                        const textLength = answerText.length;
-                        const dynamicRadius = baseRadius + (textLength > 100 ? 50 : 0) + 
-                                         (textLength > 200 ? 50 : 0) + 
-                                         (textLength > 300 ? 50 : 0);
-                        
-                        // Calculate angle and position - use consistent positioning
-                        const angle = (index / clusterAnswers.length) * 2 * Math.PI;
-                        const offsetX = Math.cos(angle) * dynamicRadius;
-                        const offsetY = Math.sin(angle) * dynamicRadius;
-                        
-                        // Calculate dynamic height based on content length
-                        const estimatedLines = Math.ceil(textLength / 25); // Rough estimate of chars per line
-                        const minHeight = 180;
-                        const dynamicHeight = Math.max(minHeight, 100 + estimatedLines * 20);
-                        const cappedHeight = Math.min(400, dynamicHeight);
-
-                        return (
-                            <div
-                                key={answer.answer_id || index}
-                                className={styles.answerCard}
-                                style={{
-                                    position: 'fixed',
-                                    top: `calc(50% + ${offsetY}px)`,
-                                    left: `calc(50% + ${offsetX}px)`,
-                                    transform: `translate(-50%, -50%)`, // Base transform
-                                    backgroundColor: questionColor,
-                                    width: '220px',
-                                    minHeight: `${cappedHeight}px`,
-                                    padding: '0',
-                                    borderRadius: '2px',
-                                    zIndex: 20,
-                                    boxShadow: '0 6px 12px rgba(0,0,0,0.3)',
-                                    overflow: 'hidden',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: '#fff',
-                                    border: '1px solid rgba(0,0,0,0.1)',
-                                    transition: 'all 0.6s cubic-bezier(0.25, 1, 0.5, 1)',
-                                    animationFillMode: 'both',
-                                    opacity: 1,
-                                    // Add the animation properties
-                                    animation: `float ${6 + (index % 4)}s ease-in-out ${index * 0.4}s infinite alternate`,
-                                    // This will create a gentle floating effect
-                                }}
-                            >
-                                {/* Thumb tack hole effect */}
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '10px',
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
-                                    width: '16px',
-                                    height: '16px',
-                                    borderRadius: '50%',
-                                    backgroundColor: 'rgba(0,0,0,0.4)',
-                                    boxShadow: 'inset 0 0 5px rgba(0,0,0,0.5)',
-                                    zIndex: 3,
-                                }}></div>
-                                
-                                {/* Answer text with better handling */}
-                                <div style={{
-                                    fontFamily: "'Comic Sans MS', cursive, sans-serif",
-                                    fontSize: '14px',
-                                    lineHeight: '20px',
-                                    width: '90%',
-                                    height: '90%',
-                                    textAlign: 'left',
-                                    color: '#fff',
-                                    position: 'relative',
-                                    zIndex: 2,
-                                    margin: '20px 10px 10px 10px',
-                                    padding: '5px',
-                                    overflowY: textLength > 300 ? 'auto' : 'visible',
-                                    maxHeight: textLength > 300 ? '340px' : 'none',
-                                }}>
-                                    {answerText.split('\n').map((line, i) => (
-                                        <div key={i} style={{ 
-                                            marginBottom: '0',
-                                            lineHeight: '20px',
-                                            wordWrap: 'break-word'
-                                        }}>
-                                            {line || '\u00A0'}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        );
-                    })}
+                {/* Card count indicator */}
+                <div style={{
+                    position: 'fixed',
+                    bottom: '10px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    color: 'white',
+                    fontSize: '16px', // Slightly bigger
+                    zIndex: 1601,
+                    backgroundColor: 'rgba(0,0,0,0.3)', // Slightly darker
+                    padding: '6px 18px',
+                    borderRadius: '20px',
+                }}>
+                    {clusterAnswers.length} {clusterAnswers.length === 1 ? 'card' : 'cards'}
                 </div>
+
+                {/* Close button in top right corner */}
+                <button
+                    onClick={() => {
+                        // Check if this is "your" cluster
+                        const isYourCluster = newestAnswerId && 
+                            expandedCluster.answers.some(answer => answer.answer_id === newestAnswerId);
+                        
+                        // Close the expanded view
+                        setExpandedCluster(null);
+                        setFocusedCard(null);
+                        
+                        // Also dismiss the "YOU" label when closing via button click
+                        if (isYourCluster) {
+                            setNewestAnswerId(null);
+                            setYouLabelDismissed(true);
+                        }
+
+                        // Add this to stop auto-hover
+                        setAutoHoverActive(false);
+                        setAutoHoverIndex(null);
+                    }}
+                    style={{
+                        position: 'fixed',
+                        top: '20px',
+                        right: '20px',
+                        backgroundColor: 'rgba(0,0,0,0.2)', // Matches card X's background
+                        color: '#fff',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        border: 'none',
+                        display: 'flex',
+                        alignItems: 'center',      // Ensures vertical centering
+                        justifyContent: 'center',  // Ensures horizontal centering
+                        fontSize: '16px',          // Same size as card X
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        zIndex: 1600,
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)', // Lighter shadow like cards
+                        lineHeight: 1,             // This helps with vertical alignment of the X
+                        padding: 0,                // Remove any padding that might affect centering
+                        textAlign: 'center',       // Additional centering help
+                    }}
+                    aria-label="Close expanded view"
+                >
+                    ✕
+                </button>
             </>
         );
     };
 
     // Fix the randomShadowGrid to not use useMemo incorrectly
-const randomShadowGrid = useMemo(() => {
-    return createRandomShadowGrid(gridCols, gridRows);
-}, [gridCols, gridRows]);
-   // Replace the useEffect that's currently trying to fetch the newest answer
-useEffect(() => {
-        // Fix the fetchNewestAnswer function
+    const randomShadowGrid = useMemo(() => {
+        return createRandomShadowGrid(gridCols, gridRows);
+    }, [gridCols, gridRows]);
+    
+    // Replace the event listener useEffect (around line 587)
+    useEffect(() => {
+        // Handle custom event for new submissions
+        const handleNewSubmission = (event) => {
+            if (event.detail && event.detail.answer_id) {
+                const newId = event.detail.answer_id;
+                console.log("New submission detected via event:", newId);
+                
+                // If this is a different ID than the last one we saw
+                if (newId !== lastSeenAnswerId) {
+                    console.log("New answer ID differs from last seen:", newId, "vs", lastSeenAnswerId);
+                    lastSeenAnswerId = newId;
+                    setNewestAnswerId(newId);
+                    setYouLabelDismissed(false); // Always reset for new answers
+                }
+            }
+        };
+
+        // Set up event listener for direct submissions
+        window.addEventListener('newAnswerSubmitted', handleNewSubmission);
+        
+        // Function to check for newest answer via API
         const fetchNewestAnswer = async () => {
             try {
-                console.log("Fetching newest answer ID...");
                 const response = await fetch(`${API_BASE}/get_newest_answer`);
                 if (response.ok) {
                     const data = await response.json();
-                    console.log("Raw API response for newest answer:", data);
+                    const fetchedId = typeof data === 'number' ? data : (data?.answer_id);
                     
-                    // Handle case where API returns just the number instead of {answer_id: number}
-                    const newId = typeof data === 'number' ? data : (data && data.answer_id);
-                    
-                    if (newId) {
-                        setNewestAnswerId(newId);
-                        console.log("✅ Newest answer ID set to:", newId);
-                        
-                        // Debug check: log all answer IDs in filtered clusters
-                        const allIds = [];
-                        filteredClusters.forEach(cluster => {
-                            cluster.answers.forEach(answer => {
-                                if (answer.answer_id) allIds.push(answer.answer_id);
-                            });
-                        });
-                        console.log("Available answer IDs in clusters:", allIds);
-                        
-                        // Check if any clusters have this ID
-                        const foundCluster = filteredClusters.find(cluster => 
-                            cluster.answers.some(answer => answer.answer_id === newId)
-                        );
-                        console.log("Found cluster with newest ID:", foundCluster ? "YES" : "NO");
-                    } else {
-                        console.error("❌ No answer ID found in response");
+                    if (fetchedId && !youLabelDismissed && fetchedId !== lastSeenAnswerId) {
+                        console.log("Polling found new answer ID:", fetchedId, "previous:", lastSeenAnswerId);
+                        lastSeenAnswerId = fetchedId;
+                        setNewestAnswerId(fetchedId);
+                        setYouLabelDismissed(false);
                     }
-                } else {
-                    console.error("❌ Error fetching newest answer - non-OK response");
                 }
             } catch (error) {
-                console.error("❌ Error fetching newest answer:", error);
+                console.error("Error fetching newest answer:", error);
             }
         };
-
-        // Custom event listener for new submissions
-        const handleNewSubmission = (event) => {
-            if (event.detail && event.detail.answer_id) {
-                console.log("New submission detected:", event.detail.answer_id);
-                setNewestAnswerId(event.detail.answer_id);
-            }
-        };
-
-        // Listen for custom events
-        window.addEventListener('newAnswerSubmitted', handleNewSubmission);
         
         // Initial fetch
         fetchNewestAnswer();
         
-        // Less frequent polling to reduce server load
-        const interval = setInterval(fetchNewestAnswer, 10000);
+        // Set up polling every 3 seconds
+        const pollingInterval = setInterval(fetchNewestAnswer, 3000);
         
+        // Cleanup
         return () => {
             window.removeEventListener('newAnswerSubmitted', handleNewSubmission);
-            clearInterval(interval);
+            clearInterval(pollingInterval);
         };
-    }, [filteredClusters]); // Add filteredClusters as a dependency so it re-checks when clusters change
+    }, []); // Empty dependency array = only run once on mount
 
-    // Add this useEffect to hide "YOU" label after 20 seconds
-useEffect(() => {
-    // When the newestAnswerId changes and is not null
-    if (newestAnswerId) {
-        console.log("Setting timeout to hide YOU label after 20 seconds for ID:", newestAnswerId);
+    // Keep the 20-second timer effect
+    useEffect(() => {
+        if (newestAnswerId) {
+            console.log("Setting 20s timer for newest answer ID:", newestAnswerId);
+            const hideYouLabelTimer = setTimeout(() => {
+                console.log("Timer expired - hiding YOU label");
+                setNewestAnswerId(null);
+                setYouLabelDismissed(true);
+            }, 60000); // 60 seconds
+            
+            return () => clearTimeout(hideYouLabelTimer);
+        }
+    }, [newestAnswerId]); // Missing closing parenthesis and dependency array
+
+    // Helper function to get answer text consistently
+    const getAnswerText = (answer, language) => {
+        if (!answer) return "";
+        if (answer.en) return answer.en;
+        if (answer.english) return answer.english;
+        if (answer.body) return answer.body;
+        if (typeof answer.answer === 'string') return answer.answer;
+        if (answer.content) return answer.content;
+        if (answer.text) return answer.text;
+        if (answer.answer_text) return answer.answer_text;
+        if (answer[language] && language === 'en') return answer[language];
+        return "";
+    };
+
+    // Helper function to determine optimal font size based on text length
+    const determineOptimalFontSize = (text, availableWidth, availableHeight) => {
+        if (!text) return '14px';
         
-        // Set a timeout to clear the newestAnswerId after 20 seconds
-        const hideYouLabelTimer = setTimeout(() => {
-            console.log("Clearing YOU label after timeout");
-            setNewestAnswerId(null); // Clear the newestAnswerId instead of yourRecentAnswerId
-        }, 20000); // 20 seconds
+        const textLength = text.length;
+        const baseSize = 14;
         
-        // Clean up the timer when component unmounts or newestAnswerId changes
-        return () => {
-            clearTimeout(hideYouLabelTimer);
-        };
-    }
-}, [newestAnswerId]); // Watch newestAnswerId instead of yourRecentAnswerId
+        // Simple scaling algorithm based on text length
+        if (textLength < 100) return `${baseSize}px`;
+        if (textLength < 200) return `${baseSize - 1}px`;
+        if (textLength < 350) return `${baseSize - 2}px`;
+        if (textLength < 500) return `${baseSize - 3}px`;
+        if (textLength < 650) return `${baseSize - 4}px`;
+        if (textLength < 800) return `${baseSize - 5}px`;
+        
+        // For really long text, cap at minimum readable size
+        return `${Math.max(8, baseSize - 6)}px`;
+    };
+
+    // Add this effect to handle the auto-hover functionality
+    useEffect(() => {
+        // Only activate auto-hover when a cluster is expanded and no card is being interacted with
+        if (expandedCluster && hoveredCard === null && focusedCard === null) {
+            // Start auto-hover after 5 seconds of inactivity
+            const startTimer = setTimeout(() => {
+                setAutoHoverActive(true);
+                
+                // Start with the LAST card (rightmost)
+                setAutoHoverIndex(expandedCluster.answers.length - 1);
+                
+                // Set up interval to cycle through cards RIGHT TO LEFT
+                autoHoverIntervalRef.current = setInterval(() => {
+                    setAutoHoverIndex(prevIndex => {
+                        if (!expandedCluster) return null;
+                        
+                        // Move to previous card or cycle back to last card
+                        const nextIndex = prevIndex - 1;
+                        return nextIndex < 0 ? expandedCluster.answers.length - 1 : nextIndex;
+                    });
+                }, 2000); // Hover on each card for 2 seconds
+            }, 5000); // Start auto-hover after 5 seconds
+            
+            return () => {
+                clearTimeout(startTimer);
+                if (autoHoverIntervalRef.current) {
+                    clearInterval(autoHoverIntervalRef.current);
+                    autoHoverIntervalRef.current = null;
+                }
+            };
+        } else if (autoHoverActive && (hoveredCard !== null || focusedCard !== null)) {
+            // Stop auto-hover if user manually interacts with a card
+            setAutoHoverActive(false);
+            setAutoHoverIndex(null);
+            if (autoHoverIntervalRef.current) {
+                clearInterval(autoHoverIntervalRef.current);
+                autoHoverIntervalRef.current = null;
+            }
+        }
+    }, [expandedCluster, hoveredCard, focusedCard, autoHoverActive]);
+
+    // Add this function before renderExpandedCluster
+    const handleCardClick = (index) => {
+        if (focusedCard === index) {
+            setFocusedCard(null); // Toggle off if already focused
+        } else {
+            setFocusedCard(index); // Focus this card
+            setHoveredCard(null); // Clear any hover state
+        }
+    };
 
     return (
         <div className={styles.container}>
@@ -668,53 +969,44 @@ useEffect(() => {
                             left: `${Math.max(15, Math.min(85, cluster.answers[0].x_axis_value * 70 + 15))}%`,
                             position: 'absolute',
                             transform: 'translate(-50%, -50%)',
-                            backgroundColor: getQuestionColor(cluster.questionId),
-                            width: `${Math.min(150, 10 + (cluster.size - 1) * 8)}px`,
-                            height: `${Math.min(150, 10 + (cluster.size - 1) * 8)}px`,
-                            borderRadius: '50%',
-                        };
-                        
-                        return (
-                        <div
-    key={cluster.id}
-    className={`${styles.answerItem} ${cluster.size > 1 ? styles.cluster : ''} ${isYourCluster ? styles.yourCluster : ''}`}
-    data-color={getQuestionColor(cluster.questionId)}
-    data-cluster-size={cluster.size}
-    style={{
-        ...style,
-        opacity: 1,
-        pointerEvents: 'auto', 
-        cursor: 'pointer',
-        zIndex: isYourCluster ? 11 : 10,
-        border: isYourCluster ? '3px solid black' : 'none',
-    }}
-    onClick={(e) => handleClusterClick(cluster, e)}
-    title={isYourCluster ? 'Your answer' : (cluster.size > 1 ? `${cluster.size} answers` : 'Single answer')}
->
-    {isYourCluster && (
-        <div 
-            className={styles.youIndicator}
-            style={{
-                position: 'absolute',
-                top: '-30px', 
-                left: '50%',
-                transform: 'translateX(-50%)',
-                backgroundColor: 'black',
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '14px',
-                padding: '3px 10px',
-                borderRadius: '12px',
-                zIndex: 100,
-                whiteSpace: 'nowrap',
-                pointerEvents: 'none',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-            }}
-        >
-            <span>YOU</span>
-        </div>
-    )}
-</div>
+                            backgroundColor: getQuestionColor(cluster.questionId)
+                        };  // Added closing parenthesis and properly closed the object
+return (
+                            <div
+                                key={cluster.id}
+                                className={`${styles.answerItem} ${cluster.size > 1 ? styles.cluster : ''} ${isYourCluster ? styles.yourCluster : ''}`}
+                                data-color={getQuestionColor(cluster.questionId)}
+                                data-cluster-size={cluster.size}
+                                style={{
+                                    ...style,
+                                    opacity: expandedCluster ? 0.3 : 1,
+                                    pointerEvents: expandedCluster ? 'none' : 'auto',
+                                    cursor: 'pointer',
+                                    zIndex: isYourCluster ? 1000 : (200 - Math.min(cluster.size * 5, 150)),
+                                    border: isYourCluster ? '3px solid black' : 'none',
+                                }}
+                                onClick={(e) => handleClusterClick(cluster, e)}
+                                title={isYourCluster ? 'Your answer' : (cluster.size > 1 ? `${cluster.size} answers` : 'Single answer')}
+                            >
+                                {}
+                                {isYourCluster && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '-10px',
+                                        right: '-10px',
+                                        backgroundColor: 'black',
+                                        color: 'white',
+                                        borderRadius: '12px',
+                                        padding: '2px 8px',
+                                        fontSize: '12px',
+                                        fontWeight: 'bold',
+                                        zIndex: 1001,
+                                        pointerEvents: 'none',
+                                    }}>
+                                        YOU
+                                    </div>
+                                )}
+                            </div>
                         );
                     })}
                     
@@ -745,14 +1037,10 @@ useEffect(() => {
                 transition: 'opacity 0.3s ease',
                 pointerEvents: expandedCluster ? 'none' : 'auto'
             }}>
-                <div className={`${styles.axisLabel} ${styles.labelTop}`}>AI enthusiast</div>
-                <div className={`${styles.axisLabel} ${styles.labelBottom}`}>AI skeptic</div>
-                <div className={`${styles.axisLabel} ${styles.labelLeft}`}>Little scared
-                of the
-                future</div>
-                <div className={`${styles.axisLabel} ${styles.labelRight}`}>Looking bright
-                to the
-                future</div>
+                <div className={`${styles.axisLabel} ${styles.labelTop}`}>{translate('aiEnthusiast', 'AI enthusiast')}</div>
+                <div className={`${styles.axisLabel} ${styles.labelBottom}`}>{translate('aiSkeptic', 'AI skeptic')}</div>
+                <div className={`${styles.axisLabel} ${styles.labelLeft}`}>{translate('scaredOfFuture', 'Little scared of the future')}</div>
+                <div className={`${styles.axisLabel} ${styles.labelRight}`}>{translate('brightFuture', 'Looking bright to the future')}</div>
             </div>
 
             <div className={styles.timeline} style={{
@@ -761,6 +1049,16 @@ useEffect(() => {
                 pointerEvents: expandedCluster ? 'none' : 'auto',
                 transform: 'scale(0.85)',
             }}>
+                {/* Language toggle near the timeline */}
+                <LanguageToggle 
+                    onToggle={(newLang) => {
+                        setLanguage(newLang);
+                        // Force refresh to update all translations
+                        setTimeout(() => setScanningStep(scanningStep), 100);
+                    }} 
+                    currentLang={language} 
+                />
+                
                 {SEASONS.map((season, index) => (
                     <div
                         key={season}
@@ -792,6 +1090,10 @@ useEffect(() => {
                             numOctaves="3" 
                             seed="1"
                             stitchTiles="stitch"
+                        />
+                        <feDisplacementMap 
+                            in="SourceGraphic" 
+                            scale="5"
                         />
                         <feDisplacementMap 
                             in="SourceGraphic" 

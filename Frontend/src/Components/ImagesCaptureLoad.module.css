@@ -251,6 +251,73 @@ background-color: var(--postItPinkDark) !important;
   overflow-y: auto !important; /* Allow scrolling if content is tall */
 }
 
+.scanningContainer.landscape {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Adjust camera container for landscape mode */
+.landscape .scanningContent {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+  max-width: none;
+  padding: 0;
+}
+
+/* Left side with info and buttons */
+.landscape .scanningInfo {
+  width: 30%;
+  height: 100%;
+  padding: 20px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Right side with camera view */
+.landscape .cameraViewfinderContainer {
+  width: 70%;
+  height: 100%;
+  margin: 0;
+  max-width: none;
+  aspect-ratio: auto;
+}
+
+/* Camera viewfinder takes full height of container */
+.landscape .cameraViewfinder {
+  width: auto;
+  height: 100%;
+  max-height: 100vh;
+  aspect-ratio: 4/3;
+  margin: 0 auto;
+}
+
+/* Reposition controls */
+.landscape .captureButton {
+  bottom: 20px;
+}
+
+.landscape .cameraBackButton {
+  top: 20px;
+  left: 20px;
+}
+
+/* Adjust upload button position */
+.landscape .uploadFallbackContainer {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  text-align: left;
+}
+
 .scanningContent {
   width: 100%;
   max-width: 800px;
