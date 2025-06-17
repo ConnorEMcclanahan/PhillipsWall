@@ -100,7 +100,6 @@ const StatisticsDashboard = () => {
         color: stats.color_usage.colors[i]
     }));
 
-
     const GeneralMetrics = () => (
         <Fade in={true} timeout={800}>
             <Grid container spacing={3}>
@@ -192,27 +191,24 @@ const StatisticsDashboard = () => {
             <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                     <GlassCard>
-                        <Typography variant="h6" gutterBottom sx={{color: 'black'}}>{translate('mostEngagingQuestions')}</Typography>
+                        <Typography variant="h6" gutterBottom sx={{color: 'black'}}>{translate('Post-it Wall Engagement')}</Typography>
                         <List>
-                            {stats.engagement_metrics.most_engaging_questions.map((question, index) => (
-                                <React.Fragment key={question.question_id}>
+                            {stats.engagement_metrics.map(({ answer_count, month, year }) => (
+                                <React.Fragment key={`${year}-${month}`}>
                                     <ListItem>
-                                        <ListItemText
-                                            primary={
-                                                <Typography sx={{color: 'black'}}>
-                                                    {question[`question_text_${language}`]}
-                                                </Typography>
-                                            }
-                                            secondary={
-                                                <Typography sx={{color: 'rgba(0,0,0,0.7)'}}>
-                                                    {question.answer_count} answers
-                                                </Typography>
-                                            }
-                                        />
+                                    <ListItemText
+                                        primary={
+                                        <Typography sx={{ color: 'black' }}>
+                                            Scanned post-its: {answer_count}
+                                        </Typography>
+                                        }
+                                        secondary={
+                                        <Typography sx={{ color: 'rgba(0,0,0,0.7)' }}>
+                                            {month}/{year}
+                                        </Typography>
+                                        }
+                                    />
                                     </ListItem>
-                                    {index < stats.engagement_metrics.most_engaging_questions.length - 1 &&
-                                        <Divider sx={{borderColor: 'rgba(0,0,0,0.1)'}}/>
-                                    }
                                 </React.Fragment>
                             ))}
                         </List>

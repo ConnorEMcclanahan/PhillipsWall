@@ -108,3 +108,26 @@ class AnswerDAO:
                 connection.commit()
         except Exception as e:
             print("Error inserting translated answer:", e)
+
+    @staticmethod
+    def get_answer_count_per_month():
+        query = (
+            "SELECT YEAR(answer_date) AS year, "
+            "MONTH(answer_date) AS month, "
+            "COUNT(answer_date) AS answer_count "
+            "FROM Answer "
+            "GROUP BY YEAR(answer_date), MONTH(answer_date) "
+            "ORDER BY YEAR(answer_date), MONTH(answer_date)"
+        )
+        try:
+            with create_connection() as connection:
+                cursor = connection.cursor()
+                cursor.execute(query)
+                rows = cursor.fetchall()
+                answers = [
+                    dict(zip([column[0] for column in cursor.description], row))
+                    for row in rows
+                ]
+                return answers
+        except Exception as e:
+            print("Error getting answer count per month:", e)

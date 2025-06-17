@@ -5,9 +5,10 @@ from typing import List, Dict
 
 
 class UtilityService:
-    def __init__(self, question_dao, answer_for_questions_dao):
+    def __init__(self, question_dao, answer_for_questions_dao, answer_dao):
         self.qd = question_dao
         self.aqd = answer_for_questions_dao
+        self.answer_dao = answer_dao
 
     def get_statistics(self):
         questions = self.qd.get_questions() or []
@@ -23,7 +24,7 @@ class UtilityService:
             "general_metrics": self.calculate_general_metrics(questions, answers),
             "language_distribution": self.calculate_language_distribution(answers),
             "response_distribution": self.calculate_response_distribution(questions),
-            "engagement_metrics": self.calculate_engagement_metrics(questions, answers),
+            "engagement_metrics": self.answer_dao.get_answer_count_per_month(),
             "completion_rate": self.calculate_completion_rate(questions, answers),
             "popularity": self.calculate_popularity(questions, answers),
             "color_usage": self.analyze_color_usage(questions),
@@ -114,32 +115,18 @@ class UtilityService:
             "most_popular_question": most_popular,
             "least_popular_question": least_popular,
         }
-
-    def calculate_engagement_metrics(self, questions: List, answers: List) -> Dict:
-        # Calculate engagement over time (you might want to add timestamp field to your DB)
-        question_engagement = {}
-        for question in questions:
-            question_answers = [
-                a for a in answers if a["question_id"] == question["question_id"]
+    @staticmethod
+    def calculate_engagement_metrics(dates):
+        return {
+            "most_engaging_questions": [
+                {
+                    "count": date['answer_count'],
+                    "month": date['month'],
+                    "year": date['year']
+                }
+                for date in dates
             ]
-            question_engagement[question["question_id"]] = len(question_answers)
-
-            most_engaging = sorted(
-                question_engagement.items(), key=lambda x: x[1], reverse=True
-            )[:5]
-
-            return {
-                "most_engaging_questions": [
-                    {
-                        "question_id": q_id,
-                        "answer_count": count,
-                        "question_text_en": next(
-                            q["en"] for q in questions if q["question_id"] == q_id
-                        ),
-                    }
-                    for q_id, count in most_engaging
-                ]
-            }
+        }
 
     @staticmethod
     def analyze_color_usage(questions):
