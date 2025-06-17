@@ -1,3 +1,4 @@
+import json
 import statistics
 from collections import Counter
 from typing import List, Dict
@@ -77,8 +78,6 @@ class UtilityService:
         }
 
     def calculate_response_distribution(self, questions: List) -> Dict:
-        print ('QUESTIONS!!!')
-        print (questions)
         question_answer_counts = {
             question["question_id"]: len(self.aqd.get_answers_for_question(question["question_id"]) or [])
             for question in questions
@@ -86,7 +85,6 @@ class UtilityService:
 
 
         answer_lengths = list(question_answer_counts.values())
-        print (answer_lengths)
 
         return {
             "max_answers_for_question": max(answer_lengths) if answer_lengths else 0,
@@ -143,21 +141,16 @@ class UtilityService:
                 ]
             }
 
-    def analyze_color_usage(self, questions: List) -> Dict:
-        colors = Counter(
-            question.get("color", "unknown")
-            for question in questions
-            if question.get("color")
-        )
-        gradient_colors = Counter(
-            question.get("gradient_color", "unknown")
-            for question in questions
-            if question.get("gradient_color")
-        )
-
+    @staticmethod
+    def analyze_color_usage(questions):
         return {
-            "color_palette": dict(colors),
-            "gradient_palette": dict(gradient_colors),
-            "most_used_colors": dict(colors.most_common(3)),
-            "most_used_gradients": dict(gradient_colors.most_common(3)),
+            "questions": [
+                {
+                    "question_id": q["question_id"],
+                    "nl": q["nl"],
+                    "en": q["en"]
+                }
+                for q in questions
+            ],
+            "colors": [q["color"] for q in questions]
         }

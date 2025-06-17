@@ -13,12 +13,12 @@ class PortkeyClient:
             api_key=api_key
         )
 
-    def get_chat_completion(self, messages, model="gpt-40-mini"):
+    def get_chat_completion(self, messages, model="gpt-4o-mini"):
         response =  self.client.chat.completions.create(
             messages=messages,
             model=model,
-            debug=False
-,           temperature=0
+            debug=False,
+            temperature=0
         )
 
         return response

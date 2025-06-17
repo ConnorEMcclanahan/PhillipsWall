@@ -33,6 +33,7 @@ import PaletteIcon from '@mui/icons-material/Palette';
 import styles from './StatisticsDisplay.module.css';
 import translations from '../Pages/translations.json';
 import {useLanguage} from "./LanguageContext";
+import { Style } from '@mui/icons-material';
 
 // Styled components to match the application theme
 const GlassCard = styled(Box)(({theme}) => ({
@@ -59,6 +60,7 @@ const StatisticsDashboard = () => {
         fetch('http://localhost:5000/statistics')
             .then(res => res.json())
             .then(data => {
+                console.log(data)
                 setStats(data);
                 setLoading(false);
             })
@@ -92,9 +94,12 @@ const StatisticsDashboard = () => {
 
     const responseDistData = Object.entries(stats.response_distribution.questions_by_answer_count)
         .map(([questionID, value]) => ({name: `Question ${questionID}`, value}));
+    
+    const questionColorPairs = stats.color_usage.questions.map((q, i) => ({
+        question: q.en, 
+        color: stats.color_usage.colors[i]
+    }));
 
-    const colorData = Object.entries(stats.color_usage.most_used_colors)
-        .map(([name, value]) => ({name, value}));
 
     const GeneralMetrics = () => (
         <Fade in={true} timeout={800}>
@@ -138,9 +143,9 @@ const StatisticsDashboard = () => {
 
     const Distribution = () => (
         <Fade in={true} timeout={800}>
-            <Grid container spacing={3}>
+            <Grid container spacing={5}>
                 <Grid item xs={12} md={6}>
-                    <GlassCard sx={{height: '400px'}}>
+                    <GlassCard sx={{height: '400px', width: '600px'}}>
                         <Typography variant="h6" gutterBottom sx={{color: 'black'}}>{translate('languageDistribution')}</Typography>
                         <ResponsiveContainer width="100%" height="90%">
                             <PieChart>
@@ -220,12 +225,12 @@ const StatisticsDashboard = () => {
                             <PaletteIcon sx={{ml: 1, color: 'rgba(0,0,0,0.7)'}}/>
                         </Box>
                         <Grid container spacing={2}>
-                            {colorData.map(({name, value}) => (
-                                <Grid item xs={12} key={name}>
+                            {questionColorPairs.map(({question, color}) => (
+                                <Grid item xs={12} key={question}>
                                     <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                                        <Box sx={{width: 20, height: 20, borderRadius: 1, bgcolor: name}}/>
-                                        <Typography sx={{flexGrow: 1, color: 'black'}}>{name}</Typography>
-                                        <Typography sx={{fontWeight: 'bold', color: 'black'}}>{value}</Typography>
+                                        <Box sx={{width: 20, height: 20, borderRadius: 1, bgcolor: color}}/>
+                                        <Typography sx={{flexGrow: 1, color: 'black'}}>{question}</Typography>
+                                        {/* <Typography sx={{fontWeight: 'bold', color: 'black'}}>{value}</Typography> */}
                                     </Box>
                                 </Grid>
                             ))}
@@ -250,5 +255,7 @@ const StatisticsDashboard = () => {
         </Container>
     );
 };
+
+
 
 export default StatisticsDashboard;

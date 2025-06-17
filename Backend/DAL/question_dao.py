@@ -15,7 +15,6 @@ class QuestionDAO:
 
                 columns = [desc[0] for desc in cur.description]
                 rows = [dict(zip(columns, row)) for row in cur.fetchall()]
-                print (rows)
                 return rows
             
     @staticmethod
