@@ -20,38 +20,7 @@ class AnswerDAO:
         except Exception as e:
             print("Error fetching answers:", e)
             return []
-  
-    @staticmethod
-    def get_answers_with_translations():
-        query = """
-        SELECT
-            a.answer_id, 
-            a.answer_text,
-            a.answer_date, 
-            a.x_axis_value AS answer_x_axis_value, 
-            a.y_axis_value AS answer_y_axis_value,
-            a.answer_language,
-            a.image_url,
-             
-            t.answer_dutch, 
-            t.answer_english,
-        FROM Answer a
-        LEFT JOIN AnswerTranslation t ON a.answer_id = t.answer_id;
-        """
-        try:
-            with create_connection() as connection:
-                cursor = connection.cursor()
-                cursor.execute(query)
-                rows = cursor.fetchall()
-                answers = [
-                    dict(zip([column[0] for column in cursor.description], row))
-                    for row in rows
-                ]
-            return answers
-        except Exception as e:
-            print("Error fetching answers with translations:", e)
-            return []
-        
+ 
     @staticmethod
     def get_answer(answer_id):
         query = "SELECT * FROM Answer WHERE answer_id = ?"
@@ -107,24 +76,25 @@ class AnswerDAO:
                 ))
                 connection.commit()
         except Exception as e:
-<<<<<<< get-newly-submitted-answer
             print("Error inserting translated answer:", e)
 
     @staticmethod
     def get_latest_answer_id():
-        query = ("SELECT answer_id FROM Answer ORDER BY answer_date DESC LIMIT 1")
+
+        # Simply get the highest ID - most reliable for finding newest record
+        query = ("SELECT TOP 1 answer_id FROM Answer ORDER BY answer_id DESC")
+
         try:
             with create_connection() as connection:
                 cursor = connection.cursor()
                 cursor.execute(query)
                 result = cursor.fetchone()
                 if result:
+                    print(f"Latest answer ID found: {result[0]}")  # Add logging
                     return result[0]
                 else:
+                    print("No answers found in database")
                     return None
         except Exception as e:
             print("Error retrieving most recently added answer:", e)
-
-=======
-            print("Error inserting translated answer:", e)
->>>>>>> main
+            return None
