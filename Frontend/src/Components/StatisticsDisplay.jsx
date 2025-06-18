@@ -12,7 +12,6 @@ import {
     Divider,
     Fade
 } from '@mui/material';
-import {styled} from '@mui/material/styles';
 import {
     BarChart,
     Bar,
@@ -33,19 +32,6 @@ import PaletteIcon from '@mui/icons-material/Palette';
 import styles from './StatisticsDisplay.module.css';
 import translations from '../Pages/translations.json';
 import {useLanguage} from "./LanguageContext";
-import { Style } from '@mui/icons-material';
-
-// Styled components to match the application theme
-const GlassCard = styled(Box)(({theme}) => ({
-    background: 'rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(10px)',
-    borderRadius: '16px',
-    padding: theme.spacing(3),
-    boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-}));
-
-
 
 const StatisticsDashboard = () => {
     const [stats, setStats] = useState(null);
@@ -72,19 +58,19 @@ const StatisticsDashboard = () => {
 
     if (loading) {
         return (
-                <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
-                    <CircularProgress sx={{color: 'white'}}/>
-                </Box>
+            <Box className={styles.loadingContainer}>
+                <CircularProgress className={styles.loadingSpinner}/>
+            </Box>
         );
     }
 
     if (error) {
         return (
-                <Container maxWidth="lg">
-                    <Alert severity="error" sx={{background: 'rgba(255,255,255,0.1)', color: 'white'}}>
-                        Failed to load statistics: {error}
-                    </Alert>
-                </Container>
+            <Container className={styles.errorContainer}>
+                <Alert severity="error" className={styles.errorAlert}>
+                    Failed to load statistics: {error}
+                </Alert>
+            </Container>
         );
     }
 
@@ -102,39 +88,44 @@ const StatisticsDashboard = () => {
 
     const GeneralMetrics = () => (
         <Fade in={true} timeout={800}>
-            <Grid container spacing={3}>
+            <Grid container spacing={3} className={styles.generalMetricsContainer}>
+                {/* Total Questions Blok */}
                 <Grid item xs={12} md={4}>
-                    <GlassCard>
-                        <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}>
-                            <Typography variant="h6" sx={{color: 'black'}}>{translate('totalQuestions')}</Typography>
-                            <PeopleIcon sx={{color: 'rgba(0,0,0,0.7)'}}/>
+                    <Box className={`${styles.glassCard} ${styles.generalMetricsCard}`}>
+                        <Box className={styles.metricCard}>
+                            <Typography variant="h6" className={styles.metricTitle}>{translate('totalQuestions')}</Typography>
+                            <PeopleIcon className={styles.metricIcon}/>
                         </Box>
-                        <Typography variant="h3" sx={{color: 'black'}}>
+                        <Typography variant="h3" className={styles.metricValue}>
                             {stats.general_metrics.total_questions}
                         </Typography>
-                    </GlassCard>
+                    </Box>
                 </Grid>
+                
+                {/* Total Answers Blok */}
                 <Grid item xs={12} md={4}>
-                    <GlassCard>
-                        <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}>
-                            <Typography variant="h6" sx={{color: 'black'}}>{translate('totalAnswers')}</Typography>
-                            <MessageIcon sx={{color: 'rgba(0,0,0,0.7)'}}/>
+                    <Box className={`${styles.glassCard} ${styles.generalMetricsCard}`}>
+                        <Box className={styles.metricCard}>
+                            <Typography variant="h6" className={styles.metricTitle}>{translate('totalAnswers')}</Typography>
+                            <MessageIcon className={styles.metricIcon}/>
                         </Box>
-                        <Typography variant="h3" sx={{color: 'black'}}>
+                        <Typography variant="h3" className={styles.metricValue}>
                             {stats.general_metrics.total_answers}
                         </Typography>
-                    </GlassCard>
+                    </Box>
                 </Grid>
+                
+                {/* Average Answers Per Question Blok */}
                 <Grid item xs={12} md={4}>
-                    <GlassCard>
-                        <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}>
-                            <Typography variant="h6" sx={{color: 'black'}}>{translate('avgAnswersPerQuestion')}</Typography>
-                            <PieChartIcon sx={{color: 'rgba(0,0,0,0.7)'}}/>
+                    <Box className={`${styles.glassCard} ${styles.generalMetricsCard}`}>
+                        <Box className={styles.metricCard}>
+                            <Typography variant="h6" className={styles.metricTitle}>{translate('avgAnswersPerQuestion')}</Typography>
+                            <PieChartIcon className={styles.metricIcon}/>
                         </Box>
-                        <Typography variant="h3" sx={{color: 'black'}}>
+                        <Typography variant="h3" className={styles.metricValue}>
                             {stats.general_metrics.average_answers_per_question}
                         </Typography>
-                    </GlassCard>
+                    </Box>
                 </Grid>
             </Grid>
         </Fade>
@@ -142,11 +133,12 @@ const StatisticsDashboard = () => {
 
     const Distribution = () => (
         <Fade in={true} timeout={800}>
-            <Grid container spacing={5}>
+            <Grid container spacing={5} className={styles.distributionContainer}>
+                {/* Language Distribution Blok */}
                 <Grid item xs={12} md={6}>
-                    <GlassCard sx={{height: '400px', width: '600px'}}>
-                        <Typography variant="h6" gutterBottom sx={{color: 'black'}}>{translate('languageDistribution')}</Typography>
-                        <ResponsiveContainer width="100%" height="90%">
+                    <Box className={`${styles.glassCard} ${styles.languageDistributionCard}`}>
+                        <Typography variant="h6" className={styles.chartTitle}>{translate('languageDistribution')}</Typography>
+                        <ResponsiveContainer className={styles.chartContainer}>
                             <PieChart>
                                 <Pie
                                     data={languageData}
@@ -165,12 +157,14 @@ const StatisticsDashboard = () => {
                                 <Tooltip contentStyle={{background: 'rgba(255,255,255,0.8)'}}/>
                             </PieChart>
                         </ResponsiveContainer>
-                    </GlassCard>
+                    </Box>
                 </Grid>
+                
+                {/* Response Distribution Blok */}
                 <Grid item xs={12} md={6}>
-                    <GlassCard sx={{height: '400px'}}>
-                        <Typography variant="h6" gutterBottom sx={{color: 'black'}}>{translate('responseDistribution')}</Typography>
-                        <ResponsiveContainer width="100%" height="90%">
+                    <Box className={`${styles.glassCard} ${styles.responseDistributionCard}`}>
+                        <Typography variant="h6" className={styles.chartTitle}>{translate('responseDistribution')}</Typography>
+                        <ResponsiveContainer className={styles.chartContainer}>
                             <BarChart data={responseDistData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)"/>
                                 <XAxis dataKey="name" stroke="black"/>
@@ -180,7 +174,7 @@ const StatisticsDashboard = () => {
                                 <Bar dataKey="value" fill="#64b5f6"/>
                             </BarChart>
                         </ResponsiveContainer>
-                    </GlassCard>
+                    </Box>
                 </Grid>
             </Grid>
         </Fade>
@@ -188,22 +182,23 @@ const StatisticsDashboard = () => {
 
     const Engagement = () => (
         <Fade in={true} timeout={800}>
-            <Grid container spacing={3}>
+            <Grid container spacing={3} className={styles.engagementContainer}>
+                {/* Post-it Wall Engagement Blok */}
                 <Grid item xs={12} md={6}>
-                    <GlassCard>
-                        <Typography variant="h6" gutterBottom sx={{color: 'black'}}>{translate('Post-it Wall Engagement')}</Typography>
+                    <Box className={`${styles.glassCard} ${styles.engagementMetricsCard}`}>
+                        <Typography variant="h6" className={styles.chartTitle}>{translate('Post-it Wall Engagement')}</Typography>
                         <List>
                             {stats.engagement_metrics.map(({ answer_count, month, year }) => (
                                 <React.Fragment key={`${year}-${month}`}>
                                     <ListItem>
                                     <ListItemText
                                         primary={
-                                        <Typography sx={{ color: 'black' }}>
+                                        <Typography className={styles.engagementList}>
                                             Scanned post-its: {answer_count}
                                         </Typography>
                                         }
                                         secondary={
-                                        <Typography sx={{ color: 'rgba(0,0,0,0.7)' }}>
+                                        <Typography className={styles.engagementSecondary}>
                                             {month}/{year}
                                         </Typography>
                                         }
@@ -212,46 +207,45 @@ const StatisticsDashboard = () => {
                                 </React.Fragment>
                             ))}
                         </List>
-                    </GlassCard>
+                    </Box>
                 </Grid>
+                
+                {/* Color Usage Blok */}
                 <Grid item xs={12} md={6}>
-                    <GlassCard>
-                        <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                            <Typography variant="h6" sx={{color: 'black'}}>{translate('colorUsage')}</Typography>
-                            <PaletteIcon sx={{ml: 1, color: 'rgba(0,0,0,0.7)'}}/>
+                    <Box className={`${styles.glassCard} ${styles.colorUsageCard}`}>
+                        <Box className={styles.colorUsageHeader}>
+                            <Typography variant="h6" className={styles.metricTitle}>{translate('colorUsage')}</Typography>
+                            <PaletteIcon className={styles.colorUsageIcon}/>
                         </Box>
                         <Grid container spacing={2}>
                             {questionColorPairs.map(({question, color}) => (
                                 <Grid item xs={12} key={question}>
-                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                                        <Box sx={{width: 20, height: 20, borderRadius: 1, bgcolor: color}}/>
-                                        <Typography sx={{flexGrow: 1, color: 'black'}}>{question}</Typography>
-                                        {/* <Typography sx={{fontWeight: 'bold', color: 'black'}}>{value}</Typography> */}
+                                    <Box className={styles.colorItem}>
+                                        <Box className={styles.colorSwatch} style={{backgroundColor: color}}/>
+                                        <Typography className={styles.colorQuestion}>{question}</Typography>
                                     </Box>
                                 </Grid>
                             ))}
                         </Grid>
-                    </GlassCard>
+                    </Box>
                 </Grid>
             </Grid>
         </Fade>
     );
 
     return (
-        <Container className={styles.container} sx={{ maxWidth: '1400px', width: '100%' }}>
-            <Typography variant="h4" gutterBottom sx={{mb: 4, color: 'black'}} className={styles.statTitle}>
+        <Container className={styles.container}>
+            <Typography variant="h4" className={styles.statTitle}>
                 {translate('postWallStatistics')}
             </Typography>
 
             <GeneralMetrics />
-            <Box sx={{ mt: 4 }} />
+            <Box className={styles.gridSpacing} />
             <Distribution />
-            <Box sx={{ mt: 4 }} />
+            <Box className={styles.gridSpacing} />
             <Engagement />
         </Container>
     );
 };
-
-
 
 export default StatisticsDashboard;

@@ -1,8 +1,205 @@
-.container{
+.container {
     height: 92vh;
     color: rgb(0, 0, 0);
+    max-width: 1400px;
+    width: 100%;
 }
 
-.statTitle{
+.statTitle {
     padding: 2rem 1rem 1rem 2rem;
+    margin-bottom: 2rem;
+    color: black;
+}
+
+.loadingContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+}
+
+.loadingSpinner {
+    color: white;
+}
+
+.errorContainer {
+    max-width: 1200px;
+}
+
+.errorAlert {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Algemene kaartstijl */
+.glassCard {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Kaart-specifieke stijlen: pas hier per kaart aan */
+.languageDistributionCard {
+    height: 450px;
+    width: 400px;
+    max-width: 100%;
+    min-width: 350px;
+    /* Voeg hier unieke stijlen toe voor deze kaart */
+}
+
+.responseDistributionCard {
+    height: 450px;
+    width: 100%;
+    /* Voeg hier unieke stijlen toe voor deze kaart */
+}
+
+.generalMetricsCard {
+    height: 150px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* Voeg hier unieke stijlen toe voor deze kaart */
+}
+
+.engagementMetricsCard {
+    height: 400px;
+    width: 100%;
+    overflow-y: auto;
+    /* Voeg hier unieke stijlen toe voor deze kaart */
+}
+
+.colorUsageCard {
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    /* Voeg hier unieke stijlen toe voor deze kaart */
+}
+
+/* Overige stijlen */
+.metricCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.metricTitle {
+    color: black;
+}
+
+.metricIcon {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.metricValue {
+    color: black;
+}
+
+.generalMetricsContainer {
+    width: 100%;
+}
+
+.distributionContainer {
+    width: 100%;
+}
+
+.chartTitle {
+    color: black;
+    margin-bottom: 1rem;
+}
+
+.chartContainer {
+    width: 100%;
+    height: 90%;
+}
+
+.tooltipContent {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.engagementContainer {
+    width: 100%;
+}
+
+.gridContainer {
+    margin-top: 2rem;
+}
+
+.gridSpacing {
+    margin-top: 2rem;
+}
+
+.engagementList {
+    color: black;
+}
+
+.engagementSecondary {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.colorUsageHeader {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.colorUsageIcon {
+    margin-left: 0.5rem;
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.colorItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.colorSwatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.colorQuestion {
+    flex-grow: 1;
+    color: black;
+    font-size: 0.9rem;
+}
+
+.colorValue {
+    font-weight: bold;
+    color: black;
+}
+
+@media (max-width: 1080px) {
+    .languageDistributionCard,
+    .responseDistributionCard,
+    .generalMetricsCard,
+    .engagementMetricsCard,
+    .colorUsageCard {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 1rem;
+    }
+
+    .languageDistributionCard,
+    .responseDistributionCard {
+        height: 350px;
+    }
+
+    .generalMetricsCard {
+        height: 120px;
+    }
+
+    .engagementMetricsCard,
+    .colorUsageCard {
+        height: 300px;
+    }
 }
