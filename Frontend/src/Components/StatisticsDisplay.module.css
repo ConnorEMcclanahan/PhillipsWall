@@ -1,85 +1,154 @@
-.container {
-    height: 92vh;
-    color: rgb(0, 0, 0);
-    max-width: 1400px;
-    width: 100%;
+/* Forceer alle parents van de container om full-bleed groen te zijn op de stats-pagina */
+#root, .App, .container {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    display: flex; 
+    flex-direction: column;
 }
 
+.container {
+    min-height: 100vh;
+    color: rgb(0, 0, 0);
+    padding: 3.125rem !important; /* 50px */
+    box-sizing: border-box;
+    overflow-x: auto;
+}
+
+/* Titel bovenaan de pagina (PostWall Statistics) */
 .statTitle {
-    padding: 2rem 1rem 1rem 2rem;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
+    margin-top: 1rem;
     color: black;
 }
 
+/* Flexbox container voor metrics en color usage naast elkaar */
+.metricsFlexContainer {
+    display: flex;
+    gap: 3.125rem;
+    width: 100%;
+    align-items: stretch;
+    flex-wrap: nowrap;
+}
+
+/* Linkerkolom met alle General Metrics kaarten onder elkaar (1/5 breedte) */
+.metricsColumn {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9375rem; /* 1.5rem = 24px */
+}
+
+/* Rechterkolom met de Color Usage kaart (4/5 breedte) */
+.colorUsageColumn {
+    flex: 4 1 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Linkerkolom voor Language Distribution (2/5 breedte) */
+.languageDistributionColumn {
+    flex: 2 1 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Rechterkolom voor Timeline (3/5 breedte) */
+.timelineColumn {
+    flex: 3 1 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* Container voor de metrics sectie */
+.generalMetricsContainer {
+    width: 100%;
+}
+
+/* Container voor de distributie charts */
+.distributionContainer {
+    width: 100%;
+}
+
+/* Algemene kaartstijl voor alle blokken (glassmorphism effect) */
+.glassCard {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 1rem; /* 16px */
+    box-shadow: 0 0.25rem 1.875rem rgba(0, 0, 0, 0.1); /* 0 4px 30px */
+    border: 0.0625rem solid rgba(255, 255, 255, 0.2); /* 1px */
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Kaart voor elke General Metric (Total Questions, Total Answers, Avg Answers/Question) */
+.generalMetricsCard {
+    height: 7.5rem; /* 120px */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Kaart voor het kleurgebruik overzicht */
+.colorUsageCard {
+    width: 100%;
+    box-sizing: border-box;
+    height: 100%;
+}
+
+/* Kaart voor de taalverdeling (pie chart) - aangepast voor 2/5 breedte */
+.languageDistributionCard {
+    height: 28.125rem; /* 450px */
+    width: 100%;
+    max-width: 100%;
+    min-width: auto;
+}
+
+/* Kaart voor de timeline (line chart) - aangepast voor 3/5 breedte */
+.timelineCard {
+    height: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* Kaart voor de response distributie (bar chart) */
+.responseDistributionCard {
+    height: 28.125rem; /* 450px */
+}
+
+/* Loader container (spinner centreren) */
 .loadingContainer {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 80vh;
+    min-height: 5rem;
 }
 
+/* Loader spinner kleur */
 .loadingSpinner {
     color: white;
 }
 
+/* Container voor foutmeldingen */
 .errorContainer {
-    max-width: 1200px;
+    max-width: 75rem; /* 1200px */
 }
 
+/* Stijl voor foutmelding (Alert) */
 .errorAlert {
     background: rgba(255, 255, 255, 0.1);
     color: white;
 }
 
-/* Algemene kaartstijl */
-.glassCard {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
+/* Typografie en elementen in kaarten */
 
-/* Kaart-specifieke stijlen: pas hier per kaart aan */
-.languageDistributionCard {
-    height: 450px;
-    width: 400px;
-    max-width: 100%;
-    min-width: 350px;
-    /* Voeg hier unieke stijlen toe voor deze kaart */
-}
-
-.responseDistributionCard {
-    height: 450px;
-    width: 100%;
-    /* Voeg hier unieke stijlen toe voor deze kaart */
-}
-
-.generalMetricsCard {
-    height: 150px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    /* Voeg hier unieke stijlen toe voor deze kaart */
-}
-
-.engagementMetricsCard {
-    height: 400px;
-    width: 100%;
-    overflow-y: auto;
-    /* Voeg hier unieke stijlen toe voor deze kaart */
-}
-
-.colorUsageCard {
-    height: 100%;
-    width: 100%;
-    overflow-y: auto;
-    /* Voeg hier unieke stijlen toe voor deze kaart */
-}
-
-/* Overige stijlen */
+/* Rij met titel en icoon in elke metric kaart */
 .metricCard {
     display: flex;
     justify-content: space-between;
@@ -87,71 +156,62 @@
     margin-bottom: 1rem;
 }
 
+/* Titel van elke metric kaart (zoals Total Questions) */
 .metricTitle {
     color: black;
 }
 
+/* Icoon naast de titel in elke metric kaart */
 .metricIcon {
     color: rgba(0, 0, 0, 0.7);
 }
 
+/* Grote waarde in elke metric kaart (zoals het getal bij Total Questions) */
 .metricValue {
     color: black;
 }
 
-.generalMetricsContainer {
-    width: 100%;
-}
-
-.distributionContainer {
-    width: 100%;
-}
-
+/* Titel boven elke chart */
 .chartTitle {
     color: black;
     margin-bottom: 1rem;
 }
 
+/* Container voor recharts charts */
 .chartContainer {
     width: 100%;
-    height: 90%;
+    height: 100%;
 }
 
+/* Tooltip stijl voor recharts */
 .tooltipContent {
     background: rgba(255, 255, 255, 0.8);
 }
 
-.engagementContainer {
-    width: 100%;
-}
-
+/* Extra spacing tussen blokken */
 .gridContainer {
     margin-top: 2rem;
 }
 
+/* Extra spacing tussen secties */
 .gridSpacing {
     margin-top: 2rem;
 }
 
-.engagementList {
-    color: black;
-}
-
-.engagementSecondary {
-    color: rgba(0, 0, 0, 0.7);
-}
-
+/* Header van het kleurgebruik blok (titel + icoon) */
 .colorUsageHeader {
     display: flex;
     align-items: center;
     margin-bottom: 1rem;
 }
 
+/* Icoon in het kleurgebruik blok */
 .colorUsageIcon {
     margin-left: 0.5rem;
     color: rgba(0, 0, 0, 0.7);
 }
 
+/* Rij voor elke kleur + vraag in het kleurgebruik blok */
 .colorItem {
     display: flex;
     align-items: center;
@@ -159,47 +219,56 @@
     margin-bottom: 0.5rem;
 }
 
+/* Gekleurd blokje in het kleurgebruik blok */
 .colorSwatch {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
+    width: 1.25rem; /* 20px */
+    height: 1.25rem;
+    border-radius: 0.25rem; /* 4px */
     flex-shrink: 0;
 }
 
+/* Vraagtekst in het kleurgebruik blok */
 .colorQuestion {
     flex-grow: 1;
     color: black;
     font-size: 0.9rem;
 }
 
+/* (optioneel) getal in het kleurgebruik blok */
 .colorValue {
     font-weight: bold;
     color: black;
 }
 
-@media (max-width: 1080px) {
-    .languageDistributionCard,
-    .responseDistributionCard,
-    .generalMetricsCard,
-    .engagementMetricsCard,
+/* Responsive aanpassingen voor kleinere schermen */
+@media (max-width: 68.75rem) { /* 1100px */
+    .metricsFlexContainer {
+        flex-direction: column;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+    .colorUsageColumn {
+        /* margin-left: 0; verwijderd */
+    }
     .colorUsageCard {
-        width: 100%;
+        height: auto;
+    }
+}
+
+@media (max-width: 43.75rem) { /* 700px */
+    .container {
+        padding: 1.25rem !important; /* 20px */
+    }
+}
+
+@media (min-width: 1100px) {
+    .engagementMetricsCard {
         max-width: 100%;
-        box-sizing: border-box;
-        margin-bottom: 1rem;
     }
+}
 
-    .languageDistributionCard,
-    .responseDistributionCard {
-        height: 350px;
-    }
-
-    .generalMetricsCard {
-        height: 120px;
-    }
-
-    .engagementMetricsCard,
-    .colorUsageCard {
-        height: 300px;
-    }
+.responseDistributionColumn {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
 }
