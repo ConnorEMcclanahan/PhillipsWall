@@ -48,7 +48,7 @@
 .metricsColumn {
     flex: 1 1 0;
     display: flex;
-    flex-direction: column
+    flex-direction: column;
 }
 
 /* Rechterkolom met de Color Usage kaart (4/5 breedte) */
@@ -70,8 +70,7 @@
     flex: 3 1 0;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    box-sizing: border-box;
+   
 }
 
 /* Container voor de metrics sectie */
@@ -96,18 +95,18 @@
 
 /* Kaart voor elke General Metric (Total Questions, Total Answers, Avg Answers/Question) */
 .generalMetricsCard {
-    height: 7.5rem; /* 120px */
+    height: 6rem; /* 120px */
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    gap: 2rem;
 }
 
 /* Kaart voor het kleurgebruik overzicht */
 .colorUsageCard {
     width: 100%;
     box-sizing: border-box;
-    height: 100%;
+    height: auto;
 }
 
 .colorUsageCard .MuiGrid-container {
@@ -299,10 +298,11 @@
     flex: 1 1 0;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.17rem;
 }
 
 
+ 
 
 
 

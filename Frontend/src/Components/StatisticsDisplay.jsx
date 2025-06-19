@@ -218,7 +218,8 @@ const StatisticsDashboard = () => {
                         </ResponsiveContainer>
                     </Box>
                 </div>
- 
+
+                
                 {/* Timeline Blok (3/5 breedte) */}
                 <div className={styles.timelineColumn}>
                     <Box className={`${styles.glassCard} ${styles.timelineCard}`}>
