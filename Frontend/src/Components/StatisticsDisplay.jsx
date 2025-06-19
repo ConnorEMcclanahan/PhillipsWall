@@ -298,12 +298,12 @@ const StatisticsDashboard = () => {
                 <Box className={`${styles.glassCard} ${styles.generalMetricsCard}`}>
                     <Box className={styles.metricCard}>
                         <Typography variant="h6" className={styles.metricTitle}>
-                            {translate('avgAnswersPerQuestion')}
+                            Number of languages
                             <PieChartIcon className={styles.metricIcon}/>
                         </Typography>
                     </Box>
                     <Typography variant="h3" className={styles.metricValue}>
-                        {stats.general_metrics.average_answers_per_question}
+                        {Object.keys(stats.language_distribution.language_counts).length}
                     </Typography>
                 </Box>
             </div>
