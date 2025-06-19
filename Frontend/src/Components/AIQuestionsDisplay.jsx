@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styles from './AIQuestionsDisplay.module.css';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import { useLanguage } from './LanguageContext';
 import config from '../config';
+import { LanguageProvider, useLanguage } from '../LanguageContext';
+import LanguageSelector from './LanguageSelector';
 
 const { API_BASE } = config;
 const createRandomShadowGrid = (gridCols, gridRows) => {
@@ -63,6 +64,7 @@ const AIQuestionsDisplay = () => {
     const [currentAnswers, setCurrentAnswers] = useState([]);
     const [answersData, setAnswersData] = useState([]);
     const [clickedQuestionPosition, setClickedQuestionPosition] = useState(null);
+    
 
     // Clustering state
     const [clusteredAnswers, setClusteredAnswers] = useState([]);

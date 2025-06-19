@@ -6,7 +6,7 @@ from .connection_db import create_connection
 class AnswerDAO:
     @staticmethod
     def get_answers():
-        query = "SELECT * FROM Answer LEFT JOIN AnswerTranslation ON Answer.answer_id = AnswerTranslation.answer_id"
+        query = "SELECT * answer_text_dutch as Dutch, answer_text_english as English FROM Answer LEFT JOIN AnswerTranslation ON Answer.answer_id = AnswerTranslation.answer_id"
         try:
             with create_connection() as connection:
                 cursor = connection.cursor()

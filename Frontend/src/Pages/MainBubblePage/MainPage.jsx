@@ -1,11 +1,14 @@
 import React from "react";
 import AIQuestionsDisplay from "../../Components/AIQuestionsDisplay";
+import { LanguageProvider } from "../../LanguageContext";
 
 export const MainPage = () => {
     return (
-        <div>
-            <AIQuestionsDisplay/>
-        </div>
+        <LanguageProvider>
+            <div>
+                <AIQuestionsDisplay/>
+            </div>
+        </LanguageProvider>    
     );
 };
 
