@@ -19,7 +19,7 @@
 
 /* Titel bovenaan de pagina (PostWall Statistics) */
 .statTitle {
-    margin-bottom: 3rem;
+    margin-bottom: 3rem !important;
     margin-top: 1rem;
     color: black;
 }
@@ -27,7 +27,12 @@
 /* Titels van alle statistiekblokken en kaarten */
 .chartTitle, .metricTitle {
     color: #000000;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
+}
+
+.glassCard > .chartTitle,
+.glassCard > .metricTitle {
+    margin-bottom: 2rem;
 }
 
 /* Flexbox container voor metrics en color usage naast elkaar */
@@ -85,7 +90,7 @@
     border-radius: 1rem; /* 16px */
     box-shadow: 0 0.25rem 1.875rem rgba(0, 0, 0, 0.1); /* 0 4px 30px */
     border: 0.0625rem solid rgba(255, 255, 255, 0.2); /* 1px */
-    padding: 1.5rem;
+    padding: 1rem;
     margin-bottom: 2rem;
 }
 
@@ -103,6 +108,16 @@
     width: 100%;
     box-sizing: border-box;
     height: 100%;
+}
+
+.colorUsageCard .MuiGrid-container {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem 2rem;
+}
+
+.colorUsageCard .MuiGrid-item {
+    width: 100%;
 }
 
 /* Kaart voor de taalverdeling (pie chart) - aangepast voor 2/5 breedte */
@@ -124,8 +139,8 @@
 
 /* Kaart voor de response distributie (bar chart) */
 .responseDistributionCard {
-    height: 30rem; /* 450px */
-    padding-bottom: 3rem;
+    height: 36rem;
+    padding-bottom: 6rem;
 }
 
 /* Loader container (spinner centreren) */
@@ -157,7 +172,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: -2rem;
 }
 
 /* Grote waarde in elke metric kaart (zoals het getal bij Total Questions) */
@@ -273,5 +288,21 @@
     vertical-align: middle;
     display: inline-flex;
 }
+
+.colorUsageColumns {
+    display: flex;
+    gap: 2rem;
+    width: 100%;
+}
+
+.colorUsageColumnCustom {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+
+
 
 
