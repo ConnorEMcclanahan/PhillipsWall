@@ -62,7 +62,8 @@ const AIQuestionsDisplay = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [currentAnswers, setCurrentAnswers] = useState([]);
     const [answersData, setAnswersData] = useState([]);
-    
+    const [clickedQuestionPosition, setClickedQuestionPosition] = useState(null);
+
     // Clustering state
     const [clusteredAnswers, setClusteredAnswers] = useState([]);
     const [expandedCluster, setExpandedCluster] = useState(null);
@@ -115,6 +116,7 @@ const AIQuestionsDisplay = () => {
 
                 const data = await response.json();
                 setAnswersData(data);
+                console.log("Raw API response for answers:", data);
             } catch (error) {
                 console.error("Error fetching answers:", error);
             }
