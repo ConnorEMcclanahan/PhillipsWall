@@ -24,10 +24,16 @@
     color: black;
 }
 
+/* Titels van alle statistiekblokken en kaarten */
+.chartTitle, .metricTitle {
+    color: #000000;
+    margin-bottom: 1rem;
+}
+
 /* Flexbox container voor metrics en color usage naast elkaar */
 .metricsFlexContainer {
     display: flex;
-    gap: 3.125rem;
+    gap: 5rem;
     width: 100%;
     align-items: stretch;
     flex-wrap: nowrap;
@@ -37,8 +43,7 @@
 .metricsColumn {
     flex: 1 1 0;
     display: flex;
-    flex-direction: column;
-    gap: 0.9375rem; /* 1.5rem = 24px */
+    flex-direction: column
 }
 
 /* Rechterkolom met de Color Usage kaart (4/5 breedte) */
@@ -119,7 +124,8 @@
 
 /* Kaart voor de response distributie (bar chart) */
 .responseDistributionCard {
-    height: 28.125rem; /* 450px */
+    height: 30rem; /* 450px */
+    padding-bottom: 3rem;
 }
 
 /* Loader container (spinner centreren) */
@@ -146,8 +152,6 @@
     color: white;
 }
 
-/* Typografie en elementen in kaarten */
-
 /* Rij met titel en icoon in elke metric kaart */
 .metricCard {
     display: flex;
@@ -156,25 +160,9 @@
     margin-bottom: 1rem;
 }
 
-/* Titel van elke metric kaart (zoals Total Questions) */
-.metricTitle {
-    color: black;
-}
-
-/* Icoon naast de titel in elke metric kaart */
-.metricIcon {
-    color: rgba(0, 0, 0, 0.7);
-}
-
 /* Grote waarde in elke metric kaart (zoals het getal bij Total Questions) */
 .metricValue {
     color: black;
-}
-
-/* Titel boven elke chart */
-.chartTitle {
-    color: black;
-    margin-bottom: 1rem;
 }
 
 /* Container voor recharts charts */
@@ -188,27 +176,33 @@
     background: rgba(255, 255, 255, 0.8);
 }
 
-/* Extra spacing tussen blokken */
+/* Extra spacing tussen de secties */
 .gridContainer {
     margin-top: 2rem;
 }
 
-/* Extra spacing tussen secties */
-.gridSpacing {
-    margin-top: 2rem;
-}
 
 /* Header van het kleurgebruik blok (titel + icoon) */
 .colorUsageHeader {
     display: flex;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: rem;
 }
 
 /* Icoon in het kleurgebruik blok */
 .colorUsageIcon {
     margin-left: 0.5rem;
     color: rgba(0, 0, 0, 0.7);
+    vertical-align: middle;
+    display: inline-flex;
+}
+
+/* Icoon naast de titel in elke metric kaart */
+.metricIcon {
+    margin-left: 0.5rem;
+    color: rgba(0, 0, 0, 0.7);
+    vertical-align: middle;
+    display: inline-flex;
 }
 
 /* Rij voor elke kleur + vraag in het kleurgebruik blok */
@@ -221,8 +215,8 @@
 
 /* Gekleurd blokje in het kleurgebruik blok */
 .colorSwatch {
-    width: 1.25rem; /* 20px */
-    height: 1.25rem;
+    width: 3rem; /* 20px */
+    height: 3rem;
     border-radius: 0.25rem; /* 4px */
     flex-shrink: 0;
 }
@@ -272,3 +266,12 @@
     display: flex;
     flex-direction: column;
 }
+
+.metricIcon, .colorUsageIcon {
+    margin-left: 0.5rem;
+    color: rgba(0, 0, 0, 0.7);
+    vertical-align: middle;
+    display: inline-flex;
+}
+
+

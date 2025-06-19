@@ -12,28 +12,29 @@
     "cancel": "Cancel",
     "retry": "Retry",
     "aiModelEvaluation": "AI Model Evaluation",
-    "questionTranscription": "Question Transcription",
-    "answerTranscription": "Answer Transcription",
+    "questionTranscription": "Question transcription",
+    "answerTranscription": "Answer transcription",
     "captureUploadPrompt": "Capture or upload an image to see AI evaluation",
     "disclaimerText": "By using this application, you will be interacting with an AI handwriting recognition system. This tool captures your handwritten input,",
     "disclaimerText2": "transforms it into digital text, and displays it on our interactive digital post-it wall.",
 
-    "postWallStatistics": "PostWall Statistics",
-    "totalQuestions": "Total Questions",
-    "totalAnswers": "Total Answers",
-    "avgAnswersPerQuestion": "Avg Answers/Question",
-    "languageDistribution": "Language Distribution",
-    "responseDistribution": "Response Distribution",
-    "mostEngagingQuestions": "Most Engaging Questions",
-    "answers": "answers",
-    "colorUsage": "Color Usage"
+    "postWallStatistics": "PostWall statistics",
+    "totalQuestions": "Total questions",
+    "totalAnswers": "Total answers",
+    "avgAnswersPerQuestion": "Avg answers per question",
+    "languageDistribution": "Language distribution",
+    "responseDistribution": "Response distribution",
+    "mostEngagingQuestions": "Most engaging questions",
+    "answers": "Answers",
+    "colorUsage": "Color assigned to question",
+    "answersOverTime": "Answers over time"
   },
   "nl": {
     "home": "Home",
     "statistics": "Statistieken",
     "profile": "Profiel",
     "bubbles": "Bubbels",
-    "iconScan": "Afbeelding Scannen",
+    "iconScan": "Afbeelding scannen",
     "importImage": "Afbeelding Importeren / Scannen",
     "uploadImage": "Afbeelding Uploaden",
     "takePicture": "Foto Maken",
@@ -55,6 +56,7 @@
     "responseDistribution": "Antwoordverdeling",
     "mostEngagingQuestions": "Meest Betrokken Vragen",
     "answers": "antwoorden",
-    "colorUsage": "Kleurgebruik"
+    "colorUsage": "Kleurgebruik",
+    "answersOverTime": "Antwoorden door de tijd"
   }
 }
