@@ -38,6 +38,42 @@ import NotListedLocationIcon from '@mui/icons-material/NotListedLocation';
 import styles from './StatisticsDisplay.module.css';
 import translations from '../Pages/translations.json';
 import {useLanguage} from "./LanguageContext";
+import { Text } from 'recharts';
+
+const breakByWidth = (label, maxCharsPerLine = 16) => {
+    const words = label.split(' ');
+    const lines = [];
+    let currentLine = '';
+    words.forEach(word => {
+      if ((currentLine + ' ' + word).trim().length <= maxCharsPerLine) {
+        currentLine = (currentLine + ' ' + word).trim();
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
+  
+  const WordBreakTick = ({ x, y, payload }) => {
+    const label = typeof payload.value === 'string'
+      ? payload.value
+      : payload.payload?.name || '';
+    const lines = breakByWidth(label, 16); // Adjust maxCharsPerLine as needed
+    return (
+      <g transform={`translate(${x},${y + 20})`}>
+        {lines.map((line, i) => (
+          <text key={i} x={0} y={i * 14} textAnchor="middle" fill="#000" fontSize="12">
+            {line}
+          </text>
+        ))}
+      </g>
+    );
+  };
+   
+  
+  
  
 const StatisticsDashboard = () => {
     const [stats, setStats] = useState(null);
@@ -215,9 +251,9 @@ const StatisticsDashboard = () => {
                             <NotListedLocationIcon className={styles.metricIcon}/>
                         </Typography>
                         <ResponsiveContainer className={styles.chartContainer}>
-                            <BarChart data={responseDistData}>
+                        <BarChart data={responseDistData} margin={{ top: 20, right: 30, left: 20, bottom: 70 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" vertical={false}/>
-                                <XAxis dataKey="name" stroke="black"  interval={0} />
+                                <XAxis dataKey="name" stroke="black" interval={0} textAnchor="end"  tick={<WordBreakTick />}/>
                                 <YAxis stroke="black"/>
                                 <Tooltip contentStyle={{background: 'rgba(255,255,255,0.8)'}}/>
                                 <Bar dataKey="value" barSize={80}>
