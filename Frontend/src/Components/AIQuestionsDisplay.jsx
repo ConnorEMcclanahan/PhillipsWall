@@ -55,7 +55,6 @@ const createRandomShadowGrid = (gridCols, gridRows) => {
 const AIQuestionsDisplay = () => {
     // Core state
     const [bubbleStyles, setBubbleStyles] = useState([]);
-    const { language } = useLanguage(); // Using the up-to-date version (no setLanguage destructuring)
     const [questionsData, setQuestionsData] = useState([]);
     const [activeQuestion, setActiveQuestion] = useState(null);
     const [activeQuestionData, setActiveQuestionData] = useState(null);
@@ -64,7 +63,7 @@ const AIQuestionsDisplay = () => {
     const [answersData, setAnswersData] = useState([]);
     const [clickedQuestionPosition, setClickedQuestionPosition] = useState(null);
 
-
+    const { language } = useLanguage();
     
 
     // Clustering state
@@ -98,7 +97,7 @@ const AIQuestionsDisplay = () => {
         ]
         };
 
-    const seasonTranslations = SEASON_TRANSLATIONS[language];
+    const seasonTranslations = SEASON_TRANSLATIONS[language] || SEASON_TRANSLATIONS.en;
     const SEASONS = seasonTranslations;
 
     const AXIS_LABELS = {
@@ -495,7 +494,7 @@ const AIQuestionsDisplay = () => {
 
                     }}
                 >
-                    {activeQuestionData?.question[language] || 'Loading question...'}
+                    {activeQuestionData?.question?.[language] || 'Loading question...'}
                 </div>
                 
                 {/* Answer cards - with smooth animations */}
