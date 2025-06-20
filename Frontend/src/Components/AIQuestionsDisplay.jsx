@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styles from './AIQuestionsDisplay.module.css';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import config from '../config';
-import { LanguageProvider, useLanguage } from '../LanguageContext';
-import LanguageSelector from './LanguageSelector';
+import { useLanguage } from '../LanguageContext';
 
 const { API_BASE } = config;
 const createRandomShadowGrid = (gridCols, gridRows) => {
@@ -101,6 +100,23 @@ const AIQuestionsDisplay = () => {
 
     const seasonTranslations = SEASON_TRANSLATIONS[language];
     const SEASONS = seasonTranslations;
+
+    const AXIS_LABELS = {
+        en: {
+            top: "AI enthusiast",
+            bottom: "AI skeptic",
+            left: "Little scared of the future",
+            right: "Looking bright to the future",
+        },
+        nl: {
+            top: "AI enthousiast",
+            bottom: "AI scepticus",
+            left: "Een beetje bang voor de toekomst",
+            right: "Optimistisch over de toekomst",
+        },
+    };
+    const labels = AXIS_LABELS[language];
+
 
 
     // Grid dimensions
@@ -780,14 +796,10 @@ useEffect(() => {
                 transition: 'opacity 0.3s ease',
                 pointerEvents: expandedCluster ? 'none' : 'auto'
             }}>
-                <div className={`${styles.axisLabel} ${styles.labelTop}`}>AI enthusiast</div>
-                <div className={`${styles.axisLabel} ${styles.labelBottom}`}>AI skeptic</div>
-                <div className={`${styles.axisLabel} ${styles.labelLeft}`}>Little scared
-                of the
-                future</div>
-                <div className={`${styles.axisLabel} ${styles.labelRight}`}>Looking bright
-                to the
-                future</div>
+                <div className={`${styles.axisLabel} ${styles.labelTop}`}>{labels.top}</div>
+                <div className={`${styles.axisLabel} ${styles.labelBottom}`}>{labels.bottom}</div>
+                <div className={`${styles.axisLabel} ${styles.labelLeft}`}>{labels.left}</div>
+                <div className={`${styles.axisLabel} ${styles.labelRight}`}>{labels.right}</div>
             </div>
 
             <div className={styles.timeline} style={{
