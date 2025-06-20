@@ -32,7 +32,7 @@ import PieChartIcon from '@mui/icons-material/PieChart';
 import PaletteIcon from '@mui/icons-material/Palette';
 import styles from './StatisticsDisplay.module.css';
 import translations from '../Pages/translations.json';
-import {useLanguage} from "./LanguageContext";
+import {useLanguage} from "../LanguageContext";
 
 // Styled components to match the application theme
 const GlassCard = styled(Box)(({theme}) => ({

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styles from './AIQuestionsDisplay.module.css';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import { useLanguage } from './LanguageContext';
 import config from '../config';
+import { useLanguage } from '../LanguageContext';
 
 const { API_BASE } = config;
 const createRandomShadowGrid = (gridCols, gridRows) => {
@@ -64,6 +64,9 @@ const AIQuestionsDisplay = () => {
     const [answersData, setAnswersData] = useState([]);
     const [clickedQuestionPosition, setClickedQuestionPosition] = useState(null);
 
+
+    
+
     // Clustering state
     const [clusteredAnswers, setClusteredAnswers] = useState([]);
     const [expandedCluster, setExpandedCluster] = useState(null);
@@ -83,10 +86,38 @@ const AIQuestionsDisplay = () => {
     const ITEMS_PER_PAGE = 20;
     const TRANSITION_DURATION = 500;
     const CLUSTER_THRESHOLD = 15; // Distance threshold for clustering (in percentage points)
-    const SEASONS = [
-        'Winter 2024', 'Spring 2024', 'Summer 2024', 'Fall 2024',
-        'Winter 2025', 'Spring 2025'
-    ];
+
+    const SEASON_TRANSLATIONS = {
+        en: [
+            'Winter 2024', 'Spring 2024', 'Summer 2024', 'Fall 2024',
+            'Winter 2025', 'Spring 2025'
+        ],
+        nl: [
+            'Winter 2024', 'Lente 2024', 'Zomer 2024', 'Herfst 2024',
+            'Winter 2025', 'Lente 2025'
+        ]
+        };
+
+    const seasonTranslations = SEASON_TRANSLATIONS[language];
+    const SEASONS = seasonTranslations;
+
+    const AXIS_LABELS = {
+        en: {
+            top: "AI enthusiast",
+            bottom: "AI skeptic",
+            left: "Little scared of the future",
+            right: "Looking bright to the future",
+        },
+        nl: {
+            top: "AI enthousiast",
+            bottom: "AI scepticus",
+            left: "Een beetje bang voor de toekomst",
+            right: "Optimistisch over de toekomst",
+        },
+    };
+    const labels = AXIS_LABELS[language];
+
+
 
     // Grid dimensions
     const gridCols = 55; 
@@ -100,6 +131,7 @@ const AIQuestionsDisplay = () => {
                 const response = await fetch(`${API_BASE}/questions`);
                 const data = await response.json();
                 setQuestionsData(data);
+                console.log("Raw API response for questions:", data);
             } catch (error) {
                 console.error("Error fetching questions:", error);
             }
@@ -471,15 +503,8 @@ const AIQuestionsDisplay = () => {
                     {clusterAnswers.map((answer, index) => {
                         // Get the answer text
                         const answerText = (() => {
-                            if (answer.en) return answer.en;
-                            if (answer.english) return answer.english;
-
-                            if (answer.body) return answer.body;
-                            if (typeof answer.answer === 'string') return answer.answer;
-                            if (answer.content) return answer.content;
+                            if (answer[language]) return answer[language];
                             if (answer.text) return answer.text;
-                            if (answer.answer_text) return answer.answer_text;
-                            if (answer[language] && language === 'en') return answer[language];
                             return "That despite all technology, in 2044 we still answer these questions on paper with a pencil...";
                         })();
                         
@@ -677,13 +702,13 @@ useEffect(() => {
             <div className={styles.randomShadowGrid} aria-hidden="true">
                 {randomShadowGrid}
             </div>
-            
             <div className={styles.answersLayer}>
                 <div className={styles.answersGrid}>
                     {(filteredClusters.length > 0 ? filteredClusters : []).map((cluster, index) => {
                         // Check if this cluster contains the newest answer
                         const isYourCluster = newestAnswerId && 
-                            cluster.answers.some(answer => answer.answer_id === newestAnswerId);
+                        cluster.answers.some(answer => answer.answer_id === newestAnswerId);
+           
                         
                         // Get style for this cluster
                         const styleIndex = clusteredAnswers.findIndex(c => c.id === cluster.id);
@@ -771,14 +796,10 @@ useEffect(() => {
                 transition: 'opacity 0.3s ease',
                 pointerEvents: expandedCluster ? 'none' : 'auto'
             }}>
-                <div className={`${styles.axisLabel} ${styles.labelTop}`}>AI enthusiast</div>
-                <div className={`${styles.axisLabel} ${styles.labelBottom}`}>AI skeptic</div>
-                <div className={`${styles.axisLabel} ${styles.labelLeft}`}>Little scared
-                of the
-                future</div>
-                <div className={`${styles.axisLabel} ${styles.labelRight}`}>Looking bright
-                to the
-                future</div>
+                <div className={`${styles.axisLabel} ${styles.labelTop}`}>{labels.top}</div>
+                <div className={`${styles.axisLabel} ${styles.labelBottom}`}>{labels.bottom}</div>
+                <div className={`${styles.axisLabel} ${styles.labelLeft}`}>{labels.left}</div>
+                <div className={`${styles.axisLabel} ${styles.labelRight}`}>{labels.right}</div>
             </div>
 
             <div className={styles.timeline} style={{

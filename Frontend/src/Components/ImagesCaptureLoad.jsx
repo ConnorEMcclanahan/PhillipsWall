@@ -13,9 +13,9 @@ import {
 } from '@mui/icons-material';
 import styles from './ImagesCaptureLoad.module.css';
 import { styled } from "@mui/material/styles";
-import translations from "../Pages/translations.json";
-import { useLanguage } from "./LanguageContext";
+import { useLanguage } from "../LanguageContext";
 import config from '../config';
+
 
 const { API_BASE } = config;
 
@@ -36,7 +36,6 @@ const ImagesCaptureLoad = () => {
     const captureContainerRef = useRef(null);
 
     const { language } = useLanguage();
-    const translate = (key) => translations[language]?.[key] || key;
 
     // Styled Post-it component 
 
@@ -460,16 +459,58 @@ const ImagesCaptureLoad = () => {
         }
     }, [scanningStep]);
 
+    const texts = {
+        en: {
+            title: "Scan your post-it here!",
+            subtitle: "Ready to share your idea with the AI wall?",
+            positiveRules: [
+            "Only the post-it is in the photo",
+            "The text is clearly readable",
+            "Your idea will be added to the AI database",
+            "Your post-it will be shown anonymously",
+            ],
+            negativeRules: [
+            "No personal data like names, email addresses or phone numbers",
+            "No hands, backgrounds, or unrelated objects",
+            "No swear words, hate speech, or harmful content allowed",
+            ],
+            startButton: "Start scanning",
+            finePrint:
+            'By tapping "Start scanning", you agree that your input may be used for research and public display in the AI exhibition.',
+        },
+        nl: {
+            title: "Scan hier je post-it!",
+            subtitle: "Klaar om je idee te delen met de AI-muur?",
+            positiveRules: [
+            "Alleen de post-it staat op de foto",
+            "De tekst is duidelijk leesbaar",
+            "Je idee wordt toegevoegd aan de AI-database",
+            "Je post-it wordt anoniem getoond",
+            ],
+            negativeRules: [
+            "Geen persoonlijke gegevens zoals namen, e-mailadressen of telefoonnummers",
+            "Geen handen, achtergronden of niet-gerelateerde objecten",
+            "Geen vloekwoorden, haatspraak of schadelijke inhoud toegestaan",
+            ],
+            startButton: "Begin met scannen",
+            finePrint:
+            'Door op "Begin met scannen" te tikken, ga je akkoord dat je input kan worden gebruikt voor onderzoek en publieke tentoonstelling in de AI-expositie.',
+        },
+    };
+
+    const t = texts[language] || texts.en;
+
+
     // Render functions
     const renderScanningInfo = () => (
         <Box className={styles.scanningContainer}>
             <Box className={styles.scanningContent}>
                 <Box className={styles.scanningInfo}>
                     <Typography variant="h1" className={styles.scanningTitle}>
-                        Scan your post-it here!
+                        {t.title}
                     </Typography>
                     <Typography variant="h2" className={styles.scanningSubtitle}>
-                        Ready to share your idea with the AI wall?
+                        {t.subtitle}
                     </Typography>
                 </Box>
 
@@ -477,38 +518,22 @@ const ImagesCaptureLoad = () => {
                 <Box className={styles.rulesContainer}>
                     {/* Left column - Positive rules */}
                     <Box className={styles.positiveRules}>
-                        <Box className={styles.ruleItem}>
+                        {t.positiveRules.map((rule, index) => (
+                        <Box key={index} className={styles.ruleItem}>
                             <CheckCircleIcon className={styles.checkMark} />
-                            <Typography>Only the post-it is in the photo</Typography>
+                            <Typography>{rule}</Typography>
                         </Box>
-                        <Box className={styles.ruleItem}>
-                            <CheckCircleIcon className={styles.checkMark} />
-                            <Typography>The text is clearly readable</Typography>
-                        </Box>
-                        <Box className={styles.ruleItem}>
-                            <CheckCircleIcon className={styles.checkMark} />
-                            <Typography>Your idea will be added to the AI database</Typography>
-                        </Box>
-                        <Box className={styles.ruleItem}>
-                            <CheckCircleIcon className={styles.checkMark} />
-                            <Typography>Your post-it will be shown anonymously</Typography>
-                        </Box>
+                        ))}
                     </Box>
-                    
+
                     {/* Right column - Negative rules */}
                     <Box className={styles.negativeRules}>
-                        <Box className={styles.ruleItem}>
+                        {t.negativeRules.map((rule, index) => (
+                        <Box key={index} className={styles.ruleItem}>
                             <span className={styles.crossMark}>✕</span>
-                            <Typography>No personal data like names, email addresses or phone numbers</Typography>
+                            <Typography>{rule}</Typography>
                         </Box>
-                        <Box className={styles.ruleItem}>
-                            <span className={styles.crossMark}>✕</span>
-                            <Typography>No hands, backgrounds, or unrelated objects</Typography>
-                        </Box>
-                        <Box className={styles.ruleItem}>
-                            <span className={styles.crossMark}>✕</span>
-                            <Typography>No swear words, hate speech, or harmful content allowed</Typography>
-                        </Box>
+                        ))}
                     </Box>
                 </Box>
 
@@ -517,25 +542,40 @@ const ImagesCaptureLoad = () => {
                     className={styles.startButton}
                     onClick={() => setScanningStep('scanning')}
                 >
-                    Start scanning
+                    {t.startButton}
                 </Button>
                 <Typography variant="body2" className={styles.finePrint}>
-                    By tapping "Start scanning", you agree that your input may be used for
-                    research and public display in the AI exhibition.
+                    {t.finePrint}
                 </Typography>
             </Box>
         </Box>
     );
 
+    const textsCamera = {
+        en: {
+            title: "Take a picture",
+            subtitle: "Ready to share your idea with the AI wall?",
+            trouble: "Camera not working?",
+            upload: "Upload photo instead",
+        },
+        nl: {
+            title: "Maak een foto",
+            subtitle: "Klaar om je idee te delen met de AI-muur?",
+            trouble: "Camera werkt niet?",
+            upload: "Upload foto insted",
+            
+        },
+    }
+    const tC= textsCamera[language] || textsCamera.en;
     const renderCamera = () => (
         <Box className={styles.scanningContainer}>
             <Box className={styles.scanningContent}>
                 <Box className={styles.scanningInfo}>
                     <Typography variant="h1" className={styles.scanningTitle}>
-                        Take a picture
+                        {tC.title}
                     </Typography>
                     <Typography variant="h2" className={styles.scanningSubtitle}>
-                        Ready to share your idea with the AI wall?
+                        {tC.subtitle}
                     </Typography>
                 </Box>
                 
@@ -574,7 +614,7 @@ const ImagesCaptureLoad = () => {
                 {/* File upload fallback */}
                 <Box sx={{ mt: 3, textAlign: 'center' }}>
                     <Typography variant="body2" className={styles.uploadFallbackText}>
-                        Camera not working?
+                        {tC.trouble}
                     </Typography>
                     <Button
                         variant="outlined"
@@ -582,7 +622,7 @@ const ImagesCaptureLoad = () => {
                         size="small"
                         sx={{ mt: 1 }}
                     >
-                        Upload photo instead
+                        {tC.upload}
                         <input
                             type="file"
                             accept="image/*"
@@ -607,6 +647,11 @@ const ImagesCaptureLoad = () => {
         </Box>
     );
 
+    const textPreview = {
+        en: "Preview your post-it",
+        nl: "Voorbeeld van je post-it",
+    }
+    const tP = textPreview[language] || textPreview.en;
     const renderPreview = () => (
         <Box className={styles.previewContainer}>
             <Box sx={{ position: 'absolute', top: 16, left: 16, zIndex: 10 }}>
@@ -614,7 +659,7 @@ const ImagesCaptureLoad = () => {
                     <ArrowBackIcon />
                 </IconButton>
             </Box>
-            <Typography variant="h5" sx={{ mb: 2 }}>Preview your post-it</Typography>
+            <Typography variant="h5" sx={{ mb: 2 }}>{tP}</Typography>
             <Box sx={{ position: 'relative', mb: 3 }}>
                 <img
                     src={previewImage}
@@ -642,162 +687,217 @@ const ImagesCaptureLoad = () => {
         </Box>
     );
 
+    const textResults = {
+    en: {
+        validStatus: '✓ Valid',
+        noTextStatus: '⚠️ No text detected',
+        scanSuccess: 'Scan successful!',
+        scanIncomplete: 'Scan incomplete',
+        successMessage: 'Now... turn around and take a look at the AI wall!',
+        incompleteMessage: 'No text was detected in your image.',
+        successSubmessage: 'Your idea will appear there shortly — and you can interact with other people\'s ideas too.',
+        incompleteSubmessage: 'Please ensure your writing is clear and the post-it is fully visible.',
+        manualEntryLabel: 'Add text manually:',
+        manualEntryPlaceholder: 'Type your post-it text here...',
+        rescanButton: 'Rescan',
+        sendButton: 'Send to wall',
+        sendingText: 'Sending...',
+    },
+    nl: {
+        validStatus: '✓ Geldig',
+        noTextStatus: '⚠️ Geen tekst gedetecteerd',
+        scanSuccess: 'Scan geslaagd!',
+        scanIncomplete: 'Scan onvolledig',
+        successMessage: 'Draai nu om en bekijk de AI-muur!',
+        incompleteMessage: 'Er werd geen tekst gedetecteerd in je afbeelding.',
+        successSubmessage: 'Je idee verschijnt daar binnenkort — en je kunt ook met andermans ideeën interactie hebben.',
+        incompleteSubmessage: 'Zorg ervoor dat je schrijven duidelijk is en de post-it volledig zichtbaar is.',
+        manualEntryLabel: 'Voeg handmatig tekst toe:',
+        manualEntryPlaceholder: 'Typ hier je post-it tekst...',
+        rescanButton: 'Opnieuw scannen',
+        sendButton: 'Naar muur verzenden',
+        sendingText: 'Verzenden...',
+    },
+    };
+
     const renderResults = () => {
-        if (!modelResult) {
-            return (
-                <Box className={styles.scanningContainer}>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                        <CircularProgress />
-                    </Box>
+    const tR = textResults[language] || textResults.en;
+
+    if (!modelResult) {
+        return (
+        <Box className={styles.scanningContainer}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            <CircularProgress />
+            </Box>
+        </Box>
+        );
+    }
+
+    const hasValidText = !!modelResult.answer && modelResult.answer.trim().length > 0;
+
+    return (
+        <Box className={styles.scanningContainer}>
+        <IconButton className={styles.cameraBackButton} onClick={handleBack}>
+            <ArrowBackIcon />
+        </IconButton>
+
+        <Box className={styles.successContainer}>
+            {/* Left side - Scanned post-it */}
+            <Box className={styles.scannedPostItContainer}>
+            <Box
+                className={styles.scannedPostIt}
+                style={{
+                backgroundColor: modelResult.color || postItColors.color || '#B5EAE7',
+                }}
+            >
+                <Typography className={styles.postItHeading}>
+                {modelResult.question || "[No question detected]"}
+                </Typography>
+                <Typography className={styles.postItText}>
+                {modelResult.answer || "[No text detected]"}
+                </Typography>
+
+                {/* Status indicator */}
+                <Box
+                sx={{
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                    background: hasValidText ? 'green' : 'red',
+                    color: 'white',
+                    padding: '5px 10px',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    zIndex: 1000,
+                }}
+                >
+                {hasValidText ? tR.validStatus : tR.noTextStatus}
                 </Box>
-            );
-        }
-        
-        const hasValidText = !!modelResult.answer && modelResult.answer.trim().length > 0;
-        
+            </Box>
+            </Box>
+
+            {/* Right side - Success message and buttons */}
+            <Box className={styles.successMessageContainer}>
+            <Typography variant="h1" className={styles.successHeading}>
+                {hasValidText ? tR.scanSuccess : tR.scanIncomplete}
+            </Typography>
+            <Typography className={styles.successMessage}>
+                {hasValidText ? tR.successMessage : tR.incompleteMessage}
+            </Typography>
+            <Typography className={styles.successSubmessage}>
+                {hasValidText ? tR.successSubmessage : tR.incompleteSubmessage}
+            </Typography>
+
+            {/* Add manual text entry option when OCR fails */}
+            {!hasValidText && (
+                <Box sx={{ mt: 2, mb: 2, p: 2, border: '1px solid #ddd', borderRadius: '4px' }}>
+                <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    {tR.manualEntryLabel}
+                </Typography>
+                <textarea
+                    style={{
+                    width: '100%',
+                    minHeight: '100px',
+                    padding: '8px',
+                    fontFamily: 'inherit',
+                    marginBottom: '10px',
+                    }}
+                    placeholder={tR.manualEntryPlaceholder}
+                    onChange={(e) => {
+                    setModelResult({
+                        ...modelResult,
+                        answer: e.target.value,
+                    });
+                    }}
+                />
+                </Box>
+            )}
+
+            <Box className={styles.successButtonsContainer}>
+                <Button
+                variant="outlined"
+                className={styles.incorrectScanButton}
+                onClick={() => resetScanState('scanning', true)}
+                >
+                {tR.rescanButton}
+                </Button>
+                <Button
+                variant="contained"
+                className={styles.scanNewButton}
+                onClick={saveToDatabase}
+                disabled={isLoading || (!hasValidText && !modelResult.answer)}
+                >
+                {isLoading ? (
+                    <>
+                    <CircularProgress size={20} sx={{ mr: 1 }} />
+                    {tR.sendingText}
+                    </>
+                ) : (
+                    tR.sendButton
+                )}
+                </Button>
+            </Box>
+            </Box>
+        </Box>
+        </Box>
+        );
+    };
+
+
+    const loadingTexts = {
+    en: {
+        processing: "Processing your post-it...",
+        analyzing: "We're analyzing the text with AI vision",
+        errorPrefix: "Error:",
+    },
+    nl: {
+        processing: "Je post-it wordt verwerkt...",
+        analyzing: "We analyseren de tekst met AI-vision",
+        errorPrefix: "Fout:",
+    },
+    // Agrega más idiomas si quieres
+    };
+
+    const renderLoading = () => {
+        const t = loadingTexts[language] || loadingTexts.en;
+
         return (
             <Box className={styles.scanningContainer}>
-                <IconButton 
-                    className={styles.cameraBackButton}
-                    onClick={handleBack}
+                <Box
+                    sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "70vh",
+                    }}
                 >
-                    <ArrowBackIcon />
-                </IconButton>
-                
-                <Box className={styles.successContainer}>
-                    {/* Left side - Scanned post-it */}
-                    <Box className={styles.scannedPostItContainer}>
-                        <Box 
-                            className={styles.scannedPostIt}
-                            style={{ 
-                                backgroundColor: modelResult.color || postItColors.color || '#B5EAE7' 
+                    <CircularProgress size={60} thickness={5} />
+                    <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
+                        {t.processing}
+                    </Typography>
+                    <Typography variant="body1" sx={{ textAlign: "center", maxWidth: "80%" }}>
+                        {t.analyzing}
+                    </Typography>
+
+                    {scanError && (
+                        <Typography
+                            variant="body2"
+                            sx={{
+                            color: "error.main",
+                            mt: 2,
+                            textAlign: "center",
+                            maxWidth: "80%",
                             }}
                         >
-                            <Typography className={styles.postItHeading}>
-                                {modelResult.question || "[No question detected]"}
-                            </Typography>
-                            <Typography className={styles.postItText}>
-                                {modelResult.answer || "[No text detected]"}
-                            </Typography>
-                            
-                            {/* Status indicator */}
-                            <Box sx={{ 
-                                position: 'absolute', 
-                                top: 10, 
-                                right: 10, 
-                                background: hasValidText ? 'green' : 'red',
-                                color: 'white',
-                                padding: '5px 10px',
-                                borderRadius: '4px',
-                                fontSize: '14px',
-                                zIndex: 1000
-                            }}>
-                                {hasValidText ? '✓ Valid' : '⚠️ No text detected'}
-                            </Box>
-                        </Box>
-                    </Box>
-                    
-                    {/* Right side - Success message and buttons */}
-                    <Box className={styles.successMessageContainer}>
-                        <Typography variant="h1" className={styles.successHeading}>
-                            {hasValidText ? 'Scan successful!' : 'Scan incomplete'}
+                            {t.errorPrefix} {scanError}
                         </Typography>
-                        <Typography className={styles.successMessage}>
-                            {hasValidText 
-                                ? 'Now... turn around and take a look at the AI wall!' 
-                                : 'No text was detected in your image.'}
-                        </Typography>
-                        <Typography className={styles.successSubmessage}>
-                            {hasValidText 
-                                ? 'Your idea will appear there shortly — and you can interact with other people\'s ideas too.'
-                                : 'Please ensure your writing is clear and the post-it is fully visible.'}
-                        </Typography>
-                        
-                        {/* Add manual text entry option when OCR fails */}
-                        {!hasValidText && (
-                            <Box sx={{ mt: 2, mb: 2, p: 2, border: '1px solid #ddd', borderRadius: '4px' }}>
-                                <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 1 }}>
-                                    Add text manually:
-                                </Typography>
-                                <textarea
-                                    style={{
-                                        width: '100%',
-                                        minHeight: '100px',
-                                        padding: '8px',
-                                        fontFamily: 'inherit',
-                                        marginBottom: '10px'
-                                    }}
-                                    placeholder="Type your post-it text here..."
-                                    onChange={(e) => {
-                                        setModelResult({
-                                            ...modelResult,
-                                            answer: e.target.value
-                                        });
-                                    }}
-                                />
-                            </Box>
-                        )}
-                        
-                        <Box className={styles.successButtonsContainer}>
-                            <Button 
-                                variant="outlined" 
-                                className={styles.incorrectScanButton}
-                                onClick={() => resetScanState('scanning', true)}
-                            >
-                                Rescan
-                            </Button>
-                            <Button 
-                                variant="contained" 
-                                className={styles.scanNewButton}
-                                onClick={saveToDatabase}
-                                disabled={isLoading || (!hasValidText && !modelResult.answer)}
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <CircularProgress size={20} sx={{ mr: 1 }} />
-                                        Sending...
-                                    </>
-                                ) : (
-                                    "Send to wall"
-                                )}
-                            </Button>
-                        </Box>
-                    </Box>
+                    )}
                 </Box>
             </Box>
         );
     };
 
-    const renderLoading = () => (
-        <Box className={styles.scanningContainer}>
-            <Box sx={{ 
-                display: 'flex', 
-                flexDirection: 'column',
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                height: '70vh' 
-            }}>
-                <CircularProgress size={60} thickness={5} />
-                <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
-                    Processing your post-it...
-                </Typography>
-                <Typography variant="body1" sx={{ textAlign: 'center', maxWidth: '80%' }}>
-                    We're analyzing the text with AI vision
-                </Typography>
-                
-                {scanError && (
-                    <Typography variant="body2" sx={{ 
-                        color: 'error.main', 
-                        mt: 2, 
-                        textAlign: 'center', 
-                        maxWidth: '80%' 
-                    }}>
-                        Error: {scanError}
-                    </Typography>
-                )}
-            </Box>
-        </Box>
-    );
 
     const renderCurrentStep = () => {
         switch (scanningStep) {
