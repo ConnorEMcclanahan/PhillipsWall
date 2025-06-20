@@ -102,7 +102,7 @@ class AnswerDAO:
             print("Error getting answer count per month:", e)
 
         
-     @staticmethod
+    @staticmethod
     def get_latest_answer_id():
 
         # Simply get the highest ID - most reliable for finding newest record
