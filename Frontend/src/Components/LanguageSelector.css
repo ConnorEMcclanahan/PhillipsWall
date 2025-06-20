@@ -1,7 +1,7 @@
 .language-float {
   position: fixed;
-  top: 20px;
-  left: 20px;
+  top: 80px;
+  left: 60px;
   display: flex;
   gap: 8px;
   z-index: 10000;
