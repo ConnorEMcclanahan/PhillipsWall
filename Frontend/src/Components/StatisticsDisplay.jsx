@@ -1,3 +1,4 @@
+// Ahsen was hier
 import React, {useState, useEffect} from 'react';
 import {
     Box,
@@ -12,7 +13,6 @@ import {
     Divider,
     Fade
 } from '@mui/material';
-import {styled} from '@mui/material/styles';
 import {
     BarChart,
     Bar,
@@ -24,25 +24,64 @@ import {
     PieChart,
     Pie,
     Cell,
-    ResponsiveContainer
+    ResponsiveContainer,
+    LineChart,
+    Line,
 } from 'recharts';
 import PeopleIcon from '@mui/icons-material/People';
 import MessageIcon from '@mui/icons-material/Message';
 import PieChartIcon from '@mui/icons-material/PieChart';
 import PaletteIcon from '@mui/icons-material/Palette';
+import LanguageIcon from '@mui/icons-material/Translate';
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
+import NotListedLocationIcon from '@mui/icons-material/NotListedLocation';
 import styles from './StatisticsDisplay.module.css';
 import translations from '../Pages/translations.json';
 import {useLanguage} from "../LanguageContext";
 
+import { Text } from 'recharts';
+
+const breakByWidth = (label, maxCharsPerLine = 16) => {
+    const words = label.split(' ');
+    const lines = [];
+    let currentLine = '';
+    words.forEach(word => {
+      if ((currentLine + ' ' + word).trim().length <= maxCharsPerLine) {
+        currentLine = (currentLine + ' ' + word).trim();
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
+  
+  const WordBreakTick = ({ x, y, payload }) => {
+    const label = typeof payload.value === 'string'
+      ? payload.value
+      : payload.payload?.name || '';
+    const lines = breakByWidth(label, 16); // Adjust maxCharsPerLine as needed
+    return (
+      <g transform={`translate(${x},${y + 20})`}>
+        {lines.map((line, i) => (
+          <text key={i} x={0} y={i * 14} textAnchor="middle" fill="#000" fontSize="12">
+            {line}
+          </text>
+        ))}
+      </g>
+    );
+  };
+
 // Styled components to match the application theme
-const GlassCard = styled(Box)(({theme}) => ({
-    background: 'rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(10px)',
-    borderRadius: '16px',
-    padding: theme.spacing(3),
-    boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-}));
+// const GlassCard = styled(Box)(({theme}) => ({
+//     background: 'rgba(255, 255, 255, 0.1)',
+//     backdropFilter: 'blur(10px)',
+//     borderRadius: '16px',
+//     padding: theme.spacing(3),
+//     boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+//     border: '1px solid rgba(255, 255, 255, 0.2)',
+// }));
 
 
 
@@ -50,15 +89,11 @@ const StatisticsDashboard = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [currentPage, setCurrentPage] = useState(0);
-
+ 
     const COLORS = ['#64b5f6', '#2196f3', '#1976d2', '#0d47a1', '#82b1ff'];
-    const PAGES = ['metrics', 'distribution', 'engagement'];
-    const AUTO_CYCLE_TIME = 15000;
-
-    const translate = (key) => translations[language]?.[key] || key;
     const { language } = useLanguage();
-
+    const translate = (key) => translations[language]?.[key] || key;
+ 
     useEffect(() => {
         fetch('http://localhost:5000/statistics')
             .then(res => res.json())
@@ -71,89 +106,109 @@ const StatisticsDashboard = () => {
                 setLoading(false);
             });
     }, []);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentPage((prev) => (prev + 1) % PAGES.length);
-        }, AUTO_CYCLE_TIME);
-        return () => clearInterval(interval);
-    }, []);
-
+ 
     if (loading) {
         return (
-                <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
-                    <CircularProgress sx={{color: 'white'}}/>
-                </Box>
+            <Box className={styles.loadingContainer}>
+                <CircularProgress className={styles.loadingSpinner}/>
+            </Box>
         );
     }
-
+ 
     if (error) {
         return (
-                <Container maxWidth="lg">
-                    <Alert severity="error" sx={{background: 'rgba(255,255,255,0.1)', color: 'white'}}>
-                        Failed to load statistics: {error}
-                    </Alert>
-                </Container>
+            <Container className={styles.errorContainer}>
+                <Alert severity="error" className={styles.errorAlert}>
+                    Failed to load statistics: {error}
+                </Alert>
+            </Container>
         );
     }
-
+ 
     // Transform data for charts
-    const languageData = Object.entries(stats.language_distribution.percentage_per_language)
+     const languageData = Object.entries(stats.language_distribution.percentage_per_language)
         .map(([name, value]) => ({name, value}));
-
-    const responseDistData = Object.entries(stats.response_distribution.questions_by_answer_count)
-        .map(([questionID, value]) => ({name: `Question ${questionID}`, value}));
-
-    const colorData = Object.entries(stats.color_usage.most_used_colors)
-        .map(([name, value]) => ({name, value}));
-
-    const GeneralMetrics = () => (
-        <Fade in={currentPage === 0} timeout={800}>
-            <Grid container spacing={3}>
-                <Grid item xs={12} md={4}>
-                    <GlassCard>
-                        <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}>
-                            <Typography variant="h6">{translate('totalQuestions')}</Typography>
-                            <PeopleIcon sx={{color: 'rgba(255,255,255,0.7)'}}/>
-                        </Box>
-                        <Typography variant="h3">
-                            {stats.general_metrics.total_questions}
-                        </Typography>
-                    </GlassCard>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                    <GlassCard>
-                        <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}>
-                            <Typography variant="h6">{translate('totalAnswers')}</Typography>
-                            <MessageIcon sx={{color: 'rgba(255,255,255,0.7)'}}/>
-                        </Box>
-                        <Typography variant="h3">
-                            {stats.general_metrics.total_answers}
-                        </Typography>
-                    </GlassCard>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                    <GlassCard>
-                        <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2}}>
-                            <Typography variant="h6">{translate('avgAnswersPerQuestion')}</Typography>
-                            <PieChartIcon sx={{color: 'rgba(255,255,255,0.7)'}}/>
-                        </Box>
-                        <Typography variant="h3">
-                            {stats.general_metrics.average_answers_per_question}
-                        </Typography>
-                    </GlassCard>
-                </Grid>
-            </Grid>
-        </Fade>
+ 
+    // Maak een mapping van question_id naar vraagtekst (in de juiste taal)
+    const questionIdToText = Object.fromEntries(
+        stats.color_usage.questions.map(q => [String(q.question_id), q[language] || q.en || q.nl])
     );
 
+    // Mapping van question_id naar kleur
+    const questionIdToColor = Object.fromEntries(
+        stats.color_usage.questions.map((q, i) => [String(q.question_id), stats.color_usage.colors[i]])
+    );
+
+    // Gebruik de echte vraagtekst als naam in de responseDistData en voeg id toe
+    const responseDistData = Object.entries(stats.response_distribution.questions_by_answer_count)
+        .map(([questionID, value]) => ({
+            id: questionID,
+            name: questionIdToText[questionID] || `Question ${questionID}`,
+            value
+        }));
+ 
+    const questionColorPairs = stats.color_usage.questions.map((q, i) => ({
+        question: q.en,
+        color: stats.color_usage.colors[i]
+    }));
+ 
+     const lineData = stats.engagement_metrics.map(({ month, year, answer_count }) => ({
+        name: `${month}/${year}`,
+        answers: answer_count,
+    }));
+ 
+    // Custom tick component voor de X-as labels
+    const BarLabelTick = (props) => {
+        const { x, y, payload } = props;
+        return (
+            <text
+                x={x}
+                y={y + 16}
+                textAnchor="middle"
+                className={styles.barLabel}
+            >
+                {payload.value}
+            </text>
+        );
+    };
+
+    // Custom tick component voor de X-as labels
+    const ResponseBarLabelTick = (props) => {
+        const { x, y, payload } = props;
+        const width = 80; // breedte van het label in px, pas aan indien gewenst
+        return (
+            <foreignObject x={x - width / 2} y={y + 6} width={width} height={48} style={{ overflow: 'visible' }}>
+                <div
+                    className={styles.responseBarLabel}
+                    style={{
+                        width: width,
+                        textAlign: 'center',
+                        wordBreak: 'break-word',
+                        whiteSpace: 'normal',
+                        fontSize: '0.85rem',
+                        lineHeight: '1.1',
+                        pointerEvents: 'none',
+                        margin: 0,
+                        padding: 0
+                    }}
+                >
+                    {payload.value}
+                </div>
+            </foreignObject>
+        );
+    };
+ 
     const Distribution = () => (
-        <Fade in={currentPage === 1} timeout={800}>
-            <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                    <GlassCard sx={{height: '400px'}}>
-                        <Typography variant="h6" gutterBottom>{translate('languageDistribution')}</Typography>
-                        <ResponsiveContainer width="100%" height="90%">
+        <Fade in={true} timeout={800}>
+            <div className={styles.metricsFlexContainer}>
+                {/* Language Distribution Blok (2/5 breedte) */}
+                <div className={styles.languageDistributionColumn}>
+                    <Box className={`${styles.glassCard} ${styles.languageDistributionCard}`}>
+                        <Typography variant="h6" className={styles.chartTitle}>
+                            {translate('languageDistribution')}
+                            <LanguageIcon className={styles.metricIcon}/>
+                        </Typography>
+                        <ResponsiveContainer className={styles.chartContainer}>
                             <PieChart>
                                 <Pie
                                     data={languageData}
@@ -163,8 +218,7 @@ const StatisticsDashboard = () => {
                                     label={({name, percent}) => `${name} (${(percent * 100).toFixed(0)}%)`}
                                     outerRadius={120}
                                     fill="#8884d8"
-                                    dataKey="value"
-                                >
+                                    dataKey="value">
                                     {languageData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
                                     ))}
@@ -172,111 +226,141 @@ const StatisticsDashboard = () => {
                                 <Tooltip contentStyle={{background: 'rgba(255,255,255,0.8)'}}/>
                             </PieChart>
                         </ResponsiveContainer>
-                    </GlassCard>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                    <GlassCard sx={{height: '400px'}}>
-                        <Typography variant="h6" gutterBottom>{translate('responseDistribution')}</Typography>
-                        <ResponsiveContainer width="100%" height="90%">
-                            <BarChart data={responseDistData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)"/>
-                                <XAxis dataKey="name" stroke="white"/>
-                                <YAxis stroke="white"/>
-                                <Tooltip contentStyle={{background: 'rgba(80,80,80,0.8)'}}/>
-                                <Legend/>
-                                <Bar dataKey="value" fill="#64b5f6"/>
+                    </Box>
+                </div>
+
+                
+                {/* Timeline Blok (3/5 breedte) */}
+                <div className={styles.timelineColumn}>
+                    <Box className={`${styles.glassCard} ${styles.timelineCard}`}>
+                        <Typography variant="h6" className={styles.chartTitle}>
+                            {translate('answersOverTime')}
+                            <QueryStatsIcon className={styles.metricIcon}/>
+                        </Typography>
+                        <ResponsiveContainer width="99%" height={320}>
+                            <LineChart data={lineData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="name" stroke="black" tick={<BarLabelTick />} />
+                                <YAxis stroke="black" />
+                                <Tooltip contentStyle={{background: 'rgba(255,255,255,0.8)'}}/>
+                                <Line type="monotone" dataKey="answers" stroke="#2196f3" strokeWidth={3} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </Box>
+                </div>
+            </div>
+        </Fade>
+    );
+ 
+    const ResponseDistribution = () => (
+        <Fade in={true} timeout={800}>
+            <div className={styles.metricsFlexContainer}>
+                <div className={styles.responseDistributionColumn}>
+                    <Box className={`${styles.glassCard} ${styles.responseDistributionCard}`}>
+                        <Typography variant="h6" className={styles.chartTitle}>
+                            {translate('responseDistribution')}
+                            <NotListedLocationIcon className={styles.metricIcon}/>
+                        </Typography>
+                        <ResponsiveContainer className={styles.chartContainer}>
+                        <BarChart data={responseDistData} margin={{ top: 20, right: 30, left: 20, bottom: 70 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" vertical={false}/>
+                                <XAxis dataKey="name" stroke="black" interval={0} textAnchor="end"  tick={<WordBreakTick />}/>
+                                <YAxis stroke="black"/>
+                                <Tooltip contentStyle={{background: 'rgba(255,255,255,0.8)'}}/>
+                                <Bar dataKey="value" barSize={80}>
+                                    {responseDistData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={questionIdToColor[entry.id] || "#64b5f6"} />
+                                    ))}
+                                </Bar>
                             </BarChart>
                         </ResponsiveContainer>
-                    </GlassCard>
-                </Grid>
-            </Grid>
+                    </Box>
+                </div>
+            </div>
         </Fade>
     );
-
-    const Engagement = () => (
-        <Fade in={currentPage === 2} timeout={800}>
-            <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                    <GlassCard>
-                        <Typography variant="h6" gutterBottom>{translate('mostEngagingQuestions')}</Typography>
-                        <List>
-                            {stats.engagement_metrics.most_engaging_questions.map((question, index) => (
-                                <React.Fragment key={question.question_id}>
-                                    <ListItem>
-                                        <ListItemText
-                                            primary={
-                                                <Typography sx={{color: 'white'}}>
-                                                    {question[`question_text_${language}`]}
-                                                </Typography>
-                                            }
-                                            secondary={
-                                                <Typography sx={{color: 'rgba(211,211,211,0.7)'}}>
-                                                    {question.answer_count} answers
-                                                </Typography>
-                                            }
-                                        />
-                                    </ListItem>
-                                    {index < stats.engagement_metrics.most_engaging_questions.length - 1 &&
-                                        <Divider sx={{borderColor: 'rgba(255,255,255,0.1)'}}/>
-                                    }
-                                </React.Fragment>
+ 
+     const MetricsFlexContainer = () => (
+        <div className={styles.metricsFlexContainer}>
+            <div className={styles.metricsColumn}>
+                <Box className={`${styles.glassCard} ${styles.generalMetricsCard}`}>
+                    <Box className={styles.metricCard}>
+                        <Typography variant="h6" className={styles.metricTitle}>
+                            {translate('totalQuestions')}
+                            <PeopleIcon className={styles.metricIcon}/>
+                        </Typography>
+                    </Box>
+                    <Typography variant="h3" className={styles.metricValue}>
+                        {stats.general_metrics.total_questions}
+                    </Typography>
+                </Box>
+                <Box className={`${styles.glassCard} ${styles.generalMetricsCard}`}>
+                    <Box className={styles.metricCard}>
+                        <Typography variant="h6" className={styles.metricTitle}>
+                            {translate('totalAnswers')}
+                            <MessageIcon className={styles.metricIcon}/>
+                        </Typography>
+                    </Box>
+                    <Typography variant="h3" className={styles.metricValue}>
+                        {stats.general_metrics.total_answers}
+                    </Typography>
+                </Box>
+                <Box className={`${styles.glassCard} ${styles.generalMetricsCard}`}>
+                    <Box className={styles.metricCard}>
+                        <Typography variant="h6" className={styles.metricTitle}>
+                            Number of languages
+                            <PieChartIcon className={styles.metricIcon}/>
+                        </Typography>
+                    </Box>
+                    <Typography variant="h3" className={styles.metricValue}>
+                        {Object.keys(stats.language_distribution.language_counts).length}
+                    </Typography>
+                </Box>
+            </div>
+            <div className={styles.colorUsageColumn}>
+                <Box className={`${styles.glassCard} ${styles.colorUsageCard}`}>
+                    <Typography variant="h6" className={styles.metricTitle}>
+                        {translate('colorUsage')}
+                        <PaletteIcon className={styles.colorUsageIcon}/>
+                    </Typography>
+                    <div className={styles.colorUsageColumns}>
+                        <div className={styles.colorUsageColumnCustom}>
+                            {questionColorPairs.slice(0, Math.ceil(questionColorPairs.length / 2)).map(({question, color}) => (
+                                <Box className={styles.colorItem} key={question}>
+                                    <Box className={styles.colorSwatch} style={{backgroundColor: color}}/>
+                                    <Typography className={styles.colorQuestion}>{question}</Typography>
+                                </Box>
                             ))}
-                        </List>
-                    </GlassCard>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                    <GlassCard>
-                        <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                            <Typography variant="h6">{translate('colorUsage')}</Typography>
-                            <PaletteIcon sx={{ml: 1, color: 'rgba(255,255,255,0.7)'}}/>
-                        </Box>
-                        <Grid container spacing={2}>
-                            {colorData.map(({name, value}) => (
-                                <Grid item xs={12} key={name}>
-                                    <Box sx={{display: 'flex', alignItems: 'center', gap: 2}}>
-                                        <Box sx={{width: 20, height: 20, borderRadius: 1, bgcolor: name}}/>
-                                        <Typography sx={{flexGrow: 1}}>{name}</Typography>
-                                        <Typography fontWeight="bold">{value}</Typography>
-                                    </Box>
-                                </Grid>
+                        </div>
+                        <div className={styles.colorUsageColumnCustom}>
+                            {questionColorPairs.slice(Math.ceil(questionColorPairs.length / 2)).map(({question, color}) => (
+                                <Box className={styles.colorItem} key={question}>
+                                    <Box className={styles.colorSwatch} style={{backgroundColor: color}}/>
+                                    <Typography className={styles.colorQuestion}>{question}</Typography>
+                                </Box>
                             ))}
-                        </Grid>
-                    </GlassCard>
-                </Grid>
-            </Grid>
-        </Fade>
+                        </div>
+                    </div>
+                </Box>
+            </div>
+        </div>
     );
-
-    const PageIndicator = () => (
-        <Box sx={{display: 'flex', justifyContent: 'center', mt: 4, gap: 1}}>
-            {PAGES.map((_, index) => (
-                <Box
-                    key={index}
-                    sx={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: '50%',
-                        bgcolor: currentPage === index ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
-                        transition: 'background-color 0.3s'
-                    }}
-                />
-            ))}
-        </Box>
-    );
-
+   
+ 
+ 
     return (
         <Container className={styles.container}>
-            <Typography variant="h4" gutterBottom sx={{mb: 4}} className={styles.statTitle}>
+            <Typography variant="h4" className={styles.statTitle}>
                 {translate('postWallStatistics')}
             </Typography>
-
-            {currentPage === 0 && <GeneralMetrics/>}
-            {currentPage === 1 && <Distribution/>}
-            {currentPage === 2 && <Engagement/>}
-
-            <PageIndicator/>
+ 
+            <MetricsFlexContainer />
+            <Box className={styles.gridSpacing} />
+            <Distribution />
+            <Box className={styles.gridSpacing} />
+            <ResponseDistribution />
         </Container>
     );
 };
-
+ 
 export default StatisticsDashboard;

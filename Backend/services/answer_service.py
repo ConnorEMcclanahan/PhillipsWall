@@ -4,9 +4,10 @@ from ..utils.prompt_manager import update_image_url_prompt, update_translate_pro
 from ..utils.prompts import Prompts
 
 class AnswerService:
-    def __init__(self, portkey_client, answer_dao):
+    def __init__(self, portkey_client, answer_dao, answer_group_service):
         self.portkey_client = portkey_client
         self.answer_dao = answer_dao
+        self.answer_group_service = answer_group_service
 
     def get_answers(self) -> Dict[str, Any]:
         answers = self.answer_dao.get_answers()

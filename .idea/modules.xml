@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../postitwall-main/Backend/.idea/Backend Project.iml" filepath="$PROJECT_DIR$/../postitwall-main/Backend/.idea/Backend Project.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/PhillipsWall.iml" filepath="$PROJECT_DIR$/.idea/PhillipsWall.iml" />
     </modules>
   </component>
