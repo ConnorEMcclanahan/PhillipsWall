@@ -1,9 +1,59 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styles from './AIQuestionsDisplay.module.css';
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import { useLanguage } from './LanguageContext';
+import config from '../config';
+import { useLanguage } from '../LanguageContext';
+
+const { API_BASE } = config;
+const createRandomShadowGrid = (gridCols, gridRows) => {
+    const cells = [];
+    const shadows = [
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'none','none','none','none','none',
+        'drop-shadow(0 0 1.92px rgba(0,0,0,0.115))','drop-shadow(0 0 1.92px rgba(0,0,0,0.115))','drop-shadow(0 0 1.92px rgba(0,0,0,0.115))','drop-shadow(0 0 1.92px rgba(0,0,0,0.115))','drop-shadow(0 0 1.92px rgba(0,0,0,0.115))', // 5 subtle shadows
+        'drop-shadow(0 0 3.2px rgba(0,0,0,0.153))','drop-shadow(0 0 3.2px rgba(0,0,0,0.153))','drop-shadow(0 0 3.2px rgba(0,0,0,0.153))', // 3 medium shadows
+        'drop-shadow(0 0 4.8px rgba(0,0,0,0.192))',
+        'drop-shadow(0 0 0 1px rgba(0,0,0,0.06))'
+    ];
+
+    // Generate cells for the grid
+    for (let i = 0; i < gridCols * gridRows; i++) {
+        const shadow = shadows[Math.floor(Math.random() * shadows.length)];
+        cells.push(
+            <div
+                key={i}
+                className={styles.randomShadowCell}
+                style={{
+                    filter: shadow,
+                }}
+            />
+        );
+    }
+    return cells;
+};
+
 
 const AIQuestionsDisplay = () => {
+    // Core state
     const [bubbleStyles, setBubbleStyles] = useState([]);
     const { language } = useLanguage(); // Using the up-to-date version (no setLanguage destructuring)
     const [questionsData, setQuestionsData] = useState([]);
@@ -12,42 +62,76 @@ const AIQuestionsDisplay = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [currentAnswers, setCurrentAnswers] = useState([]);
     const [answersData, setAnswersData] = useState([]);
+    const [clickedQuestionPosition, setClickedQuestionPosition] = useState(null);
+
+
     
-    // Adding clustering state from your feature branch
+
+    // Clustering state
     const [clusteredAnswers, setClusteredAnswers] = useState([]);
     const [expandedCluster, setExpandedCluster] = useState(null);
-
-    const [isZooming, setIsZooming] = useState(false);
-    const [clickedQuestionPosition, setClickedQuestionPosition] = useState(null);
-    const [selectedMonth, setSelectedMonth] = useState(null);
-    const [activeMonth, setActiveMonth] = useState(null);
-
-    const ITEMS_PER_PAGE = 20;
-    const TRANSITION_DURATION = 500;
-    
-    // Adding clustering threshold from your feature branch
-    const CLUSTER_THRESHOLD = 15; // Distance threshold for clustering (in percentage points)
-
-    // Change the SEASONS array to only include seasons up to Summer 2025
-    const SEASONS = [
-        'Winter 2024', 'Spring 2024', 'Summer 2024', 'Fall 2024',
-        'Winter 2025', 'Spring 2025', 'Summer 2025'
-    ];
-
-    // Add this state variable
-    const [activeSeason, setActiveSeason] = useState(6); // Default to Summer 2025
-
-    // Add a new state for filtered clusters
+    const [previousExpandedCluster, setPreviousExpandedCluster] = useState(null);
     const [filteredClusters, setFilteredClusters] = useState([]);
 
-    // Fetch questions - keeping the up-to-date version
+
+    // UI state
+    const [isZooming, setIsZooming] = useState(false);
+    const [newestAnswerId, setNewestAnswerId] = useState(null);
+    
+    // Timeline state
+    const [activeSeason, setActiveSeason] = useState(5); // Default to Spring 2025
+
+
+    // Constants
+    const ITEMS_PER_PAGE = 20;
+    const TRANSITION_DURATION = 500;
+    const CLUSTER_THRESHOLD = 15; // Distance threshold for clustering (in percentage points)
+
+    const SEASON_TRANSLATIONS = {
+        en: [
+            'Winter 2024', 'Spring 2024', 'Summer 2024', 'Fall 2024',
+            'Winter 2025', 'Spring 2025'
+        ],
+        nl: [
+            'Winter 2024', 'Lente 2024', 'Zomer 2024', 'Herfst 2024',
+            'Winter 2025', 'Lente 2025'
+        ]
+        };
+
+    const seasonTranslations = SEASON_TRANSLATIONS[language];
+    const SEASONS = seasonTranslations;
+
+    const AXIS_LABELS = {
+        en: {
+            top: "AI enthusiast",
+            bottom: "AI skeptic",
+            left: "Little scared of the future",
+            right: "Looking bright to the future",
+        },
+        nl: {
+            top: "AI enthousiast",
+            bottom: "AI scepticus",
+            left: "Een beetje bang voor de toekomst",
+            right: "Optimistisch over de toekomst",
+        },
+    };
+    const labels = AXIS_LABELS[language];
+
+
+
+    // Grid dimensions
+    const gridCols = 55; 
+    const gridRows = 30; 
+
+    // Fetch questions
+
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
-                const response = await fetch('http://localhost:5000/questions');
+                const response = await fetch(`${API_BASE}/questions`);
                 const data = await response.json();
                 setQuestionsData(data);
-                console.log("Questions data fetched:", data);
+                console.log("Raw API response for questions:", data);
             } catch (error) {
                 console.error("Error fetching questions:", error);
             }
@@ -56,24 +140,29 @@ const AIQuestionsDisplay = () => {
         fetchQuestions();
     }, []);
 
-    // Fetch answers - keeping the up-to-date endpoint but using 'answers' for clustering
+    // Fetch answers with polling
     useEffect(() => {
         const fetchAnswers = async () => {
             try {
-                // Using the up-to-date endpoint but adapting for clustering
-                const response = await fetch('http://localhost:5000/answers'); // Changed back to 'answers' for clustering
+                const response = await fetch(`${API_BASE}/answers`);
+
                 const data = await response.json();
                 setAnswersData(data);
-                console.log("Answers data fetched:", data);
+                console.log("Raw API response for answers:", data);
             } catch (error) {
                 console.error("Error fetching answers:", error);
             }
         };
-
-        fetchAnswers();
+        
+        // Set up polling every 5 seconds
+        fetchAnswers(); // Initial fetch
+        const refreshInterval = setInterval(fetchAnswers, 5000);
+        
+        return () => clearInterval(refreshInterval);
     }, []);
 
-    // Extract colors from questionsData and create a map for quick access
+    // Extract colors from questionsData
+
     const questionColorMap = useMemo(() => {
         const map = {};
         for (const q of questionsData) {
@@ -82,13 +171,12 @@ const AIQuestionsDisplay = () => {
         return map;
     }, [questionsData]);
     
-    // Update the color function with exact hex values
     const getQuestionColor = useCallback((questionId) => {
         return questionColorMap[questionId] || '#7EDDDE';
     }, [questionColorMap]);
 
-    // Adding clustering functions from your feature branch
-    // Function to calculate distance between two points
+    // Clustering functions
+
     const calculateDistance = (point1, point2) => {
         const dx = point1.x - point2.x;
         const dy = point1.y - point2.y;
@@ -141,13 +229,14 @@ const AIQuestionsDisplay = () => {
         return clusters;
     }, [answersData]);
 
-    // Update clustered answers when answersData changes
+    // Update clustered answers when data changes
     useEffect(() => {
         const clusters = clusterAnswers();
         setClusteredAnswers(clusters);
     }, [answersData, clusterAnswers]);
 
-    // Update the bubble positioning in the useEffect that sets bubble styles
+
+    // Create visual styles for clusters
     useEffect(() => {
         if (!clusteredAnswers.length) return;
 
@@ -155,15 +244,12 @@ const AIQuestionsDisplay = () => {
             const firstAnswer = cluster.answers[0];
             
             // Add padding to keep bubbles away from edges (15% padding on each side)
-            // This changes range from 0-100% to 15-85%
             const normalizedX = firstAnswer.x_axis_value * 70 + 50;
             const normalizedY = firstAnswer.y_axis_value * 70 + 50;
             
             // Constrain values to stay within the safe area
             const constrainedX = Math.max(15, Math.min(85, normalizedX));
             const constrainedY = Math.max(15, Math.min(85, normalizedY));
-
-            console.log(`Cluster ID: ${cluster.id}, X: ${constrainedX}, Y: ${constrainedY}`);
             
             // Use consistent sizing for all clusters
             const baseSize = 10;
@@ -186,92 +272,12 @@ const AIQuestionsDisplay = () => {
         });
 
         setBubbleStyles(styles);
-
-        // Keeping the interval from the existing version
-        const interval = setInterval(() => setBubbleStyles(styles), 8000);
-        return () => clearInterval(interval);
     }, [clusteredAnswers, getQuestionColor]);
 
-    // Keeping the up-to-date handleQuestionClick
-    const handleQuestionClick = async (questionId, event) => {
-        const element = event.currentTarget;
-        const rect = element.getBoundingClientRect();
 
-        setClickedQuestionPosition({
-            top: rect.top,
-            left: rect.left,
-            width: rect.width,
-            height: rect.height
-        });
-
-        setIsZooming(true);
-
-        // Add class to questionsGrid for zoom effect
-        const gridElement = document.querySelector(`.${styles.questionsGrid}`);
-        gridElement?.classList.add(styles.zooming);
-
-        try {
-            const response = await fetch(`http://localhost:5000/question/${questionId}`);
-            const data = await response.json();
-
-            // Stagger the transitions
-            setTimeout(() => {
-                gridElement?.classList.add(styles.zoomed);
-                setActiveQuestion(questionId);
-                setActiveQuestionData(data);
-                setCurrentPage(1);
-            }, TRANSITION_DURATION / 2);
-        } catch (error) {
-            console.error("Error fetching question details:", error);
-        }
-    };
-
-    // Add a new state variable to store the previous expanded cluster
-    const [previousExpandedCluster, setPreviousExpandedCluster] = useState(null);
-
-    // Modified handleBubbleClick to preserve the cluster state
-    const handleBubbleClick = async (answerId, questionId, event) => {
-        const element = event.currentTarget;
-        const rect = element.getBoundingClientRect();
-
-        setClickedQuestionPosition({
-            top: rect.top,
-            left: rect.left,
-            width: rect.width,
-            height: rect.height
-        });
-
-        setIsZooming(true);
-
-        // Store the current expanded cluster so we can restore it when going back
-        if (expandedCluster) {
-            setPreviousExpandedCluster(expandedCluster);
-        }
-
-        // Add class to answersGrid for zoom effect
-        const gridElement = document.querySelector(`.${styles.answersGrid}`);
-        gridElement?.classList.add(styles.zooming);
-
-        try {
-            const response = await fetch(`http://localhost:5000/question/${questionId}`);
-            const data = await response.json();
-
-            // Stagger the transitions
-            setTimeout(() => {
-                gridElement?.classList.add(styles.zoomed);
-                setActiveQuestion(questionId);
-                setActiveQuestionData(data);
-                setCurrentPage(1);
-                // Don't clear the expanded cluster state here
-            }, TRANSITION_DURATION / 2);
-        } catch (error) {
-            console.error("Error fetching question details:", error);
-        }
-    };
-
-    // Update the handleClusterClick function to handle single answers like clusters
+    // Handle clicking on a cluster
     const handleClusterClick = async (cluster, event) => {
-        // Multiple answers OR single answer - show cluster expansion with flash cards
+        // Toggle cluster expansion
         if (expandedCluster?.id === cluster.id) {
             setExpandedCluster(null);
             return;
@@ -279,17 +285,20 @@ const AIQuestionsDisplay = () => {
 
         setExpandedCluster(cluster);
 
-        // Fetch question data for either cluster or single answer
+
+        // Fetch question data
         try {
-            const response = await fetch(`http://localhost:5000/question/${cluster.questionId}`);
+            const response = await fetch(`${API_BASE}/question/${cluster.questionId}`);
             const data = await response.json();
             setActiveQuestionData(data);
+
         } catch (error) {
             console.error("Error fetching question details:", error);
         }
     };
 
-    // Keeping the up-to-date handleBack
+    // Handle going back from detail view
+
     const handleBack = () => {
         setIsZooming(false);
 
@@ -311,7 +320,8 @@ const AIQuestionsDisplay = () => {
         }, TRANSITION_DURATION);
     };
 
-    // Keeping the up-to-date answer pagination
+    // Handle answer pagination
+
     useEffect(() => {
         if (!activeQuestionData?.answers[language]) return;
 
@@ -329,158 +339,115 @@ const AIQuestionsDisplay = () => {
         return () => clearInterval(interval);
     }, [activeQuestionData, currentPage, language]);
 
-    // Keeping the up-to-date month initialization
-    useEffect(() => {
-        // Get current date
-        const now = new Date();
-        const currentMonth = now.getMonth(); // 0-based (January is 0)
-        
-        // Set initial active month
-        setActiveMonth(currentMonth);
-    }, []);
-
-    // Keeping the up-to-date timeline handler
+    // Handle timeline point clicks
     const handleTimelinePointClick = (seasonIndex) => {
         setActiveSeason(seasonIndex);
         filterClustersBySeason(seasonIndex);
     };
 
-    // Add a useEffect to filter clusters by season
+    // Filter clusters when data or season changes
+
     useEffect(() => {
-        // Only proceed if we have clustered answers
         if (clusteredAnswers.length > 0) {
             filterClustersBySeason(activeSeason);
         }
     }, [clusteredAnswers, activeSeason]);
 
-    // Fix the getSeasonIndex function to be more tolerant of date formats
+    // Update this function to ensure proper date handling
     const getSeasonIndex = (dateString) => {
-        if (!dateString) return 6; // Default to Summer 2025 for missing dates
+        if (!dateString) return 5; // Default to Spring 2025
         
-        // Try to parse the date - handle different formats
+        // Try to parse the date
         let date;
         try {
-            // Try standard format first
             date = new Date(dateString);
             
-            // Check if we got an invalid date
             if (isNaN(date.getTime())) {
-                // Try to extract date from non-standard format if possible
-                const numbers = dateString.match(/\d+/g);
-                if (numbers && numbers.length >= 3) {
-                    // Try to construct a date from the extracted numbers
-                    date = new Date(numbers[0], numbers[1] - 1, numbers[2]);
-                    if (isNaN(date.getTime())) {
-                        console.log(`Failed to parse date: ${dateString}`);
-                        return 6; // Default to Summer 2025
-                    }
-                } else {
-                    console.log(`Invalid date format: ${dateString}`);
-                    return 6; // Default to Summer 2025
-                }
+                // If date parsing failed, default to Spring 2025
+                console.log(`Invalid date format: ${dateString}, defaulting to Spring 2025`);
+                return 5;
             }
         } catch (e) {
-            console.log(`Date parsing error for: ${dateString}`);
-            return 6; // Default to Summer 2025
+            console.log(`Error parsing date: ${dateString}, defaulting to Spring 2025`);
+            return 5; // Default to Spring 2025
         }
         
         const month = date.getMonth(); // 0-indexed
         const year = date.getFullYear();
         
-        // More permissive approach - assign all dates to a season regardless of year
-        // Just map to our 7 seasons based on month pattern
+        // Map dates to seasons
         if (month <= 2) {
             return year >= 2025 ? 4 : 0; // Winter (Jan-Mar)
         } else if (month <= 5) {
             return year >= 2025 ? 5 : 1; // Spring (Apr-Jun)
         } else if (month <= 8) {
-            return year >= 2025 ? 6 : 2; // Summer (Jul-Sep)
+            return 2; // Summer (Jul-Sep) - only in 2024 now
         } else {
             return 3; // Fall (Oct-Dec) - only in 2024
         }
     };
 
-    // Updated filtering function to ensure each season has data
+    // Filter clusters by season
     const filterClustersBySeason = (seasonIndex) => {
         if (!clusteredAnswers.length) return;
         
-        console.log(`Filtering for ${SEASONS[seasonIndex]} - before filter: ${clusteredAnswers.length} clusters`);
-        
-        // First try to filter by real dates
+        // Filter ONLY by real dates - no simulation fallback
         const realDateFiltered = clusteredAnswers.filter(cluster => {
+            // Track if we found a date in any answer in this cluster
+            let foundDate = false;
+            let matchesSeason = false;
+            
             for (const answer of cluster.answers) {
-                const dateField = answer.scan_date || 
-                              answer.created_at || 
-                              answer.createdAt || 
-                              answer.date || 
-                              answer.timestamp;
+                // Use any available date field
+                const dateField = answer.created_at || answer.scan_date || 
+                     answer.answer_date || answer.createdAt || 
+                     answer.date || answer.timestamp;
                 
                 if (dateField) {
+                    foundDate = true;
                     const parsed = getSeasonIndex(dateField);
                     if (parsed === seasonIndex) {
-                        return true; // Include this cluster - it has a matching date
+                        matchesSeason = true;
+                        break;  // We found a match, no need to check more answers
                     }
                 }
             }
-            return false;
-        });
-        
-        // If we have enough real date matches, use those
-        if (realDateFiltered.length >= 5) {
-            console.log(`Found ${realDateFiltered.length} clusters with real dates for ${SEASONS[seasonIndex]}`);
-            setFilteredClusters(realDateFiltered);
-            return;
-        }
-        
-        // Otherwise, distribute clusters deterministically across seasons
-        console.log(`Insufficient real date matches, using deterministic distribution for ${SEASONS[seasonIndex]}`);
-        
-        const assignedClusters = clusteredAnswers.filter(cluster => {
-            // Use numeric portion of cluster ID (or answer ID) for deterministic assignment
-            const hash = parseInt((cluster.id || '').replace(/\D/g, '')) || 
-                        parseInt((cluster.answers[0].answer_id || '').toString().replace(/\D/g, '')) || 0;
             
-            return hash % SEASONS.length === seasonIndex;
+            // If we found a date and it matches the season, include this cluster
+            if (foundDate && matchesSeason) {
+                return true;
+            }
+            
+            // If no date is found, show in current season (Spring 2025) if that's selected
+            return !foundDate && seasonIndex === 5;
         });
         
-        console.log(`Assigned ${assignedClusters.length} clusters to ${SEASONS[seasonIndex]}`);
-        setFilteredClusters(assignedClusters);
+        // Always use the real date filtered results, never simulate
+        setFilteredClusters(realDateFiltered);
     };
 
-    // Add this after the data is fetched
+    // Initial filtering 
     useEffect(() => {
         if (answersData.length > 0) {
-            // Log the first few answers to check date fields
-            console.log("Sample answers to check date fields:", 
-                answersData.slice(0, 3).map(a => ({
-                    answer_id: a.answer_id,
-                    date_fields: {
-                        created_at: a.created_at,
-                        createdAt: a.createdAt,
-                        date: a.date,
-                        timestamp: a.timestamp,
-                        scan_date: a.scan_date
-                    }
-                }))
-            );
-            
-            // Initial filtering using current season
+
             filterClustersBySeason(activeSeason);
         }
     }, [answersData, activeSeason]);
 
-    // Update the renderExpandedCluster function to remove the redundant circle
+    // Render expanded cluster view
 
     const renderExpandedCluster = () => {
         if (!expandedCluster) return null;
 
         const clusterAnswers = expandedCluster.answers;
-        const radius = 300; // Much larger radius to spread cards out
+        const baseRadius = 350; // Base radius for card positioning
+
         const questionColor = getQuestionColor(expandedCluster.questionId);
 
         return (
             <>
-                {/* Overlay */}
+                {/* Overlay with transition */}
+
                 <div 
                     className={styles.clusterOverlay}
                     onClick={(e) => {
@@ -496,119 +463,138 @@ const AIQuestionsDisplay = () => {
                         bottom: 0,
                         backgroundColor: 'rgba(0, 0, 0, 0.7)',
                         zIndex: 15,
+                        opacity: 1,
+                        transition: 'opacity 0.4s ease-in-out',
                     }}
                 />
 
-                {/* Central question - now fixed in center of page */}
+                {/* Central question with smooth transition */}
                 <div
                     className={styles.centralQuestion}
                     style={{
-                        position: 'fixed', // Changed to fixed
-                        top: '50%', // Center vertically
-                        left: '50%', // Center horizontally
-                        transform: 'translate(-50%, -50%)',
+                        position: 'fixed',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%) scale(1)',
                         backgroundColor: questionColor,
                         color: 'white',
-                        width: '240px',
-                        height: '240px',
+                        width: '200px',
+                        height: '200px',
                         borderRadius: '50%',
-                        padding: '30px',
+                        padding: '25px', 
+
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         textAlign: 'center',
                         zIndex: 25,
                         boxShadow: `0 0 30px ${questionColor}, inset 0 0 60px ${questionColor}`,
-                        fontSize: '18px',
-                        fontWeight: 'bold'
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        transition: 'all 0.5s ease-out',
+
                     }}
                 >
                     {activeQuestionData?.question[language] || 'Loading question...'}
                 </div>
                 
-                {/* Answer cards - now positioned around center of page */}
+                {/* Answer cards - with smooth animations */}
                 <div className={styles.expandedCluster}>
                     {clusterAnswers.map((answer, index) => {
-                        const angle = (index / clusterAnswers.length) * 2 * Math.PI;
-                        const rotation = Math.random() * 6 - 3; // Small random rotation
-                        const offsetX = Math.cos(angle) * radius;
-                        const offsetY = Math.sin(angle) * radius;
-                        
-                        // Get the actual answer text - handle different possible formats
+                        // Get the answer text
                         const answerText = (() => {
-                            // First try to get English content specifically
-                            if (answer.en) return answer.en;
-                            if (answer.english) return answer.english;
-                            
-                            // Then try common locations for answer text
-                            if (answer.body) return answer.body;
-                            if (typeof answer.answer === 'string') return answer.answer;
-                            if (answer.content) return answer.content;
+                            if (answer[language]) return answer[language];
                             if (answer.text) return answer.text;
-                            if (answer.answer_text) return answer.answer_text;
-                            
-                            // Only use other languages as a last resort
-                            if (answer[language] && language === 'en') return answer[language];
-                            
-                            // Last resort fallback
                             return "That despite all technology, in 2044 we still answer these questions on paper with a pencil...";
                         })();
+                        
+                        // Determine radius based on text length - push longer texts further out
+                        const textLength = answerText.length;
+                        const dynamicRadius = baseRadius + (textLength > 100 ? 50 : 0) + 
+                                         (textLength > 200 ? 50 : 0) + 
+                                         (textLength > 300 ? 50 : 0);
+                        
+                        // Calculate angle and position - use consistent positioning
+                        const angle = (index / clusterAnswers.length) * 2 * Math.PI;
+                        const offsetX = Math.cos(angle) * dynamicRadius;
+                        const offsetY = Math.sin(angle) * dynamicRadius;
+                        
+                        // Calculate dynamic height based on content length
+                        const estimatedLines = Math.ceil(textLength / 25); // Rough estimate of chars per line
+                        const minHeight = 180;
+                        const dynamicHeight = Math.max(minHeight, 100 + estimatedLines * 20);
+                        const cappedHeight = Math.min(400, dynamicHeight);
 
-                        // Update the answer card styling to properly align text with the lines
                         return (
                             <div
-                                key={answer.answer_id}
+                                key={answer.answer_id || index}
+
                                 className={styles.answerCard}
                                 style={{
                                     position: 'fixed',
                                     top: `calc(50% + ${offsetY}px)`,
                                     left: `calc(50% + ${offsetX}px)`,
-                                    transform: `translate(-50%, -50%) rotate(${Math.random() * 6 - 3}deg)`,
+                                    transform: `translate(-50%, -50%)`, // Base transform
                                     backgroundColor: questionColor,
                                     width: '220px',
-                                    minHeight: '150px',
-                                    padding: '0', // Remove default padding
-                                    borderRadius: '8px',
+                                    minHeight: `${cappedHeight}px`,
+                                    padding: '0',
+                                    borderRadius: '2px',
                                     zIndex: 20,
                                     boxShadow: '0 6px 12px rgba(0,0,0,0.3)',
-                                    overflow: 'visible',
+                                    overflow: 'hidden',
                                     display: 'flex',
-                                    alignItems: 'flex-start', // Align from the top
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
                                     justifyContent: 'center',
-                                    color: 'white',
-                                    fontWeight: '500',
-                                    border: '2px solid rgba(255,255,255,0.3)',
-                                    // Improved line styling with more accurate measurements
-                                    backgroundImage: `
-                                        linear-gradient(transparent 0px, transparent 19px, rgba(255,255,255,0.4) 19px, rgba(255,255,255,0.4) 20px)
-                                    `,
-                                    backgroundSize: '100% 20px',
-                                    backgroundPosition: '0 0',
+                                    color: '#fff',
+                                    border: '1px solid rgba(0,0,0,0.1)',
+                                    transition: 'all 0.6s cubic-bezier(0.25, 1, 0.5, 1)',
+                                    animationFillMode: 'both',
+                                    opacity: 1,
+                                    // Add the animation properties
+                                    animation: `float ${6 + (index % 4)}s ease-in-out ${index * 0.4}s infinite alternate`,
+                                    // This will create a gentle floating effect
                                 }}
                             >
+                                {/* Thumb tack hole effect */}
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '10px',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    width: '16px',
+                                    height: '16px',
+                                    borderRadius: '50%',
+                                    backgroundColor: 'rgba(0,0,0,0.4)',
+                                    boxShadow: 'inset 0 0 5px rgba(0,0,0,0.5)',
+                                    zIndex: 3,
+                                }}></div>
+                                
+                                {/* Answer text with better handling */}
                                 <div style={{
                                     fontFamily: "'Comic Sans MS', cursive, sans-serif",
                                     fontSize: '14px',
-                                    lineHeight: '20px', // Exactly match the background line height
-                                    width: '100%',
-                                    height: '100%',
-                                    padding: '19px 15px 0 15px', // Padding top aligns with first line
-                                    boxSizing: 'border-box',
-                                    textShadow: '0 0 1px rgba(0,0,0,0.2)',
-                                    letterSpacing: '0.5px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
+                                    lineHeight: '20px',
+                                    width: '90%',
+                                    height: '90%',
                                     textAlign: 'left',
-                                    // Apply no rotation to text so it stays aligned with lines
+                                    color: '#fff',
+                                    position: 'relative',
+                                    zIndex: 2,
+                                    margin: '20px 10px 10px 10px',
+                                    padding: '5px',
+                                    overflowY: textLength > 300 ? 'auto' : 'visible',
+                                    maxHeight: textLength > 300 ? '340px' : 'none',
                                 }}>
-                                    {/* Split text into lines for better alignment with background */}
                                     {answerText.split('\n').map((line, i) => (
                                         <div key={i} style={{ 
-                                            marginBottom: '0', // No margin between lines
-                                            lineHeight: '20px', // Match background line height exactly
-                                            paddingTop: i === 0 ? '0' : '0' // No padding for consistent line height
+                                            marginBottom: '0',
+                                            lineHeight: '20px',
+                                            wordWrap: 'break-word'
                                         }}>
-                                            {line || '\u00A0'} {/* Use non-breaking space for empty lines */}
+                                            {line || '\u00A0'}
+
                                         </div>
                                     ))}
                                 </div>
@@ -620,13 +606,111 @@ const AIQuestionsDisplay = () => {
         );
     };
 
+    // Fix the randomShadowGrid to not use useMemo incorrectly
+const randomShadowGrid = useMemo(() => {
+    return createRandomShadowGrid(gridCols, gridRows);
+}, [gridCols, gridRows]);
+   // Replace the useEffect that's currently trying to fetch the newest answer
+useEffect(() => {
+        // Fix the fetchNewestAnswer function
+        const fetchNewestAnswer = async () => {
+            try {
+                console.log("Fetching newest answer ID...");
+                const response = await fetch(`${API_BASE}/get_newest_answer`);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Raw API response for newest answer:", data);
+                    
+                    // Handle case where API returns just the number instead of {answer_id: number}
+                    const newId = typeof data === 'number' ? data : (data && data.answer_id);
+                    
+                    if (newId) {
+                        setNewestAnswerId(newId);
+                        console.log("✅ Newest answer ID set to:", newId);
+                        
+                        // Debug check: log all answer IDs in filtered clusters
+                        const allIds = [];
+                        filteredClusters.forEach(cluster => {
+                            cluster.answers.forEach(answer => {
+                                if (answer.answer_id) allIds.push(answer.answer_id);
+                            });
+                        });
+                        console.log("Available answer IDs in clusters:", allIds);
+                        
+                        // Check if any clusters have this ID
+                        const foundCluster = filteredClusters.find(cluster => 
+                            cluster.answers.some(answer => answer.answer_id === newId)
+                        );
+                        console.log("Found cluster with newest ID:", foundCluster ? "YES" : "NO");
+                    } else {
+                        console.error("❌ No answer ID found in response");
+                    }
+                } else {
+                    console.error("❌ Error fetching newest answer - non-OK response");
+                }
+            } catch (error) {
+                console.error("❌ Error fetching newest answer:", error);
+            }
+        };
+
+        // Custom event listener for new submissions
+        const handleNewSubmission = (event) => {
+            if (event.detail && event.detail.answer_id) {
+                console.log("New submission detected:", event.detail.answer_id);
+                setNewestAnswerId(event.detail.answer_id);
+            }
+        };
+
+        // Listen for custom events
+        window.addEventListener('newAnswerSubmitted', handleNewSubmission);
+        
+        // Initial fetch
+        fetchNewestAnswer();
+        
+        // Less frequent polling to reduce server load
+        const interval = setInterval(fetchNewestAnswer, 10000);
+        
+        return () => {
+            window.removeEventListener('newAnswerSubmitted', handleNewSubmission);
+            clearInterval(interval);
+        };
+    }, [filteredClusters]); // Add filteredClusters as a dependency so it re-checks when clusters change
+
+    // Add this useEffect to hide "YOU" label after 20 seconds
+useEffect(() => {
+    // When the newestAnswerId changes and is not null
+    if (newestAnswerId) {
+        console.log("Setting timeout to hide YOU label after 20 seconds for ID:", newestAnswerId);
+        
+        // Set a timeout to clear the newestAnswerId after 20 seconds
+        const hideYouLabelTimer = setTimeout(() => {
+            console.log("Clearing YOU label after timeout");
+            setNewestAnswerId(null); // Clear the newestAnswerId instead of yourRecentAnswerId
+        }, 20000); // 20 seconds
+        
+        // Clean up the timer when component unmounts or newestAnswerId changes
+        return () => {
+            clearTimeout(hideYouLabelTimer);
+        };
+    }
+}, [newestAnswerId]); // Watch newestAnswerId instead of yourRecentAnswerId
+
     return (
         <div className={styles.container}>
+            {/* Add the background grid */}
+            <div className={styles.axisLines}></div>
+            <div className={styles.randomShadowGrid} aria-hidden="true">
+                {randomShadowGrid}
+            </div>
             <div className={styles.answersLayer}>
                 <div className={styles.answersGrid}>
-                    {/* Only show clusters if there are filtered results for this season */}
                     {(filteredClusters.length > 0 ? filteredClusters : []).map((cluster, index) => {
-                        // Use existing style if found, otherwise generate one
+                        // Check if this cluster contains the newest answer
+                        const isYourCluster = newestAnswerId && 
+                        cluster.answers.some(answer => answer.answer_id === newestAnswerId);
+           
+                        
+                        // Get style for this cluster
                         const styleIndex = clusteredAnswers.findIndex(c => c.id === cluster.id);
                         const style = styleIndex >= 0 ? bubbleStyles[styleIndex] : {
                             bottom: `${Math.max(15, Math.min(85, cluster.answers[0].y_axis_value * 70 + 15))}%`,
@@ -640,31 +724,50 @@ const AIQuestionsDisplay = () => {
                         };
                         
                         return (
-                            <div
-                                key={cluster.id}
-                                className={`${styles.answerItem} ${cluster.size > 1 ? styles.cluster : ''}`}
-                                data-color={getQuestionColor(cluster.questionId)}
-                                data-cluster-size={cluster.size}
-                                style={{
-                                    ...style,
-                                    opacity: 1,
-                                    pointerEvents: 'auto', 
-                                    cursor: 'pointer',
-                                    zIndex: 10
-                                }}
-                                onClick={(e) => handleClusterClick(cluster, e)}
-                                title={cluster.size > 1 ? `${cluster.size} answers` : 'Single answer'}
-                            >
-                                {cluster.size > 1 && (
-                                    <span className={styles.clusterCount}>
-                                        {cluster.size}
-                                    </span>
-                                )}
-                            </div>
+                        <div
+    key={cluster.id}
+    className={`${styles.answerItem} ${cluster.size > 1 ? styles.cluster : ''} ${isYourCluster ? styles.yourCluster : ''}`}
+    data-color={getQuestionColor(cluster.questionId)}
+    data-cluster-size={cluster.size}
+    style={{
+        ...style,
+        opacity: 1,
+        pointerEvents: 'auto', 
+        cursor: 'pointer',
+        zIndex: isYourCluster ? 11 : 10,
+        border: isYourCluster ? '3px solid black' : 'none',
+    }}
+    onClick={(e) => handleClusterClick(cluster, e)}
+    title={isYourCluster ? 'Your answer' : (cluster.size > 1 ? `${cluster.size} answers` : 'Single answer')}
+>
+    {isYourCluster && (
+        <div 
+            className={styles.youIndicator}
+            style={{
+                position: 'absolute',
+                top: '-30px', 
+                left: '50%',
+                transform: 'translateX(-50%)',
+                backgroundColor: 'black',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                padding: '3px 10px',
+                borderRadius: '12px',
+                zIndex: 100,
+                whiteSpace: 'nowrap',
+                pointerEvents: 'none',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+            }}
+        >
+            <span>YOU</span>
+        </div>
+    )}
+</div>
                         );
                     })}
                     
-                    {/* Show message when no data for this season */}
+
                     {filteredClusters.length === 0 && (
                         <div className={styles.noDataMessage} style={{
                             position: 'absolute',
@@ -684,31 +787,27 @@ const AIQuestionsDisplay = () => {
                     )}
                 </div>
                 
-                {/* Render expanded cluster */}
                 {renderExpandedCluster()}
             </div>
 
-            {/* Keeping all the up-to-date UI elements */}
+
             <div className={styles.gridLines} style={{ 
                 opacity: expandedCluster ? 0 : 1,
                 transition: 'opacity 0.3s ease',
                 pointerEvents: expandedCluster ? 'none' : 'auto'
             }}>
-                <div className={`${styles.axisLabel} ${styles.labelTop}`}>AI enthusiast</div>
-                <div className={`${styles.axisLabel} ${styles.labelBottom}`}>AI skeptic</div>
-                <div className={`${styles.axisLabel} ${styles.labelLeft}`}>Little scared
-                of the
-                future</div>
-                <div className={`${styles.axisLabel} ${styles.labelRight}`}>Looking bright
-                to the
-                future</div>
+                <div className={`${styles.axisLabel} ${styles.labelTop}`}>{labels.top}</div>
+                <div className={`${styles.axisLabel} ${styles.labelBottom}`}>{labels.bottom}</div>
+                <div className={`${styles.axisLabel} ${styles.labelLeft}`}>{labels.left}</div>
+                <div className={`${styles.axisLabel} ${styles.labelRight}`}>{labels.right}</div>
             </div>
 
             <div className={styles.timeline} style={{
                 opacity: expandedCluster ? 0 : 1,
                 transition: 'opacity 0.3s ease',
                 pointerEvents: expandedCluster ? 'none' : 'auto',
-                transform: 'scale(0.85)', // Scale down the timeline to 85% of original size
+                transform: 'scale(0.85)',
+
             }}>
                 {SEASONS.map((season, index) => (
                     <div
@@ -774,7 +873,7 @@ const AIQuestionsDisplay = () => {
                         </div>
 
                         <div className={styles.answersContainer}>
-                            {currentAnswers.map((answer, index, array) => (
+                            {currentAnswers.map((answer, index) => (
                                 <div
                                     key={`answer-${index}-${currentPage}`}
                                     className={styles.answerBox}

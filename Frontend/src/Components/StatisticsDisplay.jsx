@@ -37,8 +37,8 @@ import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import NotListedLocationIcon from '@mui/icons-material/NotListedLocation';
 import styles from './StatisticsDisplay.module.css';
 import translations from '../Pages/translations.json';
-import {useLanguage} from "./LanguageContext";
 import { Text } from 'recharts';
+import {useLanguage} from "../LanguageContext";
 
 const breakByWidth = (label, maxCharsPerLine = 16) => {
     const words = label.split(' ');
