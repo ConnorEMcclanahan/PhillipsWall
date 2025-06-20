@@ -1,0 +1,28 @@
+{
+  "en": {
+    "scanYourPostItHere": "Scan your post-it here!",
+    "readyToShareYourIdea": "Ready to share your idea with the AI wall?",
+    "onlyPostItInPhoto": "Only the post-it is in the photo",
+    "textClearlyReadable": "The text is clearly readable",
+    "ideaAddedToDatabase": "Your idea will be added to the AI database",
+    "postItShownAnonymously": "Your post-it will be shown anonymously",
+    "noPersonalData": "No personal data like names, email addresses or phone numbers",
+    "noHandsOrBackground": "No hands, backgrounds, or unrelated objects",
+    "noInappropriateContent": "No swear words, hate speech, or harmful content allowed",
+    "startScanning": "Start scanning",
+    "privacyConsent": "By tapping \"Start scanning\", you agree that your input may be used for research and public display in the AI exhibition."
+  },
+  "nl": {
+    "scanYourPostItHere": "Scan je post-it hier!",
+    "readyToShareYourIdea": "Klaar om je idee te delen met de AI-muur?",
+    "onlyPostItInPhoto": "Alleen de post-it is te zien op de foto",
+    "textClearlyReadable": "De tekst is duidelijk leesbaar",
+    "ideaAddedToDatabase": "Je idee wordt toegevoegd aan de AI-database",
+    "postItShownAnonymously": "Je post-it wordt anoniem getoond",
+    "noPersonalData": "Geen persoonlijke gegevens zoals namen, e-mailadressen of telefoonnummers",
+    "noHandsOrBackground": "Geen handen, achtergronden of niet-gerelateerde objecten",
+    "noInappropriateContent": "Geen scheldwoorden, haatzaaien of schadelijke inhoud toegestaan",
+    "startScanning": "Start met scannen",
+    "privacyConsent": "Door op \"Start met scannen\" te tikken, ga je ermee akkoord dat je input kan worden gebruikt voor onderzoek en publieke weergave in de AI-tentoonstelling."
+  }
+}

@@ -1,0 +1,281 @@
+:root {
+    --turquoise: #7EDDDE;
+    --orange: #FFA40D;
+    --green: #009C49;
+    --purple: #A77AD7;
+}
+
+.container {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    background-color: #faf9f6;
+    overflow: hidden;
+}
+
+/* Sticky note pattern background */
+.container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: white;
+    /* Veel clusters, elk in een cirkelvormig patroon */
+    background-image:
+        /* Cluster 1 */
+        linear-gradient(to bottom, #BDE6E4 0 0), linear-gradient(to bottom, #C7ECEB 0 0), linear-gradient(to bottom, #D5F4F3 0 0), linear-gradient(to bottom, #A8DEDD 0 0), linear-gradient(to bottom, #B3E9E7 0 0), linear-gradient(to bottom, #D8F6F5 0 0), linear-gradient(to bottom, #C0EDEA 0 0), linear-gradient(to bottom, #C9F0EF 0 0), linear-gradient(to bottom, #DFFBFA 0 0),
+        /* Cluster 2 */
+        linear-gradient(to bottom, #E7FDFC 0 0), linear-gradient(to bottom, #C2EBE9 0 0), linear-gradient(to bottom, #B0DFDD 0 0), linear-gradient(to bottom, #D1F5F4 0 0), linear-gradient(to bottom, #C9F1F0 0 0), linear-gradient(to bottom, #A8DEDD 0 0), linear-gradient(to bottom, #B3E9E7 0 0), linear-gradient(to bottom, #D8F6F5 0 0),
+        /* Cluster 3 */
+        linear-gradient(to bottom, #C0EDEA 0 0), linear-gradient(to bottom, #C7ECEB 0 0), linear-gradient(to bottom, #D5F4F3 0 0), linear-gradient(to bottom, #E7FDFC 0 0), linear-gradient(to bottom, #C2EBE9 0 0), linear-gradient(to bottom, #B0DFDD 0 0), linear-gradient(to bottom, #D1F5F4 0 0), linear-gradient(to bottom, #C9F1F0 0 0),
+        /* Cluster 4 */
+        linear-gradient(to bottom, #BDE6E4 0 0), linear-gradient(to bottom, #C7ECEB 0 0), linear-gradient(to bottom, #D5F4F3 0 0), linear-gradient(to bottom, #A8DEDD 0 0), linear-gradient(to bottom, #B3E9E7 0 0), linear-gradient(to bottom, #D8F6F5 0 0), linear-gradient(to bottom, #C0EDEA 0 0), linear-gradient(to bottom, #C9F0EF 0 0),
+        /* Cluster 5 */
+        linear-gradient(to bottom, #DFFBFA 0 0), linear-gradient(to bottom, #E7FDFC 0 0), linear-gradient(to bottom, #C2EBE9 0 0), linear-gradient(to bottom, #B0DFDD 0 0), linear-gradient(to bottom, #D1F5F4 0 0), linear-gradient(to bottom, #C9F1F0 0 0), linear-gradient(to bottom, #A8DEDD 0 0), linear-gradient(to bottom, #B3E9E7 0 0),
+        /* Cluster 6 */
+        linear-gradient(to bottom, #C7ECEB 0 0), linear-gradient(to bottom, #D5F4F3 0 0), linear-gradient(to bottom, #E1FAF9 0 0), linear-gradient(to bottom, #D0F1F0 0 0), linear-gradient(to bottom, #A8DEDD 0 0), linear-gradient(to bottom, #B3E9E7 0 0), linear-gradient(to bottom, #D8F6F5 0 0),
+        /* Cluster 7 */
+        linear-gradient(to bottom, #C0EDEA 0 0), linear-gradient(to bottom, #C9F0EF 0 0), linear-gradient(to bottom, #DFFBFA 0 0), linear-gradient(to bottom, #E7FDFC 0 0), linear-gradient(to bottom, #C2EBE9 0 0), linear-gradient(to bottom, #B0DFDD 0 0),
+        /* Cluster 8 */
+        linear-gradient(to bottom, #D1F5F4 0 0), linear-gradient(to bottom, #C9F1F0 0 0), linear-gradient(to bottom, #A8DEDD 0 0), linear-gradient(to bottom, #B3E9E7 0 0), linear-gradient(to bottom, #D8F6F5 0 0),
+        /* Cluster 9 */
+        linear-gradient(to bottom, #C0EDEA 0 0), linear-gradient(to bottom, #C7ECEB 0 0), linear-gradient(to bottom, #D5F4F3 0 0), linear-gradient(to bottom, #E7FDFC 0 0),
+        /* Cluster 10 */
+        linear-gradient(to bottom, #C2EBE9 0 0), linear-gradient(to bottom, #B0DFDD 0 0), linear-gradient(to bottom, #D1F5F4 0 0), linear-gradient(to bottom, #C9F1F0 0 0);
+    background-size:
+        15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px,
+        15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px,
+        15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px,
+        15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px,
+        15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px,
+        15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px, 15px 15px,
+        15px 15px, 15px 15px;
+    background-position:
+        /* Cluster 1 */
+        50px 50px, 50px 35px, 50px 65px, 35px 50px, 65px 50px, 35px 35px, 65px 35px, 35px 65px, 65px 65px,
+        /* Cluster 2 */
+        200px 100px, 200px 85px, 200px 115px, 185px 100px, 215px 100px, 185px 85px, 215px 85px, 185px 115px,
+        /* Cluster 3 */
+        400px 80px, 400px 65px, 400px 95px, 385px 80px, 415px 80px, 385px 65px, 415px 65px, 385px 95px, 415px 95px,
+        /* Cluster 4 */
+        600px 350px, 600px 335px, 600px 365px, 585px 350px, 615px 350px, 585px 335px, 615px 335px, 585px 365px, 615px 365px,
+        /* Cluster 5 */
+        80vw 80vh, calc(80vw + 15px) calc(80vh + 0px), calc(80vw + 30px) calc(80vh + 0px), 80vw calc(80vh + 15px), calc(80vw + 15px) calc(80vh + 15px), calc(80vw + 30px) calc(80vh + 15px), 80vw calc(80vh + 30px), calc(80vw + 15px) calc(80vh + 30px),
+        /* Cluster 6 */
+        100px 600px, 100px 615px, 100px 585px, 85px 600px, 115px 600px, 85px 615px, 115px 615px,
+        /* Cluster 7 */
+        900px 200px, 900px 215px, 900px 185px, 885px 200px, 915px 200px, 885px 215px,
+        /* Cluster 8 */
+        300px 500px, 315px 500px, 285px 500px, 300px 485px, 300px 515px,
+        /* Cluster 9 */
+        700px 100px, 715px 100px, 685px 100px, 700px 85px,
+        /* Cluster 10 */
+        500px 400px, 515px 400px, 485px 400px, 500px 415px;
+    background-repeat: no-repeat;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 1;
+}
+
+/* Verwijder de schaduw effecten */
+.container::after {
+    display: none;
+}
+
+.pixelGrid {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px; /* Larger grid size */
+    opacity: 0.5;
+}
+
+.answersLayer {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    padding: 80px;
+}
+
+.answersGrid {
+    width: 100%;
+    height: 100%;
+    padding: 4rem;
+    position: relative;
+}
+
+/* Update container and grid layout */
+.container {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    background-color: white;
+    overflow: hidden;
+}
+
+/* Update grid lines to be a background element */
+.gridLines {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    padding: 80px;
+    z-index: 1;
+}
+
+.gridLines::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 80px;
+    bottom: 80px;
+    width: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.gridLines::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 80px; 
+    right: 80px;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Update the axis labels */
+.axisLabel {
+    position: absolute;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 2;
+    text-align: center;
+    white-space: pre-line;
+    line-height: 1.4;
+    width: 100%;
+}
+
+.labelTop {
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.labelBottom {
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.labelLeft, .labelRight {
+    position: absolute;
+    top: 50%;
+    transform-origin: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    width: 120px;
+    text-align: center;
+}
+
+.labelLeft {
+    transform: translateY(-50%);
+    left: 40px;
+}
+
+.labelRight {
+    transform: translateY(-50%);
+    right: 40px;
+}
+
+.answerItem {
+    position: relative;
+    width: 3rem; 
+    height: 3rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 5;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* REMOVE ALL THESE ANIMATION RULES */
+/*
+.answerItem:nth-child(2n) {
+    animation-duration: 13s;
+    animation-delay: 2s;
+}
+
+.answerItem:nth-child(3n) {
+    animation-duration: 14s;
+    animation-delay: 4s;
+}
+
+.answerItem:nth-child(4n) {
+    animation-duration: 12.5s;
+    animation-delay: 6s;
+}
+
+.answerItem:nth-child(5n) {
+    animation-duration: 13.5s;
+    animation-delay: 8s;
+}
+*/
+
+/* KEEP THE KEYFRAMES BUT DON'T APPLY THEM */
+@keyframes float {
+    0% {
+        transform: translate(-50%, -50%) translate(0px, 0px) scale(1);
+    }
+    25% {
+        transform: translate(-50%, -50%) translate(-1px, -3px) scale(1.08);
+    }
+    50% {
+        transform: translate(-50%, -50%) translate(0px, -4px) scale(1);
+    }
+    75% {
+        transform: translate(-50%, -50%) translate(1px, -3px) scale(0.92);
+    }
+    100% {
+        transform: translate(-50%, -50%) translate(0px, 0px) scale(1);
+    }
+}
+
+.answerItem:hover {
+    transform: translate(-50%, -50%) scale(1.2) !important;
+    z-index: 10000 !important;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    animation: none !important; /* Stop any animations on hover */
+}
+
+/* Add cluster-specific styles */
+.cluster {
+    border: 3px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.cluster:hover {
+    transform: translate(-50%, -50%) scale(1.1) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+    z-index: 10000 !important;
+}
+
+.clusterCount {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+    z-index: 1;
+}

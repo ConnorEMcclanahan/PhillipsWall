@@ -1,0 +1,532 @@
+:root {
+    --turquoise: #7EDDDE;
+    --orange: #FFA40D;
+    --green: #009C49;
+    --purple: #A77AD7;
+}
+
+.container {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    background-color: #faf9f6;
+    overflow: hidden;
+}
+
+/* Square sticky note pattern background */
+.container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+        /* Layer 1 - Larger squares with subtle neutral colors */
+        linear-gradient(45deg, rgba(200, 200, 200, 0.15) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(220, 220, 220, 0.12) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(180, 180, 180, 0.1) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(240, 240, 240, 0.18) 75%),
+        
+        /* Layer 2 - Medium squares */
+        linear-gradient(30deg, rgba(190, 190, 190, 0.08) 20%, transparent 20%),
+        linear-gradient(-30deg, rgba(210, 210, 210, 0.12) 30%, transparent 30%),
+        linear-gradient(60deg, transparent 70%, rgba(230, 230, 230, 0.1) 70%),
+        
+        /* Layer 3 - Small scattered squares */
+        linear-gradient(15deg, rgba(200, 200, 200, 0.06) 15%, transparent 15%),
+        linear-gradient(-75deg, rgba(180, 180, 180, 0.09) 25%, transparent 25%),
+        linear-gradient(75deg, transparent 80%, rgba(220, 220, 220, 0.07) 80%);
+    background-size: 
+        80px 80px, 90px 90px, 70px 70px, 100px 100px,
+        60px 60px, 75px 75px, 85px 85px,
+        40px 40px, 50px 50px, 65px 65px;
+    background-position:
+        0 0, 20px 20px, 40px 10px, 30px 50px,
+        10px 30px, 50px 0px, 25px 40px,
+        15px 15px, 35px 25px, 45px 35px;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Alternative approach - More distinct squares */
+.container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+        /* Create distinct square shapes at various positions */
+        conic-gradient(from 0deg at 15% 20%, rgba(200, 200, 200, 0.2) 0deg 90deg, transparent 90deg 360deg),
+        conic-gradient(from 0deg at 65% 15%, rgba(180, 180, 180, 0.15) 0deg 90deg, transparent 90deg 360deg),
+        conic-gradient(from 0deg at 85% 45%, rgba(220, 220, 220, 0.18) 0deg 90deg, transparent 90deg 360deg),
+        conic-gradient(from 0deg at 25% 70%, rgba(240, 240, 240, 0.12) 0deg 90deg, transparent 90deg 360deg),
+        conic-gradient(from 0deg at 75% 80%, rgba(190, 190, 190, 0.16) 0deg 90deg, transparent 90deg 360deg),
+        
+        /* Smaller squares */
+        conic-gradient(from 0deg at 45% 35%, rgba(210, 210, 210, 0.1) 0deg 90deg, transparent 90deg 360deg),
+        conic-gradient(from 0deg at 20% 55%, rgba(200, 200, 200, 0.14) 0deg 90deg, transparent 90deg 360deg),
+        conic-gradient(from 0deg at 90% 25%, rgba(180, 180, 180, 0.11) 0deg 90deg, transparent 90deg 360deg),
+        conic-gradient(from 0deg at 60% 75%, rgba(230, 230, 230, 0.13) 0deg 90deg, transparent 90deg 360deg),
+        
+        /* Tiny squares */
+        conic-gradient(from 0deg at 35% 10%, rgba(195, 195, 195, 0.08) 0deg 90deg, transparent 90deg 360deg),
+        conic-gradient(from 0deg at 55% 60%, rgba(215, 215, 215, 0.09) 0deg 90deg, transparent 90deg 360deg),
+        conic-gradient(from 0deg at 10% 40%, rgba(185, 185, 185, 0.12) 0deg 90deg, transparent 90deg 360deg);
+    background-size: 
+        60px 60px, 70px 70px, 80px 80px, 90px 90px, 50px 50px,
+        45px 45px, 55px 55px, 40px 40px, 65px 65px,
+        30px 30px, 35px 35px, 38px 38px;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.pixelGrid {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    opacity: 0.5;
+}
+
+.questionsLayer {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    padding: 80px;
+}
+
+.questionsGrid {
+    width: 100%;
+    height: 100%;
+    padding: 4rem;
+    position: relative;
+}
+
+/* Grid lines to be a background element */
+.gridLines {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    padding: 80px;
+    z-index: 1;
+}
+
+.gridLines::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 80px;
+    bottom: 80px;
+    width: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.gridLines::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 80px; 
+    right: 80px;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Axis labels */
+.axisLabel {
+    position: absolute;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 2;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.labelTop {
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.labelBottom {
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.labelLeft, .labelRight {
+    writing-mode: vertical-rl;
+    position: absolute;
+    top: 50%;
+    transform-origin: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+}
+
+.labelLeft {
+    transform: rotate(180deg) translateY(50%);
+    left: 40px;
+}
+
+.labelRight {
+    transform: rotate(0deg) translateY(-50%);
+    right: 40px;
+}
+
+.questionItem {
+    position: relative;
+    width: 3rem; 
+    height: 3rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: currentColor;
+    filter: url('#texture');
+    z-index: 1;
+    mix-blend-mode: normal;
+}
+
+.questionText {
+    position: relative;
+    z-index: 2;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-align: center;
+    padding: 0.5rem;
+}
+
+/* Color-specific styles */
+.questionItem[data-color="#7EDDDE"] {
+    background-color: var(--turquoise);
+    color: var(--turquoise);
+}
+
+.questionItem[data-color="#FFA40D"] {
+    background-color: var(--orange);
+    color: var(--orange);
+}
+
+.questionItem[data-color="#009C49"] {
+    background-color: var(--green);
+    color: var(--green);
+}
+
+.questionItem[data-color="#A77AD7"] {
+    background-color: var(--purple);
+    color: var(--purple);
+}
+
+/* Hover effects */
+.questionItem:hover::before {
+    opacity: 0.25;
+    transform: scale(1.1);
+    filter: blur(2px);
+}
+
+/* Rotation animation */
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.questionItem:hover:not(.inactiveQuestion) {
+    transform: scale(1.1);
+    z-index: 20;
+}
+
+.inactiveQuestion {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+    transition: all 0.5s ease;
+}
+
+.zoomTransition {
+    position: fixed;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center center;
+}
+
+.zoomedIn {
+    transform: scale(1.5) translateZ(500px);
+}
+
+.zoomedOut {
+    transform: scale(0.1) translateZ(-1000px);
+}
+
+.glowEffect {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    filter: blur(0.5rem);
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    -webkit-backdrop-filter: blur(7.9px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.questionItem:hover .glowEffect {
+    opacity: 0.7;
+}
+
+/* Modal Overlay */
+.overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contentWrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    transform: translateZ(0);
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.backButton {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+    font-weight: 500;
+    z-index: 50;
+    cursor: pointer;
+}
+
+.backButton:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.activeQuestion {
+    width: 14rem;
+    height: 14rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    text-align: center;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 30;
+    transform: scale(1.2);
+}
+
+.answerBox {
+    position: absolute;
+    width: 17rem;
+    height: 16rem;
+    padding: 1.5rem;
+    color: white;
+    text-align: center;
+    transition: all 0.3s ease;
+    border-radius: 0.5rem;
+    transform-origin: center center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: auto;
+}
+
+.answerBox::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.4) 0%,
+            transparent 50%,
+            rgba(0, 0, 0, 0.05) 100%
+    );
+    pointer-events: none;
+}
+
+.answerBox:hover {
+    transform: scale(1.1) rotate(0deg) translate(-50%, -50%) !important;
+    z-index: 40;
+    box-shadow: 0 0 40px var(--hover-color), inset 0 0 40px var(--hover-color);
+}
+
+/* Animation for answer transitions */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.pageContainer {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes wave {
+    0% {
+        transform: translate(0, 0);
+    }
+    50% {
+        transform: translate(5px, -5px);
+    }
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+.entering {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.leaving {
+    transform: scale(0.8);
+    opacity: 0;
+}
+
+.enteringQuestions {
+    opacity: 1;
+}
+
+.leavingQuestions {
+    opacity: 0;
+}
+
+.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* General zoom transition settings */
+.zoomTransition {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    transform-origin: center center;
+}
+
+.zoomIn {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+.zoomOut {
+    transform: scale(1);
+    opacity: 0.7;
+}
+
+.zoomTransition.zoomIn {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.zoomTransition.zoomOut {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+/* Updated pagination animation keyframes */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+}
+
+.timeline {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    height: 40px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 0 60px;
+    z-index: 4;
+}
+
+/* Create one continuous line behind all timeline points */
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 60px;
+    right: 60px;
+    height: 1px;
+    background-color: black;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.timelinePoint {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: white;
+    border: 2px solid black;
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.timelinePoint.active {
+    background-color: black;
+    transform: scale(1.2);
+}
+
+.timelinePoint:hover {
+    transform: scale(1.2);
+}
+
+.timelineItem {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    flex: 1;
+    margin-top: 14px;
+}
+
+/* Remove the individual line segments from each timeline item */
+.timelineItem:not(:last-child)::after {
+    display: none;
+}

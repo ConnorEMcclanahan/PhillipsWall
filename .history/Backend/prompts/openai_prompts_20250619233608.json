@@ -1,0 +1,62 @@
+[
+  {
+    "name": "scan-postit",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Extract the question and answer text from the image and return them in a JSON object. Also identify the post-it color (like yellow, green, blue, pink, etc.) and provide x and y axis values. Use double quotes for all keys and values, and format your response exactly as in the example: {\"answer_id\": null, \"answer_text\": \"<answer text>\", \"answer_date\": \"<today's date in datetime sql format>\", \"x_axis_value\": 0.42, \"y_axis_value\": 0.73, \"color\": \"#HEXCODE or color name\", \"answer_language\": \"<language>\", \"image_url\": \"placeholder\", \"question_text\": \"<question text>\" }. Respond ONLY with a valid JSON object."
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "image_url"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "translate-submitted-answer",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "Translate the answer to dutch and english, format your response exactly as in the example: {answer_dutch: <answer text>, answer_english: <answer text>}. Respond ONLY with a valid JSON object. All keys and string values MUST be enclosed in double quotes. Use null for null values. Do not use single quotes, Python-style None, or any extra text."
+          },
+          {
+            "type": "text",
+            "text": "{submitted_text}"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "get-axis-value",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "In context of the question, classify the personal sentiment of the answer toward AI: For each axis, assign a value between -1.00 and +1.00 (do not round; the second digit should not be 0 or 5 if possible). Definitions: - Y-axis: +1.00 means extremely enthusiastic about AI; -1.00 means extremely skeptical - X-axis: +1.00 means extremely optimistic about the AI-driven future; -1.00 means extremely fearful; Return ONLY a JSON object as {'y': 0.<est value>, 'x': -0.<est value>}. All keys and string values MUST be enclosed in double quotes. Do not use single quotes, Python-style None, or any extra text. In the off case that the answer does not show sentiment or does not answer the question, make the default value 0."
+          },
+          {
+            "type": "text",
+            "text": "{question_text}"
+          },
+          {
+            "type": "text",
+            "text": "{answer_text}"
+          }
+        ]
+      }
+    ]
+  }
+]

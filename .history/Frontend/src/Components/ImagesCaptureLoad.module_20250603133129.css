@@ -1,0 +1,551 @@
+.mainContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.container {
+    padding: 16px;
+    height: 93vh;
+    gap: 1rem;
+    display: flex;
+    width: 100%;
+    margin-left: -16px;
+    justify-content: space-evenly;
+}
+
+.panel {
+    width: 100%;
+}
+
+.card {
+    height: 100%;
+    background: #FFFFFF !important; /* Pure white */
+    border-radius: 16px !important ;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important; /* Subtle shadow */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 2rem;
+}
+
+.emptyState {
+    border-radius: 8px;
+    height: calc(100% - 60px);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    background: #FFFFFF !important; /* Pure white */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+.controls {
+    display: flex;
+    gap: 16px;
+    justify-content: space-around;
+}
+
+.preview {
+    flex: 1;
+    position: relative;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.cameraFeed {
+    height: 100%;
+    position: relative;
+}
+
+.video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.overlay {
+    position: absolute;
+    top: 2%;
+    left: 10%;
+    right: 10%;
+    bottom: 10%;
+    border: 4px solid #2196f3;
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+.cameraButtons {
+    display: flex;
+    gap: 4rem;
+    justify-content: center;
+}
+
+.capturedImage {
+    height: 100%;
+    position: relative;
+}
+
+.image {
+    width: 100%;
+    height: 100%;
+    max-height: 35rem;
+    object-fit: contain;
+}
+.retryBox{
+    display: flex;
+    justify-content: space-around;
+}
+.retryButton {
+    background-color: var(--postItYellow) !important;
+    padding: 1rem !important;
+    margin: 1rem !important;
+
+}
+
+.submitButton {
+    background-color: var(--postItPink) !important;
+    padding: 1rem !important;
+    margin: 1rem !important;
+
+}
+
+.submitButton svg {
+    color:var(--postItPinkDark);
+
+}
+
+.retryButton svg {
+color:var(--postItYellowDark);
+}
+
+.noResult {
+height: calc(100% - 60px);
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.imageScanImportText{
+color: white;
+font-weight: 600 !important;
+font-size: 2rem;
+display: flex;
+justify-content: center;
+padding-bottom: 2rem;
+}
+
+.secondaryText{
+    padding-bottom: 2rem;
+}
+
+.uploadButton{
+background-color: var(--postItGreenDark) !important;
+}
+
+.takePictureButton{
+background-color: var(--postItPinkDark) !important;
+}
+
+
+.resultArea{
+    background: #FFFFFF !important; /* Pure white */
+    border-radius: 16px !important ;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(8.8px);
+    -webkit-backdrop-filter: blur(8.8px);
+    padding: 2rem;
+}
+
+.chipArea{
+    font-size: 1rem !important;
+    color: var(--darkBlack) !important;
+    border: none !important;
+    background-color: white !important;
+}
+
+.questionArea{
+    background: #FFFFFF !important; /* Pure white */
+    border-radius: 16px !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    -webkit-backdrop-filter: blur(8.8px);
+    padding: 2rem;
+    filter: blur();
+}
+
+.titleTranscriptionLabel{
+    font-size: 1.4rem !important;
+    font-weight: 600 !important;
+}
+
+.titleTranscription{
+
+}
+
+.answerArea{
+    background: #FFFFFF !important; /* Pure white */
+    border-radius: 16px !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    -webkit-backdrop-filter: blur(8.8px);
+    padding: 2rem;
+}
+
+.matchArea{
+    background: #FFFFFF !important; /* Pure white */
+    border-radius: 16px !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    -webkit-backdrop-filter: blur(8.8px);
+    padding: 2rem;
+}
+
+.matchScore{
+    margin-top: 0px !important;
+}
+
+.postNote{
+    display: flex;
+    gap: 2rem;
+    flex-direction: column;
+    padding: 1rem;
+}
+
+.infoBox{
+    border-radius: 8px;
+    height: calc(100% - 60px);
+    background: #FFFFFF !important; /* Pure white */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 16px;
+    display: flex;
+    width: 85%;
+    flex-direction: column;
+    align-items: center;
+}
+
+.infoText {
+  font-size: 1.4rem !important;
+  font-weight: 600 !important;
+  color: #000000 !important; /* Black text for white background */
+}
+
+.scanningContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 48px 24px;
+  width: 100vw !important; /* Full viewport width */
+  min-height: 100vh !important; /* Full viewport height */
+  max-width: none !important; /* Override any max-width */
+  margin: 0 !important; /* Remove any margins */
+  background-color: #FFFFFF !important; /* Force white background with !important */
+  position: fixed !important; /* Position fixed to cover everything */
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 9999 !important; /* Very high z-index to ensure it's above everything */
+  overflow-y: auto !important; /* Allow scrolling if content is tall */
+}
+
+.scanningContent {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scanningInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 40px;
+}
+
+.scanningTitle {
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 16px !important;
+  text-align: center;
+}
+
+.scanningSubtitle {
+  font-size: 1.2rem !important;
+  font-weight: 500 !important;
+  margin-bottom: 40px !important;
+  text-align: center;
+}
+
+.rulesContainer {
+  display: flex;
+  flex-direction: row; /* Change to row for two columns */
+  justify-content: space-between;
+  width: 100%;
+  max-width: 800px; /* Wider to accommodate two columns */
+  margin: 0 auto 40px;
+  text-align: left;
+}
+
+/* Create separate columns for positives and negatives */
+.positiveRules, .negativeRules {
+  display: flex;
+  flex-direction: column;
+  width: 48%; /* Slightly less than 50% to create space between */
+}
+
+/* Each rule item styling */
+.ruleItem {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+/* Green checkmarks */
+.checkMark {
+  color: #4CAF50 !important;
+  margin-right: 12px !important;
+  flex-shrink: 0;
+  font-size: 1.2rem !important;
+}
+
+/* Red X marks */
+.crossMark {
+  color: #F44336 !important;
+  margin-right: 12px !important;
+  flex-shrink: 0;
+  font-size: 1.2rem !important;
+  display: inline-block;
+  width: 24px; /* Match the width of the CheckCircleIcon */
+  text-align: center;
+  line-height: 24px;
+  font-weight: bold;
+}
+
+.startButton {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  padding: 12px 28px !important;
+  font-size: 1rem !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  margin-bottom: 16px !important;
+}
+
+.finePrint {
+  font-size: 0.75rem !important;
+  color: rgba(0, 0, 0, 0.6) !important;
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* Reset any other styles that might interfere */
+body, html {
+  background-color: #FFFFFF;
+}
+
+/* Container for camera viewfinder with border */
+.cameraViewfinderContainer {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 40px;
+}
+
+/* Camera viewfinder */
+.cameraViewfinder {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border: 2px solid #000;
+  overflow: hidden;
+  background-color: #000;
+}
+
+/* Camera feed styling */
+.cameraFeed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Back button positioning */
+.cameraBackButton {
+  position: absolute !important;
+  top: -50px;
+  left: 0;
+  color: #000 !important;
+  z-index: 10;
+}
+
+/* Corner brackets for viewfinder */
+.cornerBracket {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: black;
+  border-style: solid;
+  border-width: 0;
+  z-index: 2;
+}
+
+.topLeft {
+  top: 10px;
+  left: 10px;
+  border-left-width: 3px;
+  border-top-width: 3px;
+}
+
+.topRight {
+  top: 10px;
+  right: 10px;
+  border-right-width: 3px;
+  border-top-width: 3px;
+}
+
+.bottomLeft {
+  bottom: 10px;
+  left: 10px;
+  border-left-width: 3px;
+  border-bottom-width: 3px;
+}
+
+.bottomRight {
+  bottom: 10px;
+  right: 10px;
+  border-right-width: 3px;
+  border-bottom-width: 3px;
+}
+
+/* Capture button positioned inside viewfinder */
+.captureButton {
+  position: absolute !important;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70px !important;
+  height: 70px !important;
+  padding: 0 !important;
+  min-width: 0 !important;
+  border-radius: 50% !important;
+  background-color: white !important;
+  border: 2px solid white !important;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 3;
+}
+
+.innerCaptureButton {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background-color: black;
+}
+
+/* Add responsive adjustments to the existing camera styles */
+
+/* Make the scanning container responsive */
+@media (max-height: 700px), (max-width: 500px) {
+  .scanningContainer {
+    padding: 24px 16px;
+  }
+  
+  .scanningTitle {
+    font-size: 2rem !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .scanningSubtitle {
+    font-size: 1rem !important;
+    margin-bottom: 24px !important;
+  }
+}
+
+/* Camera viewfinder container responsive adjustments */
+@media (max-width: 600px) {
+  .cameraViewfinderContainer {
+    max-width: 100%;
+    margin-bottom: 20px;
+  }
+}
+
+/* Camera viewfinder responsive sizing */
+@media (max-height: 700px) {
+  .cameraViewfinder {
+    aspect-ratio: 4/3; /* More compact ratio for smaller heights */
+  }
+  
+  .cornerBracket {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+/* Adjust capture button size on smaller screens */
+@media (max-width: 500px), (max-height: 650px) {
+  .captureButton {
+    width: 60px !important;
+    height: 60px !important;
+    bottom: 20px;
+  }
+  
+  .innerCaptureButton {
+    width: 46px;
+    height: 46px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 350px), (max-height: 550px) {
+  .captureButton {
+    width: 50px !important;
+    height: 50px !important;
+    bottom: 15px;
+  }
+  
+  .innerCaptureButton {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .cameraBackButton {
+    top: -40px;
+  }
+  
+  .cameraViewfinder {
+    border-width: 2px;
+  }
+}
+
+/* Ensure the camera content fits on smaller screens */
+@media (max-height: 600px) {
+  .scanningContent {
+    max-height: 100vh;
+  }
+  
+  .cameraViewfinderContainer {
+    margin-bottom: 10px;
+  }
+  
+  .scanningInfo {
+    margin-bottom: 20px;
+  }
+}
+
+/* Fix bottom spacing on very small screens */
+@media (max-height: 500px) {
+  .scanningContainer {
+    justify-content: flex-start;
+    padding-top: 10px;
+  }
+}
