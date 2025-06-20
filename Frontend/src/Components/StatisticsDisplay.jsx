@@ -74,14 +74,14 @@ const breakByWidth = (label, maxCharsPerLine = 16) => {
   };
 
 // Styled components to match the application theme
-const GlassCard = styled(Box)(({theme}) => ({
-    background: 'rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(10px)',
-    borderRadius: '16px',
-    padding: theme.spacing(3),
-    boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-}));
+// const GlassCard = styled(Box)(({theme}) => ({
+//     background: 'rgba(255, 255, 255, 0.1)',
+//     backdropFilter: 'blur(10px)',
+//     borderRadius: '16px',
+//     padding: theme.spacing(3),
+//     boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+//     border: '1px solid rgba(255, 255, 255, 0.2)',
+// }));
 
 
 
