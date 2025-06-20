@@ -1,15 +1,27 @@
 // src/components/LanguageSelector.jsx
 import { useLanguage } from '../LanguageContext';
+import './LanguageSelector.css';
 
 const LanguageSelector = () => {
   const { language, changeLanguage } = useLanguage();
 
+  const flags = {
+  en: '/flags/gb.png',
+  nl: '/flags/nl.png',
+  };
+
   return (
-    <select value={language} onChange={(e) => changeLanguage(e.target.value)}>
-      <option value="en">English</option>
-      <option value="nl">Dutch</option>
-      
-    </select>
+    <div className="language-float">
+      {Object.keys(flags).map((lang) => (
+        <img
+          key={lang}
+          src={flags[lang]}
+          alt={lang}
+          onClick={() => changeLanguage(lang)}
+          className={`flag-icon ${language === lang ? 'active' : ''}`}
+        />
+      ))}
+    </div>
   );
 };
 
