@@ -12,7 +12,7 @@ from .services.answer_group_service import AnswerGroupService
 from .services.utility_service import UtilityService
 from .routes import question_route as qr
 from .routes import answer_route as ar
-from .routes import answer_group_route as agr
+from .routes import answer_group_route as arg
 from .routes import utility_route as ur
 
 def create_app():
@@ -35,7 +35,7 @@ def create_app():
     # Create blueprint by calling the factory function with the service instance
     question_bp = qr.create_question_blueprint(question_service)
     answer_bp = ar.create_answer_blueprint(answer_service)
-    answer_group_bp = agr.create_answer_group_blueprint(answer_group_service)
+    answer_group_bp = arg.create_answer_group_blueprint(answer_group_service)
     utility_bp = ur.create_utility_blueprint(utility_service)
 
     app.register_blueprint(answer_bp)

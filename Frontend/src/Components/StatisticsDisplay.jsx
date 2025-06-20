@@ -37,7 +37,8 @@ import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import NotListedLocationIcon from '@mui/icons-material/NotListedLocation';
 import styles from './StatisticsDisplay.module.css';
 import translations from '../Pages/translations.json';
-import {useLanguage} from "./LanguageContext";
+import {useLanguage} from "../LanguageContext";
+
 import { Text } from 'recharts';
 
 const breakByWidth = (label, maxCharsPerLine = 16) => {
@@ -71,10 +72,19 @@ const breakByWidth = (label, maxCharsPerLine = 16) => {
       </g>
     );
   };
-   
-  
-  
- 
+
+// Styled components to match the application theme
+const GlassCard = styled(Box)(({theme}) => ({
+    background: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '16px',
+    padding: theme.spacing(3),
+    boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+}));
+
+
+
 const StatisticsDashboard = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);

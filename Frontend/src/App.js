@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainPage from "./Pages/MainBubblePage/MainPage";
 import ImageScanPage from "./Pages/ImageScan/ImageScanPage";
-import { LanguageProvider } from './Components/LanguageContext';
+import { LanguageProvider } from './LanguageContext';
 import StatisticsPage from "./Pages/StatisticsPage/StatisticsPage";
 
 const App = () => {
